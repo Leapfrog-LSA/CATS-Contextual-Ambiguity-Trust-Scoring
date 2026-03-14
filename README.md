@@ -2,15 +2,12 @@
 
 > **Trust intelligence for OSINT sources — not fact-checking, but source reliability over time.**
 
-
-
-[![CI](https://github.com/cats-project/cats/actions/workflows/ci.yml/badge.svg)](https://github.com/cats-project/cats/actions)
-[![Coverage](https://codecov.io/gh/cats-project/cats/branch/main/graph/badge.svg)](https://codecov.io/gh/cats-project/cats)
+[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions)
+[![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GDPR Compliant](https://img.shields.io/badge/GDPR-Art.13--22-blue)](docs/compliance.md)
 [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
-
 
 ---
 
@@ -39,7 +36,7 @@ CATS analyses the *behavioural patterns* of a source over time — narrative con
 
 ```bash
 # 1. Clone and configure
-git clone https://github.com/cats-project/cats.git && cd cats
+git clone https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring.git && cd CATS-Contextual-Ambiguity-Trust-Scoring
 cp .env.example .env          # fill in secrets (see .env.example)
 
 # 2. Install
