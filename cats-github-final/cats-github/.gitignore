@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.mypy_cache/
+
+# Environment
+.env
+*.env.local
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+*.pid
+
+# Alembic
+alembic/versions/__pycache__/
+
+# Logs
+*.log
+logs/
+
+# Certs
+nginx/certs/*.crt
+nginx/certs/*.key
