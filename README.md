@@ -11,6 +11,7 @@
 [![GDPR Compliant](https://img.shields.io/badge/GDPR-Art.13--22-blue)](docs/compliance.md)
 [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
 
+
 ---
 
 ## What is CATS?
