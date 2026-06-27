@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-import redis.asyncio as aioredis
 import structlog
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from sqlalchemy import select
@@ -81,16 +80,16 @@ async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
     }
 
 
-_redis: Optional[aioredis.Redis] = None
-
-
-async def init_redis_logger(redis_url: str) -> None:
-    global _redis
-    _redis = await aioredis.from_url(redis_url, decode_responses=True)
+def _get_redis():
+    from cats.core.security import redis_client
+    if redis_client is None:
+        raise RuntimeError("Redis not initialized — call init_redis() first")
+    return redis_client
 
 
 async def purge_expired_audits(db: AsyncSession) -> None:
-    acquired = await _redis.set("cats:purge_lock", "1", nx=True, ex=300)
+    redis = _get_redis()
+    acquired = await redis.set("cats:purge_lock", "1", nx=True, ex=300)
     if not acquired:
         logger.info("purge_skipped", reason="lock_held")
         return
@@ -103,4 +102,4 @@ async def purge_expired_audits(db: AsyncSession) -> None:
         await db.commit()
         logger.info("purge_done", deleted=len(old))
     finally:
-        await _redis.delete("cats:purge_lock")
+        await redis.delete("cats:purge_lock")
