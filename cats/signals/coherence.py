@@ -15,8 +15,7 @@ def init_nlp(model_name: str = "it_core_news_lg") -> None:
 
 
 def _normalize(text: str) -> str:
-    # N-03: Unicode NFD for Italian
-    return unicodedata.normalize("NFD", text).lower()
+    return unicodedata.normalize("NFC", text).lower()
 
 
 def _entities(text: str) -> Set[str]:

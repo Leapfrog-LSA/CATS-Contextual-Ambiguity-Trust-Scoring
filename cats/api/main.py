@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
+
 import structlog
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -9,7 +11,7 @@ from cats.core.config import settings
 from cats.core.db import AsyncSessionLocal
 from cats.core.security import init_jwt_keys, init_redis
 from cats.signals.coherence import init_nlp
-from cats.audit.logger import init_redis_logger, purge_expired_audits
+from cats.audit.logger import purge_expired_audits
 from cats.api.routes.evaluate import router as evaluate_router
 
 # N-06: JSON structured logging
@@ -28,7 +30,6 @@ async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.environment)
     init_jwt_keys()                              # S-01
     await init_redis()                           # S-03
-    await init_redis_logger(settings.redis_url)  # I-03
     init_nlp(settings.spacy_model)               # N-01: singleton
 
     # Q-03: max_instances=1 prevents overlapping purge jobs
@@ -47,6 +48,16 @@ async def _purge_job():
 
 
 app = FastAPI(title="CATS API", version="1.0.0", lifespan=lifespan)
+
+if settings.cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in settings.cors_origins.split(",")],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 app.include_router(evaluate_router, prefix="/v1/cats", tags=["cats"])
 
 
@@ -82,7 +93,9 @@ async def health():
     except Exception as e:
         checks["redis"] = f"error:{e}"
     try:
-        async with engine.connect():
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
             checks["database"] = "ok"
     except Exception as e:
         checks["database"] = f"error:{e}"

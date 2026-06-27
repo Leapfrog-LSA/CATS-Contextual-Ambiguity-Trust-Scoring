@@ -1,21 +1,38 @@
+import hmac
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
 import redis.asyncio as aioredis
-from jose import JWTError, jwt
-from fastapi import HTTPException, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from cats.core.config import settings
 import structlog
+from fastapi import HTTPException, Request, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+
+from cats.core.config import settings
 
 logger = structlog.get_logger()
 
-# S-01: RSA keypair for JWT RS256
 _JWT_PRIVATE_KEY: Optional[str] = None
 _JWT_PUBLIC_KEY: Optional[str] = None
 
 
 def init_jwt_keys() -> None:
     global _JWT_PRIVATE_KEY, _JWT_PUBLIC_KEY
+    key_path = os.environ.get("JWT_PRIVATE_KEY_FILE")
+    if key_path and os.path.isfile(key_path):
+        with open(key_path) as f:
+            _JWT_PRIVATE_KEY = f.read()
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
+        priv = load_pem_private_key(_JWT_PRIVATE_KEY.encode(), password=None)
+        from cryptography.hazmat.primitives import serialization
+        _JWT_PUBLIC_KEY = priv.public_key().public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        ).decode()
+        logger.info("jwt_keys_loaded", source="file")
+        return
+
     from cryptography.hazmat.primitives.asymmetric import rsa
     from cryptography.hazmat.primitives import serialization
     priv = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -28,6 +45,8 @@ def init_jwt_keys() -> None:
         serialization.Encoding.PEM,
         serialization.PublicFormat.SubjectPublicKeyInfo,
     ).decode()
+    logger.warning("jwt_keys_generated", source="ephemeral",
+                   hint="Set JWT_PRIVATE_KEY_FILE for persistent keys")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -42,10 +61,9 @@ def verify_token(token: str) -> dict:
     try:
         return jwt.decode(token, _JWT_PUBLIC_KEY, algorithms=['RS256'])
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized')  # S-05
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized')
 
 
-# S-03: atomic sliding-window rate-limit via Lua
 _LUA_SLIDING_INCR = (
     'local key    = KEYS[1]\n'
     'local now    = tonumber(ARGV[1])\n'
@@ -74,7 +92,7 @@ async def init_redis() -> None:
 
 async def check_rate_limit(client_id: str) -> bool:
     now = datetime.now(timezone.utc).timestamp()
-    w   = settings.redis_rate_limit_window_seconds
+    w = settings.redis_rate_limit_window_seconds
     result = await redis_client.eval(
         _LUA_SLIDING_INCR, 1,
         f'ratelimit:{client_id}',
@@ -83,7 +101,6 @@ async def check_rate_limit(client_id: str) -> bool:
     return bool(result)
 
 
-# S-06: correct X-Forwarded-For parsing
 def get_client_ip(request: Request) -> str:
     fwd = request.headers.get('X-Forwarded-For')
     if fwd:
@@ -92,9 +109,9 @@ def get_client_ip(request: Request) -> str:
 
 
 def verify_api_key(api_key: str) -> bool:
-    if api_key == settings.cats_api_key:
+    if hmac.compare_digest(api_key, settings.cats_api_key):
         return True
-    if settings.cats_api_key_prev and api_key == settings.cats_api_key_prev:
+    if settings.cats_api_key_prev and hmac.compare_digest(api_key, settings.cats_api_key_prev):
         return True
     return False
 

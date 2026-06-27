@@ -1,4 +1,7 @@
+import asyncio
 import uuid
+from functools import partial
+
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
@@ -30,15 +33,17 @@ router = APIRouter()
 @router.post("/evaluate", response_model=EvaluateResponse, dependencies=[Depends(api_key_bearer)])
 async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = Depends(get_db)):
     trace_id = str(uuid.uuid4())
-    msgs     = normalize_messages([m.dict() for m in req.messages])
+    msgs     = normalize_messages([m.model_dump() for m in req.messages])
     context  = req.context or {}
 
-    signals  = [
-        compute_coherence(msgs),
-        compute_volatility(msgs),
-        compute_silence(msgs, context.get("source_type", "social")),
-        compute_gaming(msgs),
-    ]
+    loop = asyncio.get_running_loop()
+    signals = await asyncio.gather(
+        loop.run_in_executor(None, compute_coherence, msgs),
+        loop.run_in_executor(None, compute_volatility, msgs),
+        loop.run_in_executor(None, partial(compute_silence, msgs, context.get("source_type", "social"))),
+        loop.run_in_executor(None, compute_gaming, msgs),
+    )
+    signals = list(signals)
     weights  = get_dynamic_weights(context)
     score    = aggregate_score(signals, weights)
     band     = determine_band(score)
@@ -48,12 +53,12 @@ async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = De
         trace_id=trace_id, source_id=req.source_id,
         score=score, band=band,
         signals={s.name: {"value": s.value, "confidence": s.confidence} for s in signals},
-        weights=weights, metadata=context,
+        weights=weights, context_data=context,
     ))
-    await db.commit()
     await log_evaluation(db, trace_id,
                          {"source_id": req.source_id, "score": score, "band": band},
                          ip=get_client_ip(request))
+    await db.commit()
 
     return EvaluateResponse(
         trace_id=trace_id, score=score, band=band, requires_review=review,
@@ -84,10 +89,13 @@ async def contest(trace_id: str, body: ContestRequest, db: AsyncSession = Depend
 
 
 @router.post("/review/{trace_id}", dependencies=[Depends(api_key_bearer)])
-async def review(trace_id: str, db: AsyncSession = Depends(get_db)):
+async def review(trace_id: str, request: Request, db: AsyncSession = Depends(get_db)):
     r = await db.execute(select(TrustScore).where(TrustScore.trace_id == trace_id))
     if not r.scalars().first():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Trace ID not found")
+    await log_evaluation(db, trace_id, {"event": "human_review_requested"},
+                         ip=get_client_ip(request))
+    await db.commit()
     return {"message": "Review logged", "trace_id": trace_id}
 
 

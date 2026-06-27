@@ -1,18 +1,19 @@
 import base64
 import json
+import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-import redis.asyncio as aioredis
+
 import structlog
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from cats.core.config import settings
 from cats.core.models import AuditLog, Contest
 
-logger = structlog.get_logger()   # N-06
+logger = structlog.get_logger()
 
-# S-04: AES-256-GCM with robust key validation
 _gcm: Optional[AESGCM] = None
 
 
@@ -27,8 +28,8 @@ def _get_gcm() -> AESGCM:
 
 
 def _encrypt(data: dict) -> str:
-    nonce = AESGCM.generate_nonce(12)
-    ct    = _get_gcm().encrypt(nonce, json.dumps(data).encode(), None)
+    nonce = os.urandom(12)
+    ct = _get_gcm().encrypt(nonce, json.dumps(data).encode(), None)
     return base64.b64encode(nonce + ct).decode()
 
 
@@ -46,7 +47,7 @@ async def log_evaluation(
         encrypted_data=_encrypt(data), user_id=user_id,
         ip_address=ip, timestamp=datetime.now(timezone.utc),
     ))
-    await db.commit()
+    await db.flush()
 
 
 async def log_contest(
@@ -60,7 +61,7 @@ async def log_contest(
     db.add(c)
     await db.commit()
     await db.refresh(c)
-    return c.id   # D-02: return cid
+    return c.id
 
 
 async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
@@ -72,34 +73,33 @@ async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
     if not a:
         return None
     return {
-        "trace_id":   a.trace_id,
+        "trace_id": a.trace_id,
         "event_type": a.event_type,
-        "data":       _decrypt(a.encrypted_data),
-        "timestamp":  a.timestamp.isoformat(),
+        "data": _decrypt(a.encrypted_data),
+        "timestamp": a.timestamp.isoformat(),
     }
 
 
-# I-03: distributed lock for GDPR purge
-_redis: Optional[aioredis.Redis] = None
-
-
-async def init_redis_logger(redis_url: str) -> None:
-    global _redis
-    _redis = await aioredis.from_url(redis_url, decode_responses=True)
+def _get_redis():
+    from cats.core.security import redis_client
+    if redis_client is None:
+        raise RuntimeError("Redis not initialized — call init_redis() first")
+    return redis_client
 
 
 async def purge_expired_audits(db: AsyncSession) -> None:
-    acquired = await _redis.set("cats:purge_lock", "1", nx=True, ex=300)
+    redis = _get_redis()
+    acquired = await redis.set("cats:purge_lock", "1", nx=True, ex=300)
     if not acquired:
         logger.info("purge_skipped", reason="lock_held")
         return
     try:
         cutoff = datetime.now(timezone.utc) - timedelta(days=settings.audit_retention_days)
-        res    = await db.execute(select(AuditLog).where(AuditLog.timestamp < cutoff))
-        old    = res.scalars().all()
+        res = await db.execute(select(AuditLog).where(AuditLog.timestamp < cutoff))
+        old = res.scalars().all()
         for row in old:
             await db.delete(row)
         await db.commit()
         logger.info("purge_done", deleted=len(old))
     finally:
-        await _redis.delete("cats:purge_lock")
+        await redis.delete("cats:purge_lock")

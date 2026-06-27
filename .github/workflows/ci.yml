@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: black --check cats/ tests/
+      - run: isort --check-only cats/ tests/
+      - run: flake8 cats/ tests/ --max-line-length=120 --extend-ignore=E203,W503
+      - run: mypy cats/ --ignore-missing-imports --no-strict-optional
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cats
+          POSTGRES_PASSWORD: cats
+          POSTGRES_DB: cats_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U cats"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql+asyncpg://cats:cats@localhost:5432/cats_test
+      REDIS_URL: redis://localhost:6379/0
+      CATS_API_KEY: test-api-key
+      AUDIT_ENCRYPTION_KEY: dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTE=
+      ENVIRONMENT: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: pytest tests/ -v --cov=cats --cov-report=term-missing --cov-report=xml
+      - uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: coverage.xml
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t cats:test .

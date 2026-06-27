@@ -20,7 +20,7 @@ class MessageSchema(BaseModel):
 
 class EvaluateRequest(BaseModel):
     source_id: str = Field(..., min_length=1, max_length=256)
-    messages: List[MessageSchema] = Field(..., min_length=1)
+    messages: List[MessageSchema] = Field(..., min_length=1, max_length=500)
     context: Optional[Dict[str, Any]] = None
 
 

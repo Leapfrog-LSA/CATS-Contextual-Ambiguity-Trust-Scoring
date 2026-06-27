@@ -26,6 +26,8 @@ def _burst(messages: List[Message]) -> float:
     ts  = sorted(datetime.fromisoformat(m.timestamp.replace("Z", "+00:00")) for m in messages)
     ivs = [(ts[i] - ts[i - 1]).total_seconds() for i in range(1, len(ts))]
     avg = sum(ivs) / len(ivs)
+    if avg == 0:
+        return 1.0
     return min(sum(1 for iv in ivs if iv < avg / 3) / len(ivs), 1.0)
 
 
