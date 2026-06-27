@@ -17,7 +17,7 @@ class TrustScore(Base):
     band       = Column(String(32), nullable=False)
     signals    = Column(JSONB,  nullable=False)
     weights    = Column(JSONB,  nullable=False)
-    metadata   = Column(JSONB)
+    context_data = Column("context_data", JSONB)
     created_at = Column(DateTime(timezone=True), default=_now, nullable=False)
     __table_args__ = (Index("idx_source_created", "source_id", "created_at"),)
 

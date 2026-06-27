@@ -82,7 +82,9 @@ async def health():
     except Exception as e:
         checks["redis"] = f"error:{e}"
     try:
-        async with engine.connect():
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
             checks["database"] = "ok"
     except Exception as e:
         checks["database"] = f"error:{e}"

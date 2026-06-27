@@ -6,7 +6,7 @@ install:
 	pip install -r requirements.txt
 
 dev-install:
-	pip install -r requirements.txt
+	pip install -r requirements-dev.txt
 	pre-commit install
 
 nlp-download:
@@ -36,16 +36,16 @@ format:
 
 ## ── Docker ────────────────────────────────────────────────────────────
 docker-build:
-	docker-compose build
+	docker compose build
 
 docker-up:
-	docker-compose up -d
+	docker compose up -d
 
 docker-down:
-	docker-compose down
+	docker compose down
 
 docker-logs:
-	docker-compose logs -f app
+	docker compose logs -f app
 
 ## ── Database ──────────────────────────────────────────────────────────
 db-migrate:
