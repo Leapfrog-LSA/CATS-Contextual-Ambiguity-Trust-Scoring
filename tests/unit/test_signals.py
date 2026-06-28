@@ -1,5 +1,3 @@
-import pytest
-
 from cats.signals.silence import compute_silence
 from cats.signals.types import Message
 from cats.signals.volatility import compute_volatility
@@ -55,6 +53,7 @@ class TestSilence:
 class TestGaming:
     def test_insufficient_tokens(self):
         from cats.signals.gaming import compute_gaming
+
         msgs = [Message(timestamp="2026-01-01T08:00:00+00:00", text="Corto")]
         r = compute_gaming(msgs)
         assert r.value == 0.0
@@ -62,10 +61,14 @@ class TestGaming:
 
     def test_normal_text(self):
         from cats.signals.gaming import compute_gaming
+
         msgs = [
             Message(
                 timestamp=f"2026-01-{i+1:02d}T08:00:00+00:00",
-                text="Il governo italiano ha discusso il nuovo piano economico con i sindacati delle principali industrie.",
+                text=(
+                    "Il governo italiano ha discusso il nuovo piano economico "
+                    "con i sindacati delle principali industrie."
+                ),
             )
             for i in range(5)
         ]
@@ -74,6 +77,7 @@ class TestGaming:
 
     def test_repetitive_text_scores_higher(self):
         from cats.signals.gaming import compute_gaming
+
         msgs = [
             Message(
                 timestamp=f"2026-01-{i+1:02d}T08:00:00+00:00",

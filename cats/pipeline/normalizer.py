@@ -18,18 +18,18 @@ def normalize_messages(raw: List[dict]) -> List[Message]:
             continue
         try:
             dt = datetime.fromisoformat(m["timestamp"].replace("Z", "+00:00"))
-            msgs.append(Message(timestamp=dt.isoformat(), text=m["text"].strip(),
-                                metadata=m.get("metadata")))
+            msgs.append(Message(timestamp=dt.isoformat(), text=m["text"].strip(), metadata=m.get("metadata")))
         except (ValueError, KeyError):
             skipped += 1
             continue
     msgs.sort(key=lambda x: x.timestamp)
-    seen, out = set(), []
-    for m in msgs:
-        k = (m.timestamp, m.text)
+    seen: set = set()
+    out: List[Message] = []
+    for msg in msgs:
+        k = (msg.timestamp, msg.text)
         if k not in seen:
             seen.add(k)
-            out.append(m)
+            out.append(msg)
     dupes = len(msgs) - len(out)
     if skipped or dupes:
         logger.info("normalize_messages", skipped=skipped, duplicates=dupes, accepted=len(out))

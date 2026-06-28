@@ -3,6 +3,7 @@
 These tests require PostgreSQL and Redis running (see docker-compose.yml).
 Skipped automatically if services are unavailable.
 """
+
 import os
 
 import pytest
@@ -15,6 +16,7 @@ os.environ.setdefault("ENVIRONMENT", "test")
 
 try:
     from httpx import ASGITransport, AsyncClient
+
     from cats.api.main import app
 
     HAS_DEPS = True
@@ -59,18 +61,26 @@ class TestEvaluateEndpoint:
         assert r.status_code == 422
 
     async def test_evaluate_rejects_empty_messages(self, client, api_headers):
-        r = await client.post("/v1/cats/evaluate", json={
-            "source_id": "test:source",
-            "messages": [],
-        }, headers=api_headers)
+        r = await client.post(
+            "/v1/cats/evaluate",
+            json={
+                "source_id": "test:source",
+                "messages": [],
+            },
+            headers=api_headers,
+        )
         assert r.status_code == 422
 
     async def test_evaluate_rejects_over_500_messages(self, client, api_headers):
         msgs = [{"timestamp": f"2026-01-01T{i % 24:02d}:00:00Z", "text": f"msg {i}"} for i in range(501)]
-        r = await client.post("/v1/cats/evaluate", json={
-            "source_id": "test:source",
-            "messages": msgs,
-        }, headers=api_headers)
+        r = await client.post(
+            "/v1/cats/evaluate",
+            json={
+                "source_id": "test:source",
+                "messages": msgs,
+            },
+            headers=api_headers,
+        )
         assert r.status_code == 422
 
 
@@ -82,15 +92,23 @@ class TestExplainEndpoint:
 
 class TestContestEndpoint:
     async def test_contest_not_found(self, client, api_headers):
-        r = await client.post("/v1/cats/contest/nonexistent-trace", json={
-            "reason": "This is a valid contest reason with enough length.",
-        }, headers=api_headers)
+        r = await client.post(
+            "/v1/cats/contest/nonexistent-trace",
+            json={
+                "reason": "This is a valid contest reason with enough length.",
+            },
+            headers=api_headers,
+        )
         assert r.status_code == 404
 
     async def test_contest_short_reason_rejected(self, client, api_headers):
-        r = await client.post("/v1/cats/contest/some-trace", json={
-            "reason": "short",
-        }, headers=api_headers)
+        r = await client.post(
+            "/v1/cats/contest/some-trace",
+            json={
+                "reason": "short",
+            },
+            headers=api_headers,
+        )
         assert r.status_code == 422
 
 

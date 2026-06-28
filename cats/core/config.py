@@ -35,4 +35,4 @@ class Settings(BaseSettings):
     cors_origins: str = ""
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # values populated from env / .env
