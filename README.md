@@ -126,6 +126,9 @@ Client (HTTPS + Bearer token)
                     + APScheduler purge
 ```
 
+The nginx reverse proxy (TLS, rate limiting, security headers) is configured in
+[`deploy/nginx.conf`](deploy/nginx.conf) and started by `make docker-up`.
+
 See [docs/architecture.md](docs/architecture.md) for full signal and security details.
 
 ---
