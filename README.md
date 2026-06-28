@@ -106,6 +106,8 @@ curl -s -X POST http://localhost:8000/v1/cats/evaluate \
 
 ## Architecture
 
+![CATS — 9-phase OSINT evaluation pipeline](CATS%20SCHEME.png)
+
 ```
 Client (HTTPS + Bearer token)
         │
