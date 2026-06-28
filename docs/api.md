@@ -45,6 +45,39 @@ Compute the trust score for a source.
 
 ---
 
+## POST /batch
+
+Evaluate multiple sources in a single request. Each item has the same shape as
+the `/evaluate` body. All items are scored and persisted atomically (one
+transaction); each result carries its own `trace_id`.
+
+**Request**
+```json
+{
+  "items": [
+    { "source_id": "twitter:a", "messages": [ ... ], "context": { "source_type": "social" } },
+    { "source_id": "news:b",    "messages": [ ... ], "context": { "source_type": "news" } }
+  ]
+}
+```
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `items` | array | ✅ | 1–50 evaluation items |
+
+**Response 200**
+```json
+{
+  "count": 2,
+  "results": [
+    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...] },
+    { "trace_id": "...", "score": 41.0, "band": "medium",      "requires_review": true,  "signals": [...] }
+  ]
+}
+```
+
+---
+
 ## GET /explain/{trace_id}
 
 GDPR Art. 14/22 — explainability endpoint.

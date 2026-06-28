@@ -8,6 +8,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cats.api.schemas import (
+    BatchEvaluateRequest,
+    BatchEvaluateResponse,
     ContestRequest,
     ContestResponse,
     EvaluateRequest,
@@ -33,11 +35,15 @@ logger = structlog.get_logger()
 router = APIRouter()
 
 
-@router.post("/evaluate", response_model=EvaluateResponse, dependencies=[Depends(api_key_bearer)])
-async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSession) -> EvaluateResponse:
+    """Run the 4-signal pipeline for one source and stage the result + audit row.
+
+    Does not commit: the caller commits so /evaluate and /batch control the
+    transaction boundary (a batch is all-or-nothing).
+    """
     trace_id = str(uuid.uuid4())
-    msgs = normalize_messages([m.model_dump() for m in req.messages])
-    context = req.context or {}
+    msgs = normalize_messages([m.model_dump() for m in item.messages])
+    context = item.context or {}
 
     loop = asyncio.get_running_loop()
     raw_signals = await asyncio.gather(
@@ -55,7 +61,7 @@ async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = De
     db.add(
         TrustScore(
             trace_id=trace_id,
-            source_id=req.source_id,
+            source_id=item.source_id,
             score=score,
             band=band,
             signals={s.name: {"value": s.value, "confidence": s.confidence} for s in signals},
@@ -64,9 +70,8 @@ async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = De
         )
     )
     await log_evaluation(
-        db, trace_id, {"source_id": req.source_id, "score": score, "band": band}, ip=get_client_ip(request)
+        db, trace_id, {"source_id": item.source_id, "score": score, "band": band}, ip=get_client_ip(request)
     )
-    await db.commit()
 
     return EvaluateResponse(
         trace_id=trace_id,
@@ -77,6 +82,22 @@ async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = De
             {"name": s.name, "value": s.value, "confidence": s.confidence, "metadata": s.metadata} for s in signals
         ],
     )
+
+
+@router.post("/evaluate", response_model=EvaluateResponse, dependencies=[Depends(api_key_bearer)])
+async def evaluate(req: EvaluateRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    result = await _evaluate_item(req, request, db)
+    await db.commit()
+    return result
+
+
+@router.post("/batch", response_model=BatchEvaluateResponse, dependencies=[Depends(api_key_bearer)])
+async def batch_evaluate(req: BatchEvaluateRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    # Sequential per item (signals within an item already run in parallel); a
+    # single commit keeps the batch atomic.
+    results = [await _evaluate_item(item, request, db) for item in req.items]
+    await db.commit()
+    return BatchEvaluateResponse(count=len(results), results=results)
 
 
 @router.get("/explain/{trace_id}", response_model=ExplainResponse, dependencies=[Depends(api_key_bearer)])

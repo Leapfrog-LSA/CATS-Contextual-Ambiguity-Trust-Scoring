@@ -34,6 +34,15 @@ class EvaluateResponse(BaseModel):
     signals: List[Dict[str, Any]]
 
 
+class BatchEvaluateRequest(BaseModel):
+    items: List[EvaluateRequest] = Field(..., min_length=1, max_length=50)
+
+
+class BatchEvaluateResponse(BaseModel):
+    count: int
+    results: List[EvaluateResponse]
+
+
 class ExplainResponse(BaseModel):
     trace_id: str
     explanation: Dict[str, Any]
