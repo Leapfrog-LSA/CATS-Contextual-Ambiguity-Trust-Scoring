@@ -34,6 +34,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- Row-level multi-tenancy: a `tenant_id` (bound to the API key via the optional
+  `CATS_API_KEYS` "key:tenant" map, never client-supplied) is stored on every
+  `TrustScore` / `AuditLog` / `Contest`, and all reads (`/explain`, `/contest`,
+  `/review`, `/stats`) are scoped to the caller's tenant. Backwards compatible:
+  unlisted keys resolve to the `default` tenant. Migration `002`.
 - nginx reverse-proxy config (`deploy/nginx.conf`) wired into `docker-compose`:
   per-IP rate limiting (30 req/min), security headers, correct
   `X-Forwarded-For`, and a documented TLS 1.3 server block.

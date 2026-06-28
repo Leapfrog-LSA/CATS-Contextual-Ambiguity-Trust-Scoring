@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     cats_api_key: str
     cats_api_key_prev: Optional[str] = None
 
+    # Optional multi-tenant API keys: CSV of "key:tenant" pairs. Keys not listed
+    # here (e.g. cats_api_key / cats_api_key_prev) resolve to the "default" tenant.
+    api_keys: Optional[str] = None
+
     jwt_access_token_expire_minutes: int = 30
 
     database_url: str

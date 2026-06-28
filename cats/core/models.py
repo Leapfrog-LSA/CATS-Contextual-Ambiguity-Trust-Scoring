@@ -15,6 +15,7 @@ def _now() -> datetime:
 class TrustScore(Base):
     __tablename__ = "trust_scores"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False, default="default", index=True)
     trace_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     source_id: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
     score: Mapped[float] = mapped_column(Float, nullable=False)
@@ -29,6 +30,7 @@ class TrustScore(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False, default="default", index=True)
     trace_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String(64), nullable=False)
     encrypted_data: Mapped[str] = mapped_column(Text, nullable=False)
@@ -41,6 +43,7 @@ class AuditLog(Base):
 class Contest(Base):
     __tablename__ = "contests"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False, default="default", index=True)
     trace_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="pending", nullable=False)

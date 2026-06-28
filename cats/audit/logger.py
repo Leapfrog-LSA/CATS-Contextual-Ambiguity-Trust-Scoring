@@ -44,9 +44,11 @@ async def log_evaluation(
     data: dict,
     user_id: Optional[str] = None,
     ip: Optional[str] = None,
+    tenant_id: str = "default",
 ) -> None:
     db.add(
         AuditLog(
+            tenant_id=tenant_id,
             trace_id=trace_id,
             event_type="evaluation",
             encrypted_data=_encrypt(data),
@@ -63,8 +65,10 @@ async def log_contest(
     trace_id: str,
     reason: str,
     user_id: Optional[str] = None,
+    tenant_id: str = "default",
 ) -> int:
     c = Contest(
+        tenant_id=tenant_id,
         trace_id=trace_id,
         reason=reason,
         status="pending",
