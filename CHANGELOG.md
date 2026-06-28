@@ -49,6 +49,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/calibration.md](docs/calibration.md). GA design inspired by
   SantanderAI/genetic-algorithm (Apache-2.0).
 
+### Fixed
+- `compute_coherence` no longer crashes when the spaCy model is not loaded
+  (`nlp is None`): it degrades gracefully to a neutral, zero-confidence signal,
+  consistent with `/health` reporting `nlp: not_loaded`.
+
 ### Planned
 - BERT-based Italian sentiment (replace TextBlob)
 - PostgreSQL multi-tenant support
