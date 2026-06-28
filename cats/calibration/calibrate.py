@@ -18,14 +18,7 @@ from typing import List, Optional, Sequence
 
 from cats.calibration.dataset import LabeledSample, load_dataset
 from cats.calibration.ga import GAConfig, GeneticOptimizer
-from cats.calibration.objective import (
-    METRICS,
-    WeightsByGroup,
-    bounds_for,
-    build_fitness,
-    decode,
-    predict_scores,
-)
+from cats.calibration.objective import METRICS, WeightsByGroup, bounds_for, build_fitness, decode, predict_scores
 
 # Source-type group -> the context a CATS caller would send for it.
 _GROUP_CONTEXT = {"social": {"source_type": "social"}, "news": {"source_type": "news"}, "default": {}}

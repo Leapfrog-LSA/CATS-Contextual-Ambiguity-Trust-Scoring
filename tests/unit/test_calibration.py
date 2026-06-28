@@ -5,13 +5,7 @@ import pytest
 from cats.calibration.calibrate import calibrate
 from cats.calibration.dataset import LabeledSample, load_dataset
 from cats.calibration.ga import GAConfig, GeneticOptimizer
-from cats.calibration.objective import (
-    bounds_for,
-    canonical_source_type,
-    decode,
-    pairwise_concordance,
-    spearman,
-)
+from cats.calibration.objective import bounds_for, canonical_source_type, decode, pairwise_concordance, spearman
 
 
 # ── GA engine ─────────────────────────────────────────────────────────────
