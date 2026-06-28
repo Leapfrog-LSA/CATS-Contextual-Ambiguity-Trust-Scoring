@@ -44,6 +44,10 @@ async def client():
     from cats.core.db import Base, engine
     from cats.core.security import init_redis
 
+    # pytest-asyncio gives each test its own event loop, but the engine is a
+    # module-level singleton: dispose it so its pool is rebuilt on the current
+    # loop, otherwise asyncpg raises "got Future attached to a different loop".
+    await engine.dispose()
     await init_redis()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -51,6 +55,8 @@ async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
+
+    await engine.dispose()
 
 
 class TestHealthEndpoint:
