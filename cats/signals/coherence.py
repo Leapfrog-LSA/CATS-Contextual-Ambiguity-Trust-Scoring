@@ -34,6 +34,17 @@ def _jaccard(a: Set[str], b: Set[str]) -> float:
 
 
 def compute_coherence(messages: List[Message]) -> CoherenceResult:
+    if nlp is None:
+        # NLP model not loaded (e.g. failed/skipped init): degrade gracefully
+        # with a neutral, zero-confidence signal instead of crashing per request.
+        # /health already reports nlp as "not_loaded" for this state.
+        logger.warning("coherence_nlp_unavailable")
+        return CoherenceResult(
+            name="coherence",
+            value=50.0,
+            confidence=0.0,
+            metadata={"reason": "nlp_unavailable"},
+        )
     if len(messages) < 2:
         return CoherenceResult(
             name="coherence",

@@ -3,6 +3,23 @@ from cats.signals.types import Message
 from cats.signals.volatility import compute_volatility
 
 
+class TestCoherence:
+    def test_degrades_without_model(self):
+        from cats.signals import coherence
+
+        # The spaCy model is not loaded in unit tests; compute_coherence must
+        # degrade gracefully (neutral, zero-confidence) instead of crashing.
+        assert coherence.nlp is None
+        msgs = [
+            Message(timestamp="2026-01-01T08:00:00+00:00", text="Primo messaggio sul governo."),
+            Message(timestamp="2026-01-01T09:00:00+00:00", text="Secondo messaggio sul parlamento."),
+        ]
+        r = coherence.compute_coherence(msgs)
+        assert r.value == 50.0
+        assert r.confidence == 0.0
+        assert r.metadata.get("reason") == "nlp_unavailable"
+
+
 class TestVolatility:
     def test_insufficient_messages(self, single_message):
         r = compute_volatility(single_message)
