@@ -1,14 +1,12 @@
 import os
 
-import pytest
-
 os.environ.setdefault("CATS_API_KEY", "test-key")
 os.environ.setdefault("CATS_API_KEY_PREV", "old-key")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTE=")
 
-from cats.core.security import verify_api_key
+from cats.core.security import verify_api_key  # noqa: E402
 
 
 class TestVerifyApiKey:

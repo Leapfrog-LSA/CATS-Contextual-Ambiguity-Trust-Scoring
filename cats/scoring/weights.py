@@ -3,8 +3,8 @@ from typing import Dict
 DEFAULT_WEIGHTS: Dict[str, float] = {
     "coherence": 0.30,
     "volatility": 0.25,
-    "silence":    0.25,
-    "gaming":     0.20,
+    "silence": 0.25,
+    "gaming": 0.20,
 }
 
 if abs(sum(DEFAULT_WEIGHTS.values()) - 1.0) > 1e-6:

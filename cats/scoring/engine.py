@@ -1,4 +1,5 @@
-from typing import List, Dict
+from typing import Dict, List
+
 from cats.signals.types import SignalResult
 
 
@@ -12,10 +13,14 @@ def aggregate_score(signals: List[SignalResult], weights: Dict[str, float]) -> f
 
 
 def determine_band(score: float) -> str:
-    if score >= 80: return "high"
-    if score >= 60: return "medium_high"
-    if score >= 40: return "medium"
-    if score >= 20: return "low"
+    if score >= 80:
+        return "high"
+    if score >= 60:
+        return "medium_high"
+    if score >= 40:
+        return "medium"
+    if score >= 20:
+        return "low"
     return "very_low"
 
 

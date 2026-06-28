@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class Message:
-    timestamp: str          # ISO 8601 UTC
+    timestamp: str  # ISO 8601 UTC
     text: str
     metadata: Optional[Dict[str, Any]] = None
 
@@ -12,8 +12,8 @@ class Message:
 @dataclass
 class SignalResult:
     name: str
-    value: float            # 0-100
-    confidence: float       # 0-1
+    value: float  # 0-100
+    confidence: float  # 0-1
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

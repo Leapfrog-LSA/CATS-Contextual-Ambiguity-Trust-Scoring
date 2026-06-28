@@ -1,15 +1,18 @@
 import unicodedata
 from typing import List, Set
+
 import structlog
-from cats.signals.types import Message, CoherenceResult
+
+from cats.signals.types import CoherenceResult, Message
 
 logger = structlog.get_logger()
-nlp = None   # N-01: singleton loaded in lifespan
+nlp = None  # N-01: singleton loaded in lifespan
 
 
 def init_nlp(model_name: str = "it_core_news_lg") -> None:
     global nlp
     import spacy
+
     nlp = spacy.load(model_name)
     logger.info("spacy_loaded", model=model_name)
 
@@ -33,7 +36,9 @@ def _jaccard(a: Set[str], b: Set[str]) -> float:
 def compute_coherence(messages: List[Message]) -> CoherenceResult:
     if len(messages) < 2:
         return CoherenceResult(
-            name="coherence", value=100.0, confidence=0.0,
+            name="coherence",
+            value=100.0,
+            confidence=0.0,
             metadata={"reason": "insufficient_messages"},
         )
     ents = [_entities(m.text) for m in messages]
