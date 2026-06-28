@@ -136,6 +136,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/api.md](docs/api.md) | Full API reference |
 | [docs/architecture.md](docs/architecture.md) | Signal algorithms, weight matrix, security design |
 | [docs/compliance.md](docs/compliance.md) | GDPR + EU AI Act compliance |
+| [docs/calibration.md](docs/calibration.md) | Empirical weight calibration (genetic search) |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development guide |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting |
@@ -145,7 +146,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 ## Known Limitations (WP 4.1)
 
 - **NLP accuracy ~55–62%**: spaCy NER and TextBlob are naive implementations
-- **Uncalibrated parameters**: all thresholds are initial estimates, not validated on labelled data
+- **Uncalibrated parameters**: thresholds are initial estimates; signal weights can now be empirically tuned with [`cats.calibration`](docs/calibration.md), but band thresholds remain unvalidated
 - **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
 - **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
 

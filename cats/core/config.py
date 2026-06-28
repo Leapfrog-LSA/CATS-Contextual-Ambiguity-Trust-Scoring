@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     spacy_model: str = "it_core_news_lg"
     nlp_gaming_min_tokens: int = 10
 
+    # Optional path to a calibrated weights file (see cats.calibration);
+    # falls back to the static per-source-type estimates when unset.
+    weights_file: Optional[str] = None
+
     environment: str = "production"
     log_level: str = "INFO"
 

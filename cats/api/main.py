@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 import structlog
@@ -14,15 +15,19 @@ from cats.core.db import AsyncSessionLocal
 from cats.core.security import init_jwt_keys, init_redis
 from cats.signals.coherence import init_nlp
 
-# N-06: JSON structured logging
+# N-06: JSON structured logging. Use structlog-native processors + a filtering
+# bound logger so level filtering works without a stdlib logging backend (the
+# stdlib `filter_by_level` processor calls isEnabledFor(), which PrintLogger
+# lacks, and would crash on every log call).
 structlog.configure(
     processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
+        structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.JSONRenderer(),
-    ]
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, settings.log_level.upper(), logging.INFO)),
+    logger_factory=structlog.PrintLoggerFactory(),
+    cache_logger_on_first_use=True,
 )
 logger = structlog.get_logger()
 
