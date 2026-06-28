@@ -122,12 +122,41 @@ def get_client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def _key_tenant_map() -> dict:
+    """Parse the optional CATS_API_KEYS "key:tenant" CSV into a dict."""
+    raw = settings.api_keys
+    out: dict = {}
+    if raw:
+        for pair in raw.split(","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            key, _, tenant = pair.partition(":")
+            key = key.strip()
+            if key:
+                out[key] = tenant.strip() or "default"
+    return out
+
+
 def verify_api_key(api_key: str) -> bool:
-    if hmac.compare_digest(api_key, settings.cats_api_key):
-        return True
-    if settings.cats_api_key_prev and hmac.compare_digest(api_key, settings.cats_api_key_prev):
-        return True
-    return False
+    candidates = [settings.cats_api_key]
+    if settings.cats_api_key_prev:
+        candidates.append(settings.cats_api_key_prev)
+    candidates.extend(_key_tenant_map().keys())
+    return any(hmac.compare_digest(api_key, c) for c in candidates)
+
+
+def resolve_tenant(api_key: str) -> str:
+    """Tenant bound to the API key server-side (never client-supplied)."""
+    for key, tenant in _key_tenant_map().items():
+        if hmac.compare_digest(api_key, key):
+            return tenant
+    return "default"
+
+
+def get_tenant(request: Request) -> str:
+    """Tenant resolved by APIKeyBearer for the current request."""
+    return getattr(request.state, "tenant_id", "default")
 
 
 class APIKeyBearer(HTTPBearer):
@@ -137,6 +166,7 @@ class APIKeyBearer(HTTPBearer):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
         if not await check_rate_limit(get_client_ip(request)):
             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded")
+        request.state.tenant_id = resolve_tenant(cred.credentials)
         return cred.credentials
 
 

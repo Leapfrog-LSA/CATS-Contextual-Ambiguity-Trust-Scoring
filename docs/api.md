@@ -3,6 +3,11 @@
 Base URL: `https://your-domain/v1/cats`  
 Authentication: `Authorization: Bearer <API_KEY>`
 
+**Multi-tenancy:** each API key maps to a tenant (configured server-side via
+`CATS_API_KEYS`; unlisted keys use the `default` tenant). Evaluations are stored
+per tenant and reads (`/explain`, `/contest`, `/review`, `/stats`) only return
+that tenant's data — a trace from another tenant returns `404`.
+
 ---
 
 ## POST /evaluate
