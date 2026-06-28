@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     spacy_model: str = "it_core_news_lg"
     nlp_gaming_min_tokens: int = 10
 
+    # Sentiment backend for the volatility signal: "textblob" (default, light)
+    # or "bert" (requires requirements-bert.txt; falls back to textblob if the
+    # transformers model is unavailable).
+    sentiment_backend: str = "textblob"
+    sentiment_model: str = "neuraly/bert-base-italian-cased-sentiment"
+
     # Optional path to a calibrated weights file (see cats.calibration);
     # falls back to the static per-source-type estimates when unset.
     weights_file: Optional[str] = None

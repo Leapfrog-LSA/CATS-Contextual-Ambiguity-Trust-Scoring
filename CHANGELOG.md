@@ -34,6 +34,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- Optional BERT Italian sentiment backend for the volatility signal
+  (`SENTIMENT_BACKEND=bert`, model configurable via `SENTIMENT_MODEL`).
+  `transformers`/`torch` are optional (`requirements-bert.txt`); the backend
+  falls back to TextBlob when they are unavailable, so the default stays light.
 - Row-level multi-tenancy: a `tenant_id` (bound to the API key via the optional
   `CATS_API_KEYS` "key:tenant" map, never client-supplied) is stored on every
   `TrustScore` / `AuditLog` / `Contest`, and all reads (`/explain`, `/contest`,

@@ -26,7 +26,7 @@ CATS analyses the *behavioural patterns* of a source over time — narrative con
 | Signal | What it measures | Method |
 |---|---|---|
 | **Coherence** | Entity/argument consistency across messages | spaCy NER + Jaccard similarity |
-| **Volatility** | Abrupt narrative tone changes | TextBlob sentiment spike detection |
+| **Volatility** | Abrupt narrative tone changes | TextBlob (or optional BERT) sentiment spike detection |
 | **Silence** | Anomalous temporal gaps in publishing | Gap analysis vs. source-type thresholds |
 | **Gaming** | Signs of algorithmic manipulation | Repetition + TTR + burst + vocab diversity |
 
