@@ -1,0 +1,12 @@
+{"source_type": "social", "signals": {"coherence": 82.0, "volatility": 30.0, "silence": 10.0, "gaming": 12.0}, "label": 85.0}
+{"source_type": "social", "signals": {"coherence": 40.0, "volatility": 70.0, "silence": 35.0, "gaming": 65.0}, "label": 30.0}
+{"source_type": "social", "signals": {"coherence": 60.0, "volatility": 45.0, "silence": 20.0, "gaming": 40.0}, "label": 55.0}
+{"source_type": "social", "signals": {"coherence": 25.0, "volatility": 80.0, "silence": 50.0, "gaming": 78.0}, "label": 18.0}
+{"source_type": "social", "signals": {"coherence": 75.0, "volatility": 35.0, "silence": 15.0, "gaming": 20.0}, "label": 78.0}
+{"source_type": "news", "signals": {"coherence": 90.0, "volatility": 15.0, "silence": 8.0, "gaming": 5.0}, "label": 92.0}
+{"source_type": "news", "signals": {"coherence": 70.0, "volatility": 25.0, "silence": 12.0, "gaming": 18.0}, "label": 74.0}
+{"source_type": "news", "signals": {"coherence": 50.0, "volatility": 40.0, "silence": 30.0, "gaming": 35.0}, "label": 48.0}
+{"source_type": "news", "signals": {"coherence": 35.0, "volatility": 55.0, "silence": 45.0, "gaming": 50.0}, "label": 33.0}
+{"source_type": "blog", "signals": {"coherence": 65.0, "volatility": 38.0, "silence": 22.0, "gaming": 28.0}, "label": 62.0}
+{"source_type": "blog", "signals": {"coherence": 45.0, "volatility": 60.0, "silence": 40.0, "gaming": 55.0}, "label": 38.0}
+{"source_type": "blog", "signals": {"coherence": 80.0, "volatility": 28.0, "silence": 14.0, "gaming": 16.0}, "label": 81.0}

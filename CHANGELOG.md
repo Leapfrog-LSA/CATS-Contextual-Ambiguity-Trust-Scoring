@@ -33,6 +33,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — v1.1 (Q2 2026)
 
+### Added
+- Weight calibration toolkit (`cats.calibration`): dependency-free genetic
+  search that tunes per-source-type signal weights against a labelled dataset,
+  optimising rank-agreement (Spearman / pairwise concordance). Calibrated
+  weights are served via the `CATS_WEIGHTS_FILE` setting. See
+  [docs/calibration.md](docs/calibration.md). GA design inspired by
+  SantanderAI/genetic-algorithm (Apache-2.0).
+
 ### Planned
 - BERT-based Italian sentiment (replace TextBlob)
 - PostgreSQL multi-tenant support

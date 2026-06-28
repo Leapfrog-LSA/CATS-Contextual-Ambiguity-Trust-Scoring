@@ -1,5 +1,5 @@
 .PHONY: install dev-install nlp-download test test-unit test-integration lint format \
-        docker-up docker-down docker-build db-migrate db-revision clean help
+        docker-up docker-down docker-build db-migrate db-revision calibrate clean help
 
 ## ── Setup ─────────────────────────────────────────────────────────────
 install:
@@ -56,6 +56,10 @@ db-revision:
 
 db-downgrade:
 	alembic downgrade -1
+
+## ── Calibration ───────────────────────────────────────────────────────
+calibrate:
+	python -m cats.calibration --dataset examples/calibration_sample.jsonl --out calibrated_weights.json --seed 7
 
 ## ── Utilities ─────────────────────────────────────────────────────────
 generate-key:
