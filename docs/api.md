@@ -94,12 +94,20 @@ GDPR Art. 14/22 — explainability endpoint.
   "explanation": {
     "trust_score": 72.4,
     "band": "medium_high",
-    "signals": [...],
-    "methodology": "Weighted aggregation of 4 behavioural signals",
+    "signals": [
+      {"signal": "coherence", "value": 71.2, "weight": 0.35, "contribution": 24.92,
+       "score_share_pct": 41.0, "confidence": 0.8, "metadata": {"pairs": 5}}
+    ],
+    "primary_driver": "coherence",
+    "methodology": "Weighted aggregation of 4 behavioural signals; score_share_pct is each signal's share of the weighted score",
     "disclaimer": "Scores are ordinal rankings of source reliability patterns..."
   }
 }
 ```
+
+`score_share_pct` is each signal's share of the weighted score (a linear-model
+attribution), and `primary_driver` is the signal that contributed the most —
+both surface *why* a source got its score.
 
 ---
 
