@@ -34,6 +34,9 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- nginx reverse-proxy config (`deploy/nginx.conf`) wired into `docker-compose`:
+  per-IP rate limiting (30 req/min), security headers, correct
+  `X-Forwarded-For`, and a documented TLS 1.3 server block.
 - Prometheus metrics at `GET /metrics` (`prometheus-client`): HTTP request
   count/latency (labelled by route template) plus `cats_evaluations_total`
   (by band) and a `cats_trust_score` histogram.
