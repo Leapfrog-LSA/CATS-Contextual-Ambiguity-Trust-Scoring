@@ -126,6 +126,14 @@ Deep health check — returns status of API, Redis, PostgreSQL, NLP model.
 
 ---
 
+## GET /metrics
+
+Prometheus exposition format (`text/plain`). Includes HTTP request
+count/latency (labelled by route template), `cats_evaluations_total` by band,
+and a `cats_trust_score` histogram. Unauthenticated, for scraping.
+
+---
+
 ## Score Bands
 
 | Score | Band | Recommended action |

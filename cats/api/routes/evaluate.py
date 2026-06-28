@@ -19,6 +19,7 @@ from cats.api.schemas import (
 )
 from cats.audit.logger import log_contest, log_evaluation
 from cats.core.db import get_db
+from cats.core.metrics import EVALUATIONS, TRUST_SCORE
 from cats.core.models import TrustScore
 from cats.core.security import api_key_bearer, get_client_ip
 from cats.pipeline.normalizer import normalize_messages
@@ -57,6 +58,9 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
     score = aggregate_score(signals, weights)
     band = determine_band(score)
     review = requires_human_review(score, band, signals)
+
+    EVALUATIONS.labels(band=band).inc()
+    TRUST_SCORE.observe(score)
 
     db.add(
         TrustScore(

@@ -1,4 +1,5 @@
 import logging
+import time
 from contextlib import asynccontextmanager
 
 import structlog
@@ -6,12 +7,14 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from cats.api.routes.evaluate import router as evaluate_router
 from cats.audit.logger import purge_expired_audits
 from cats.core.config import settings
 from cats.core.db import AsyncSessionLocal
+from cats.core.metrics import HTTP_LATENCY, HTTP_REQUESTS
 from cats.core.security import init_jwt_keys, init_redis
 from cats.signals.coherence import init_nlp
 
@@ -65,6 +68,19 @@ if settings.cors_origins:
     )
 
 app.include_router(evaluate_router, prefix="/v1/cats", tags=["cats"])
+
+
+# N-07: Prometheus request metrics. Label by the matched route template (not the
+# raw path) to keep label cardinality bounded.
+@app.middleware("http")
+async def _prometheus_middleware(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    route = request.scope.get("route")
+    path = getattr(route, "path", None) or "unmatched"
+    HTTP_REQUESTS.labels(request.method, path, response.status_code).inc()
+    HTTP_LATENCY.labels(request.method, path).observe(time.perf_counter() - start)
+    return response
 
 
 # A-03: RFC 7807 Problem Details
@@ -126,4 +142,4 @@ async def health():
 
 @app.get("/metrics")
 async def metrics():
-    return {"note": "Prometheus metrics — integrate prometheus-client here"}
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
