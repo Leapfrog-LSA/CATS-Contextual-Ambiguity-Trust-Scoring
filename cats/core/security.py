@@ -1,7 +1,7 @@
 import hmac
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Awaitable, Optional, cast
 
 import redis.asyncio as aioredis
 import structlog
@@ -101,16 +101,18 @@ async def init_redis() -> None:
 async def check_rate_limit(client_id: str) -> bool:
     now = datetime.now(timezone.utc).timestamp()
     w = settings.redis_rate_limit_window_seconds
-    result = await redis_client.eval(
+    # redis encodes all ARGV as bulk strings on the wire; the Lua script reads
+    # them back with tonumber(), so passing str() is equivalent and type-clean.
+    raw = redis_client.eval(
         _LUA_SLIDING_INCR,
         1,
         f"ratelimit:{client_id}",
-        now,
-        w,
-        settings.redis_rate_limit_max,
-        w * 2,
+        str(now),
+        str(w),
+        str(settings.redis_rate_limit_max),
+        str(w * 2),
     )
-    return bool(result)
+    return bool(await cast(Awaitable[int], raw))
 
 
 def get_client_ip(request: Request) -> str:
@@ -129,7 +131,7 @@ def verify_api_key(api_key: str) -> bool:
 
 
 class APIKeyBearer(HTTPBearer):
-    async def __call__(self, request: Request) -> str:
+    async def __call__(self, request: Request) -> str:  # type: ignore[override]
         cred: HTTPAuthorizationCredentials = await super().__call__(request)
         if not verify_api_key(cred.credentials):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
