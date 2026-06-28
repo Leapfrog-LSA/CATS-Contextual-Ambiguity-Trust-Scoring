@@ -1,4 +1,5 @@
-from typing import List, Dict
+from typing import Dict, List
+
 from cats.signals.types import SignalResult
 
 # A-01: WP 4.1/4.3 disclaimer
@@ -10,24 +11,26 @@ _DISCLAIMER = (
 
 
 def generate_explanation(
-    score: float, band: str,
-    signals: List[SignalResult], weights: Dict[str, float],
+    score: float,
+    band: str,
+    signals: List[SignalResult],
+    weights: Dict[str, float],
 ) -> Dict:
     details = [
         {
-            "signal":       s.name,
-            "value":        round(s.value, 2),
-            "weight":       round(weights.get(s.name, 0.0), 2),
+            "signal": s.name,
+            "value": round(s.value, 2),
+            "weight": round(weights.get(s.name, 0.0), 2),
             "contribution": round(s.value * weights.get(s.name, 0.0), 2),
-            "confidence":   round(s.confidence, 2),
-            "metadata":     s.metadata,
+            "confidence": round(s.confidence, 2),
+            "metadata": s.metadata,
         }
         for s in signals
     ]
     return {
         "trust_score": round(score, 2),
-        "band":        band,
-        "signals":     details,
+        "band": band,
+        "signals": details,
         "methodology": "Weighted aggregation of 4 behavioural signals",
-        "disclaimer":  _DISCLAIMER,
+        "disclaimer": _DISCLAIMER,
     }

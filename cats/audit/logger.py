@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import structlog
@@ -39,24 +39,37 @@ def _decrypt(blob: str) -> dict:
 
 
 async def log_evaluation(
-    db: AsyncSession, trace_id: str, data: dict,
-    user_id: Optional[str] = None, ip: Optional[str] = None,
+    db: AsyncSession,
+    trace_id: str,
+    data: dict,
+    user_id: Optional[str] = None,
+    ip: Optional[str] = None,
 ) -> None:
-    db.add(AuditLog(
-        trace_id=trace_id, event_type="evaluation",
-        encrypted_data=_encrypt(data), user_id=user_id,
-        ip_address=ip, timestamp=datetime.now(timezone.utc),
-    ))
+    db.add(
+        AuditLog(
+            trace_id=trace_id,
+            event_type="evaluation",
+            encrypted_data=_encrypt(data),
+            user_id=user_id,
+            ip_address=ip,
+            timestamp=datetime.now(timezone.utc),
+        )
+    )
     await db.flush()
 
 
 async def log_contest(
-    db: AsyncSession, trace_id: str, reason: str,
+    db: AsyncSession,
+    trace_id: str,
+    reason: str,
     user_id: Optional[str] = None,
 ) -> int:
     c = Contest(
-        trace_id=trace_id, reason=reason, status="pending",
-        user_id=user_id, created_at=datetime.now(timezone.utc),
+        trace_id=trace_id,
+        reason=reason,
+        status="pending",
+        user_id=user_id,
+        created_at=datetime.now(timezone.utc),
     )
     db.add(c)
     await db.commit()
@@ -65,10 +78,7 @@ async def log_contest(
 
 
 async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
-    r = await db.execute(
-        select(AuditLog).where(AuditLog.trace_id == trace_id)
-        .order_by(AuditLog.timestamp.desc())
-    )
+    r = await db.execute(select(AuditLog).where(AuditLog.trace_id == trace_id).order_by(AuditLog.timestamp.desc()))
     a = r.scalars().first()
     if not a:
         return None
@@ -82,6 +92,7 @@ async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
 
 def _get_redis():
     from cats.core.security import redis_client
+
     if redis_client is None:
         raise RuntimeError("Redis not initialized — call init_redis() first")
     return redis_client

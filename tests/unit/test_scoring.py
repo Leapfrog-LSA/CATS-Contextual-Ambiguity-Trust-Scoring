@@ -26,13 +26,21 @@ class TestAggregateScore:
 
 
 class TestDetermineBand:
-    @pytest.mark.parametrize("score,expected", [
-        (95, "high"), (80, "high"),
-        (72, "medium_high"), (60, "medium_high"),
-        (50, "medium"), (40, "medium"),
-        (30, "low"), (20, "low"),
-        (10, "very_low"), (0, "very_low"),
-    ])
+    @pytest.mark.parametrize(
+        "score,expected",
+        [
+            (95, "high"),
+            (80, "high"),
+            (72, "medium_high"),
+            (60, "medium_high"),
+            (50, "medium"),
+            (40, "medium"),
+            (30, "low"),
+            (20, "low"),
+            (10, "very_low"),
+            (0, "very_low"),
+        ],
+    )
     def test_band_thresholds(self, score, expected):
         assert determine_band(score) == expected
 

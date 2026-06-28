@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
 from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class MessageSchema(BaseModel):
@@ -11,6 +12,7 @@ class MessageSchema(BaseModel):
     @classmethod
     def validate_timestamp(cls, v: str) -> str:
         from datetime import datetime
+
         try:
             datetime.fromisoformat(v.replace("Z", "+00:00"))
         except ValueError:
