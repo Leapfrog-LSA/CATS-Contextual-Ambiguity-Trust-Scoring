@@ -34,6 +34,9 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- Prometheus metrics at `GET /metrics` (`prometheus-client`): HTTP request
+  count/latency (labelled by route template) plus `cats_evaluations_total`
+  (by band) and a `cats_trust_score` histogram.
 - `POST /v1/cats/batch` endpoint: evaluate multiple sources in one request
   (1–50 items), persisted atomically in a single transaction.
 - Weight calibration toolkit (`cats.calibration`): dependency-free genetic
@@ -46,4 +49,3 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Planned
 - BERT-based Italian sentiment (replace TextBlob)
 - PostgreSQL multi-tenant support
-- Prometheus metrics integration

@@ -69,6 +69,14 @@ class TestHealthEndpoint:
         assert data["checks"]["api"] == "ok"
 
 
+class TestMetricsEndpoint:
+    async def test_metrics_exposed(self, client):
+        r = await client.get("/metrics")
+        assert r.status_code == 200
+        assert "text/plain" in r.headers["content-type"]
+        assert "cats_http_requests_total" in r.text
+
+
 class TestEvaluateEndpoint:
     async def test_evaluate_requires_auth(self, client):
         r = await client.post("/v1/cats/evaluate", json={})
