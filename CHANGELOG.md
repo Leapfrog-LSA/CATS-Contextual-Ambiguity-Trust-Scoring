@@ -34,6 +34,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- `POST /v1/cats/batch` endpoint: evaluate multiple sources in one request
+  (1–50 items), persisted atomically in a single transaction.
 - Weight calibration toolkit (`cats.calibration`): dependency-free genetic
   search that tunes per-source-type signal weights against a labelled dataset,
   optimising rank-agreement (Spearman / pairwise concordance). Calibrated
@@ -45,4 +47,3 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - BERT-based Italian sentiment (replace TextBlob)
 - PostgreSQL multi-tenant support
 - Prometheus metrics integration
-- `/v1/cats/batch` endpoint

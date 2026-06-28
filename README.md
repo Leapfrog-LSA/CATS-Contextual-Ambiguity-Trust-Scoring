@@ -115,6 +115,7 @@ Client (HTTPS + Bearer token)
         │
    FastAPI — 9-phase pipeline
    ├─ POST /v1/cats/evaluate
+   ├─ POST /v1/cats/batch                ← evaluate up to 50 sources at once
    ├─ GET  /v1/cats/explain/{trace_id}   ← GDPR Art.14/22
    ├─ POST /v1/cats/contest/{trace_id}   ← GDPR Art.22
    ├─ GET  /v1/cats/stats

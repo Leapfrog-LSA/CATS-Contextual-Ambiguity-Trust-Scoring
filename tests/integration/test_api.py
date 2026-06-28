@@ -102,6 +102,28 @@ class TestEvaluateEndpoint:
         assert r.status_code == 422
 
 
+class TestBatchEndpoint:
+    async def test_batch_requires_auth(self, client):
+        r = await client.post("/v1/cats/batch", json={})
+        assert r.status_code in (401, 403, 422)
+
+    async def test_batch_validates_input(self, client, api_headers):
+        r = await client.post("/v1/cats/batch", json={}, headers=api_headers)
+        assert r.status_code == 422
+
+    async def test_batch_rejects_empty_items(self, client, api_headers):
+        r = await client.post("/v1/cats/batch", json={"items": []}, headers=api_headers)
+        assert r.status_code == 422
+
+    async def test_batch_rejects_oversized(self, client, api_headers):
+        item = {
+            "source_id": "test:source",
+            "messages": [{"timestamp": "2026-01-01T08:00:00Z", "text": "msg"}],
+        }
+        r = await client.post("/v1/cats/batch", json={"items": [item] * 51}, headers=api_headers)
+        assert r.status_code == 422
+
+
 class TestExplainEndpoint:
     async def test_explain_not_found(self, client, api_headers):
         r = await client.get("/v1/cats/explain/nonexistent-trace", headers=api_headers)
