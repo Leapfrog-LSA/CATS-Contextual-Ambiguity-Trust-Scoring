@@ -4,20 +4,38 @@ from cats.signals.volatility import compute_volatility
 
 
 class TestCoherence:
-    def test_degrades_without_model(self):
+    _MSGS = [
+        Message(timestamp="2026-01-01T08:00:00+00:00", text="Primo messaggio sul governo."),
+        Message(timestamp="2026-01-01T09:00:00+00:00", text="Secondo messaggio sul parlamento."),
+    ]
+
+    def test_degrades_without_model(self, monkeypatch):
+        from cats.core.config import settings
         from cats.signals import coherence
 
-        # The spaCy model is not loaded in unit tests; compute_coherence must
-        # degrade gracefully (neutral, zero-confidence) instead of crashing.
-        assert coherence.nlp is None
-        msgs = [
-            Message(timestamp="2026-01-01T08:00:00+00:00", text="Primo messaggio sul governo."),
-            Message(timestamp="2026-01-01T09:00:00+00:00", text="Secondo messaggio sul parlamento."),
-        ]
-        r = coherence.compute_coherence(msgs)
+        # Default (ner) backend, spaCy model not loaded -> graceful degradation.
+        monkeypatch.setattr(settings, "coherence_backend", "ner")
+        monkeypatch.setattr(coherence, "nlp", None)
+        r = coherence.compute_coherence(self._MSGS)
         assert r.value == 50.0
         assert r.confidence == 0.0
         assert r.metadata.get("reason") == "nlp_unavailable"
+
+    def test_sbert_backend_falls_back_when_unavailable(self, monkeypatch):
+        from cats.core.config import settings
+        from cats.signals import coherence
+
+        # sentence-transformers is not installed in the test env, so the sbert
+        # backend must fall back to NER (which then degrades gracefully because
+        # the spaCy model is also absent) instead of crashing.
+        monkeypatch.setattr(settings, "coherence_backend", "sbert")
+        monkeypatch.setattr(coherence, "_sbert_model", None)
+        monkeypatch.setattr(coherence, "_sbert_failed", False)
+        monkeypatch.setattr(coherence, "nlp", None)
+        r = coherence.compute_coherence(self._MSGS)
+        assert r.value == 50.0
+        assert r.metadata.get("reason") == "nlp_unavailable"
+        assert coherence._sbert_failed is True
 
 
 class TestVolatility:

@@ -1,0 +1,6 @@
+# Optional dependencies for the Sentence-BERT coherence backend
+# (COHERENCE_BACKEND=sbert). Heavy (pulls in torch + transformers); kept out of
+# the default install. Enable with:
+#   pip install -r requirements-sbert.txt
+# Without these, the coherence backend transparently falls back to spaCy NER.
+sentence-transformers>=2.7,<4.0

@@ -34,6 +34,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v1.1 (Q2 2026)
 
 ### Added
+- Optional Sentence-BERT coherence backend (`COHERENCE_BACKEND=sbert`, model via
+  `COHERENCE_MODEL`): mean cosine similarity of consecutive message embeddings.
+  `sentence-transformers` is optional (`requirements-sbert.txt`); falls back to
+  the spaCy NER backend when unavailable, so the default stays light.
 - Optional BERT Italian sentiment backend for the volatility signal
   (`SENTIMENT_BACKEND=bert`, model configurable via `SENTIMENT_MODEL`).
   `transformers`/`torch` are optional (`requirements-bert.txt`); the backend

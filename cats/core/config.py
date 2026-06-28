@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     sentiment_backend: str = "textblob"
     sentiment_model: str = "neuraly/bert-base-italian-cased-sentiment"
 
+    # Coherence backend: "ner" (default, spaCy NER + Jaccard) or "sbert"
+    # (requires requirements-sbert.txt; falls back to "ner" if the
+    # sentence-transformers model is unavailable).
+    coherence_backend: str = "ner"
+    coherence_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
+
     # Optional path to a calibrated weights file (see cats.calibration);
     # falls back to the static per-source-type estimates when unset.
     weights_file: Optional[str] = None
