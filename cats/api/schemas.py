@@ -66,4 +66,4 @@ class StatsResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     checks: Dict[str, str]
-    version: str = "1.0.0"
+    version: str = "1.2.0"
