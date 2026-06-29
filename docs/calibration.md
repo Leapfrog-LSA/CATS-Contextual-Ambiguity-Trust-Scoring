@@ -31,6 +31,44 @@ Labels only need to be **ordinally** meaningful.
 `default` (anything else). A sample dataset lives at
 [`examples/calibration_sample.jsonl`](../examples/calibration_sample.jsonl).
 
+### Generating the `signals` automatically from labelled sources
+
+Computing the four `signals` by hand is impractical — they come out of the same
+pipeline `/evaluate` runs. `cats.calibration.build_dataset` does it for you:
+given *labelled sources* (messages + a reliability `label`), it runs the
+pipeline and emits the calibration `.jsonl`.
+
+Input (`.json` array / `{"sources": [...]}` or `.jsonl`), one source per record:
+
+```json
+{"source_id": "twitter:acme",
+ "source_type": "social",
+ "label": 80.0,
+ "messages": [
+   {"timestamp": "2026-01-01T08:00:00Z", "text": "..."},
+   {"timestamp": "2026-01-01T09:00:00Z", "text": "..."}
+ ]}
+```
+
+```bash
+python -m cats.calibration.build_dataset \
+    --input examples/labelled_sources_sample.jsonl \
+    --out train.jsonl
+    # --source-type social   # fallback when a record omits source_type
+    # --no-init-nlp          # skip spaCy load (coherence -> neutral/0-confidence)
+```
+
+`source_id` is optional (diagnostics only); records missing a `label` or
+`messages` are skipped with a warning. The spaCy NER model is loaded once up
+front so coherence runs at full fidelity — run `make nlp-download` first, or
+expect coherence to degrade to a neutral value (exactly as a request does when
+the model is unavailable). A sample input lives at
+[`examples/labelled_sources_sample.jsonl`](../examples/labelled_sources_sample.jsonl).
+
+> **Avoid leakage:** the `label` must come from independent ground truth (expert
+> annotation, external ratings, later-confirmed outcomes) — never derive it from
+> the same signals being calibrated. Use a **temporal** train/holdout split.
+
 ## 2. Run calibration
 
 ```bash
