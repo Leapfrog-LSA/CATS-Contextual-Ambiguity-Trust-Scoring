@@ -155,7 +155,8 @@ Band agreement     : 33.3% exact, 100.0% within 1 band
 > data where those signals dominate, the static estimates anti-correlate with
 > reliability and calibration compensates mostly by loading weight onto
 > coherence. Treat the static weights as a placeholder, not a validated baseline
-> (WP 4.1).
+> (WP 4.1). This is a recorded design decision — see
+> [architecture.md → Signal Polarity & Scoring](architecture.md#signal-polarity--scoring-design-decision).
 
 ## Metrics
 
