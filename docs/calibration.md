@@ -114,6 +114,49 @@ CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json
 it per source-type group, falling back to the static estimates when the setting
 is unset or the file is missing/invalid.
 
+## 4. Evaluate scoring quality (eval harness)
+
+Calibration *tunes* weights; the eval harness *measures* how well a given weight
+set ranks sources against ground-truth labels — i.e. **are the score bands
+meaningful?** It reuses the same metrics calibration optimises, so the numbers
+are directly comparable.
+
+```bash
+make eval                       # static (WP 4.1) weights on the sample dataset
+# or, with full control:
+python -m cats.calibration.evaluate \
+    --dataset examples/calibration_sample.jsonl \
+    --weights calibrated_weights.json \   # omit to use the static estimates
+    --json                                # machine-readable output
+```
+
+It reports Spearman, pairwise concordance, a per-(predicted-)band table
+(count, mean predicted score, mean label), **band agreement** (how often the
+predicted band matches the band the label falls into, exact and within one
+band), and a per-`source_type` breakdown.
+
+**Before vs after calibration** is a one-command comparison and shows why
+calibration matters on this dataset:
+
+```text
+# static WP 4.1 weights
+Spearman           : -0.888      # anti-correlated!
+Band agreement     : 16.7% exact, 50.0% within 1 band
+
+# calibrated weights (python -m cats.calibration ... --seed 7)
+Spearman           : +0.993
+Band agreement     : 33.3% exact, 100.0% within 1 band
+```
+
+> **Why the static weights can rank backwards.** `aggregate_score` is a
+> non-negative weighted average, so it treats every signal as "higher = better".
+> But three of the four signals (volatility, silence, gaming) are
+> "higher = *worse*". A non-negative weighting therefore cannot invert them; on
+> data where those signals dominate, the static estimates anti-correlate with
+> reliability and calibration compensates mostly by loading weight onto
+> coherence. Treat the static weights as a placeholder, not a validated baseline
+> (WP 4.1).
+
 ## Metrics
 
 | Metric | Meaning |
