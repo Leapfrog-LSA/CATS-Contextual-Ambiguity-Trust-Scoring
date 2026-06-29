@@ -63,6 +63,46 @@ FastAPI (async, Python 3.11)
 | `news` | **0.35** | 0.20 | 0.25 | 0.20 |
 | default | 0.30 | 0.25 | 0.25 | 0.20 |
 
+## Signal Polarity & Scoring (design decision)
+
+The four signals **do not share a common polarity**:
+
+| Signal | Direction | Higher value means |
+|---|---|---|
+| coherence | positive | more consistent → *more* reliable |
+| volatility | **negative** | more tone swings → *less* reliable |
+| silence | **negative** | more anomalous gaps → *less* reliable |
+| gaming | **negative** | more manipulation signs → *less* reliable |
+
+`aggregate_score` (Phase 7) is a **non-negative weighted mean**, so it treats
+every signal as "higher = better". Because the weights cannot be negative, the
+aggregation **cannot invert** the three negative-polarity signals. Two
+consequences follow:
+
+1. **The static weight matrix above is a placeholder, not a validated baseline**
+   (WP 4.1). On data where the negative-polarity signals carry the signal,
+   reliable ranking depends almost entirely on calibration loading weight onto
+   coherence. The eval harness makes this measurable: on
+   `examples/calibration_sample.jsonl` the static weights score Spearman
+   **−0.89** (anti-correlated) versus **+0.99** after calibration — see
+   [calibration.md](calibration.md).
+2. A weighted mean of mixed-polarity signals is **not** a faithful reliability
+   model on its own; it leans on calibration to approximate the right ordering.
+
+**Decision (current iteration): keep the engine as-is and document the
+limitation; do not change scoring semantics now.** Options deliberately *not*
+taken yet:
+
+- **Invert negative signals before aggregation** (e.g. use `100 − value` for
+  volatility/silence/gaming), making all signals positive-polarity and the
+  weights interpretable as importance.
+- **Allow signed weights** so the aggregation can encode polarity directly.
+
+Both alter scoring semantics and band thresholds and would need re-validation on
+labelled data, so they are deferred to the NLP/scoring hardening on the roadmap
+(v2.0). Until then, **always calibrate before relying on scores**, and treat the
+static weights as an unvalidated starting point.
+
 ## Security Design
 
 | Control | Implementation |
