@@ -149,7 +149,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 
 ## Known Limitations (WP 4.1)
 
-- **NLP accuracy ~55–62%**: spaCy NER and TextBlob are naive implementations
+- **NLP accuracy ~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
 - **Uncalibrated parameters**: thresholds are initial estimates; signal weights can now be empirically tuned with [`cats.calibration`](docs/calibration.md), but band thresholds remain unvalidated
 - **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
 - **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
@@ -158,11 +158,11 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 
 ## Roadmap
 
-| Version | Target | Key features |
+| Version | Status | Key features |
 |---|---|---|
-| **v1.0** | ✅ Now | spaCy NER · 9-phase pipeline · GDPR API · Docker |
-| v1.1 | Q2 2026 | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint |
-| v1.2 | Q3 2026 | Sentence-BERT coherence · SHAP explainer |
+| **v1.0** | ✅ | spaCy NER · 9-phase pipeline · GDPR API · Docker |
+| **v1.1** | ✅ | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx |
+| **v1.2** | ✅ | Sentence-BERT coherence · explainer attribution · weight calibration |
 | v2.0 | 2027 | AUC-ROC ≥ 0.78 · full EU AI Act Annex IX |
 
 ---

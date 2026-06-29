@@ -31,13 +31,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased] — v1.1 (Q2 2026)
+## [Unreleased] — v2.0 (2027)
+
+### Planned
+- Empirical calibration on a labelled dataset (target AUC-ROC ≥ 0.78)
+- Full EU AI Act Annex IX documentation
+
+---
+
+## [1.2.0] — 2026-06-29
 
 ### Added
 - Optional Sentence-BERT coherence backend (`COHERENCE_BACKEND=sbert`, model via
   `COHERENCE_MODEL`): mean cosine similarity of consecutive message embeddings.
   `sentence-transformers` is optional (`requirements-sbert.txt`); falls back to
   the spaCy NER backend when unavailable, so the default stays light.
+- Per-signal attribution in `/explain`: `score_share_pct` (each signal's share
+  of the weighted score) and `primary_driver` — a dependency-free, SHAP-style
+  breakdown of *why* a source got its score.
+
+---
+
+## [1.1.0] — 2026-06-29
+
+### Added
 - Optional BERT Italian sentiment backend for the volatility signal
   (`SENTIMENT_BACKEND=bert`, model configurable via `SENTIMENT_MODEL`).
   `transformers`/`torch` are optional (`requirements-bert.txt`); the backend
@@ -47,14 +64,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `TrustScore` / `AuditLog` / `Contest`, and all reads (`/explain`, `/contest`,
   `/review`, `/stats`) are scoped to the caller's tenant. Backwards compatible:
   unlisted keys resolve to the `default` tenant. Migration `002`.
-- nginx reverse-proxy config (`deploy/nginx.conf`) wired into `docker-compose`:
-  per-IP rate limiting (30 req/min), security headers, correct
-  `X-Forwarded-For`, and a documented TLS 1.3 server block.
+- `POST /v1/cats/batch` endpoint: evaluate multiple sources in one request
+  (1–50 items), persisted atomically in a single transaction.
 - Prometheus metrics at `GET /metrics` (`prometheus-client`): HTTP request
   count/latency (labelled by route template) plus `cats_evaluations_total`
   (by band) and a `cats_trust_score` histogram.
-- `POST /v1/cats/batch` endpoint: evaluate multiple sources in one request
-  (1–50 items), persisted atomically in a single transaction.
+- nginx reverse-proxy config (`deploy/nginx.conf`) wired into `docker-compose`:
+  per-IP rate limiting (30 req/min), security headers, correct
+  `X-Forwarded-For`, and a documented TLS 1.3 server block.
 - Weight calibration toolkit (`cats.calibration`): dependency-free genetic
   search that tunes per-source-type signal weights against a labelled dataset,
   optimising rank-agreement (Spearman / pairwise concordance). Calibrated
@@ -66,7 +83,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `compute_coherence` no longer crashes when the spaCy model is not loaded
   (`nlp is None`): it degrades gracefully to a neutral, zero-confidence signal,
   consistent with `/health` reporting `nlp: not_loaded`.
-
-### Planned
-- BERT-based Italian sentiment (replace TextBlob)
-- PostgreSQL multi-tenant support
+- CI is green again: applied black/isort across the codebase and fixed the
+  remaining flake8/mypy errors plus structlog-config and test-isolation bugs
+  that had been failing every run.

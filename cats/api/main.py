@@ -56,7 +56,7 @@ async def _purge_job():
         await purge_expired_audits(db)
 
 
-app = FastAPI(title="CATS API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="CATS API", version="1.2.0", lifespan=lifespan)
 
 if settings.cors_origins:
     app.add_middleware(
