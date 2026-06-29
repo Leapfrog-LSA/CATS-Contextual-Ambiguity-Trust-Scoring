@@ -34,7 +34,14 @@ CATS is classified as a **Limited Risk AI System** under Article 6(2) / Annex II
 |---|---|---|
 | v1.1 (Q2 2026) | NLP | BERT-based Italian sentiment (replace TextBlob) |
 | v1.2 (Q3 2026) | Coherence | Sentence-BERT similarity; SHAP explainability |
-| v2.0 (2027) | Validation | AUC-ROC ≥ 0.78 on labelled OSINT dataset; full EU AI Act Annex IX documentation |
+| v2.0 (2027) | Validation | AUC-ROC ≥ 0.78 on labelled OSINT dataset; full EU AI Act **Annex IV** technical documentation |
+
+> **Annex IV vs Annex IX.** The general "document the system" artefact under the
+> AI Act is **Annex IV** technical documentation (Art. 11) — *not* Annex IX.
+> Annex IX (Art. 60) covers only information to submit when **testing in
+> real-world conditions** outside regulatory sandboxes, which CATS does not
+> currently do. See [eu_ai_act/](eu_ai_act/) for the conformity scaffold and the
+> high-risk classification prerequisite.
 
 ## Contact
 

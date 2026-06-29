@@ -140,6 +140,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/api.md](docs/api.md) | Full API reference |
 | [docs/architecture.md](docs/architecture.md) | Signal algorithms, weight matrix, security design |
 | [docs/compliance.md](docs/compliance.md) | GDPR + EU AI Act compliance |
+| [docs/eu_ai_act/](docs/eu_ai_act/) | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
 | [docs/calibration.md](docs/calibration.md) | Empirical weight calibration (genetic search) |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development guide |
@@ -163,7 +164,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | **v1.0** | ✅ | spaCy NER · 9-phase pipeline · GDPR API · Docker |
 | **v1.1** | ✅ | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx |
 | **v1.2** | ✅ | Sentence-BERT coherence · explainer attribution · weight calibration |
-| v2.0 | 2027 | AUC-ROC ≥ 0.78 · full EU AI Act Annex IX |
+| v2.0 | 2027 | AUC-ROC ≥ 0.78 · full EU AI Act Annex IV technical documentation |
 
 ---
 
