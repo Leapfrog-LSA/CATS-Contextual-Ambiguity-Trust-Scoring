@@ -105,6 +105,35 @@ the model is unavailable). A sample input lives at
 > annotation, external ratings, later-confirmed outcomes) — never derive it from
 > the same signals being calibrated. Use a **temporal** train/holdout split.
 
+### Temporal train/holdout split
+
+Split labelled sources **by time** before building the dataset — calibrate on the
+past, validate on the future. `cats.calibration.split` orders sources by their
+most recent message and puts the newest slice in the holdout:
+
+```bash
+python -m cats.calibration.split --input sources.jsonl --holdout-fraction 0.2
+# or a fixed boundary (records at/after the cutoff form the holdout):
+python -m cats.calibration.split --input sources.jsonl --cutoff 2026-01-01T00:00:00Z
+```
+
+It writes `train.jsonl` / `holdout.jsonl` (labelled-sources shape), which you
+then run through `build_dataset` separately. Run `split` **before** `build_dataset`
+because the post-build records carry no timestamp.
+
+### End-to-end pipeline
+
+```
+sources.csv + external ratings
+        │  label_from_ratings        → label registry (+ messages, e.g. via RSS)
+        ▼
+labelled sources ──split──▶ train/ holdout
+        │ build_dataset                    │ build_dataset
+        ▼                                  ▼
+   train.jsonl ──calibrate──▶ weights.json │
+                                  └──────▶ evaluate(holdout) / report → accuracy declaration
+```
+
 ## 2. Run calibration
 
 ```bash
@@ -193,6 +222,23 @@ Band agreement     : 33.3% exact, 100.0% within 1 band
 > coherence. Treat the static weights as a placeholder, not a validated baseline
 > (WP 4.1). This is a recorded design decision — see
 > [architecture.md → Signal Polarity & Scoring](architecture.md#signal-polarity--scoring-design-decision).
+
+## 5. Accuracy declaration (EU AI Act Art. 15)
+
+`cats.calibration.report` runs the eval harness on a holdout dataset and renders
+a Markdown **accuracy declaration** for the Annex IV §6 / Art. 15 section. The
+measured metrics are filled in; provenance and sign-off stay `TODO` (they need
+human/legal input — the generator never fabricates them).
+
+```bash
+python -m cats.calibration.report \
+    --dataset holdout.jsonl \
+    --weights calibrated_weights.json \   # omit to use the static estimates
+    --out docs/eu_ai_act/accuracy_declaration.md
+```
+
+This is the last step of the chain: once a real labelled holdout exists, going
+from data to a validated accuracy declaration is a single command.
 
 ## Metrics
 

@@ -1,5 +1,5 @@
 .PHONY: install dev-install nlp-download test test-unit test-integration lint format \
-        docker-up docker-down docker-build db-migrate db-revision calibrate eval clean help
+        docker-up docker-down docker-build db-migrate db-revision calibrate eval split report clean help
 
 ## ── Setup ─────────────────────────────────────────────────────────────
 install:
@@ -63,6 +63,12 @@ calibrate:
 
 eval:
 	python -m cats.calibration.evaluate --dataset examples/calibration_sample.jsonl
+
+split:
+	python -m cats.calibration.split --input examples/labelled_sources_sample.jsonl --holdout-fraction 0.2
+
+report:
+	python -m cats.calibration.report --dataset examples/calibration_sample.jsonl
 
 ## ── Utilities ─────────────────────────────────────────────────────────
 generate-key:
