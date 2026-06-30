@@ -31,6 +31,42 @@ Labels only need to be **ordinally** meaningful.
 `default` (anything else). A sample dataset lives at
 [`examples/calibration_sample.jsonl`](../examples/calibration_sample.jsonl).
 
+### Getting `label`s without hand-annotation: distant supervision
+
+Hand-labelling every source is the bottleneck. `cats.calibration.label_from_ratings`
+reuses **existing** reliability ratings (NewsGuard, Media Bias/Fact Check,
+fact-checker verdicts, NATO Admiralty Code) as labels by joining a source
+catalogue (the `Fonti_OSINT` CSV) with a ratings file you supply, on normalised
+hostname:
+
+```bash
+python -m cats.calibration.label_from_ratings \
+    --sources Fonti_OSINT.csv \
+    --ratings mbfc.csv \           # CSV (domain,rating) or JSON {host: rating}
+    --scale mbfc \                 # mbfc | admiralty | numeric | custom
+    --out labels.jsonl
+```
+
+Output is a **label registry** — one `{source_id, source_type, label, url, rss}`
+per *matched* source (the *labels* half of a dataset). It then reports the match
+rate and the label band/`source_type` distribution so you can judge coverage and
+balance before investing in message collection.
+
+> **It never invents a rating.** Every label comes from the ratings file; sources
+> with no rating are dropped. The tool only joins and maps the scale onto CATS's
+> 0–100 ordinal.
+>
+> ⚠️ **Distant-supervision caveats.** External ratings carry their own editorial
+> and geographic bias; domain-level ratings apply to *every* path under that host;
+> and ratings sourced from the same evidence the signals measure risk **leakage**.
+> Treat distant-supervision validation as indicative, and prefer expert
+> annotation for a true gold standard (see
+> [eu_ai_act/data_governance_art10.md](eu_ai_act/data_governance_art10.md)).
+
+**Next step:** attach message histories (e.g. via the `rss` feeds in the
+registry) to each source, producing the `{..., "messages": [...]}` shape below,
+then run `build_dataset`.
+
 ### Generating the `signals` automatically from labelled sources
 
 Computing the four `signals` by hand is impractical — they come out of the same
