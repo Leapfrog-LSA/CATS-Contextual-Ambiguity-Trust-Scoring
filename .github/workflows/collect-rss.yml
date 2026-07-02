@@ -1,0 +1,45 @@
+name: Collect RSS snapshot
+
+# Periodic message-history collection for weight calibration (docs/calibration.md).
+# Each run fetches the feeds in data/labels.jsonl and commits a dated snapshot
+# under data/snapshots/; merge them with cats.calibration.merge_snapshots to
+# build long histories and a meaningful temporal holdout.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      # collect_rss only needs the HTTP client and logging, not the full stack.
+      - run: pip install httpx structlog
+      - name: Collect snapshot
+        run: |
+          mkdir -p data/snapshots
+          python -m cats.calibration.collect_rss \
+            --labels data/labels.jsonl \
+            --out "data/snapshots/labelled_sources_$(date -u +%F).jsonl" \
+            --workers 8 --timeout 20 \
+            --user-agent "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
+      - name: Commit snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/snapshots/
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+          else
+            git commit -m "data: RSS snapshot $(date -u +%F)"
+            git push
+          fi
