@@ -35,10 +35,39 @@ on the Media Bias/Fact Check *Factual Reporting* scale
   MBFC's own editorial perspective — treat results as indicative
   (distant-supervision caveats in `docs/eu_ai_act/data_governance_art10.md`).
 
+## `disinfo_sources.csv` — known low-reliability sources
+Curated registry of documented disinformation/fake-news domains (114 rows,
+deduplicated): the Russian **Doppelganger** clone network (Qurium 2022-09-27,
+DFRLab/DOJ 2024 — forensic attribution) and the Italian *bufale* network plus
+known fake-news factories (BUTAC/Bufalopedia, Repubblica). Columns include the
+impersonated outlet, attribution, evidence level and a `cats_flag`
+(`disinformation_clone | fake_news_site | fake_news_portal | satire_recognizable
+| suspect_source`).
+
+Used to widen the ordinal spread of `labels.jsonl`: domains flagged
+`fake_news_site | disinformation_clone | fake_news_portal` whose RSS feed is
+still alive are appended with label **10.0** (MBFC "Very Low" equivalent —
+membership in a documented disinformation network is stronger evidence than a
+rating). `satire_recognizable` entries (declared satire, e.g. Lercio, The
+Onion) are **excluded** from labels: satire is not disinformation and MBFC does
+not place it on the factual-reporting scale. `suspect_source` entries are
+people/organisations without feeds and are ignored. Of the 87 probed domains,
+11 had a live feed on 2026-07-02 (most Doppelganger clones are seized/offline).
+
 ## `labels.jsonl`
-Output of step 1 (`label_from_ratings`) over the two files above: one
-`{source_id, source_type, label, url, rss}` per matched source. Next step:
+Output of step 1 (`label_from_ratings`) over the catalogue + ratings above
+(141 sources, labels 50–95), **plus** 11 very-low (10.0) sources appended from
+`disinfo_sources.csv` as described above — 152 total. Next step:
 
 ```bash
 python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
 ```
+
+## Pipeline outputs (snapshot 2026-07-02)
+`labelled_sources.jsonl` (49 sources / 1 595 messages), temporal 80/20 split
+(`train_sources` / `holdout_sources`), built datasets (`train.jsonl` /
+`holdout.jsonl`, `COHERENCE_BACKEND=sbert`) and `calibrated_weights.json`
+(spearman, seed 7). ⚠️ Single-snapshot caveat: mainstream feeds publish hourly,
+disinfo sites sporadically, so the temporal split puts every low-label source
+in *train* — the holdout cannot yet measure low-end discrimination. Validate
+low-end ranking against a **future** snapshot instead.

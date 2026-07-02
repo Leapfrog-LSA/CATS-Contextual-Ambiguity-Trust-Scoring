@@ -1,0 +1,115 @@
+domain,impersonated_outlet,authentic_domain,country,tld,first_seen,campaign,attribution,source,evidence_level,cats_flag,notes
+blld.live,Bild,bild.de,DE,live,2022-06-05,Doppelganger,Russia (SDA/Structura/ANO Dialog) — VIGINUM/DOJ,Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (blld)
+bild.pics,Bild,bild.de,DE,pics,2022-06-06,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.asia,Bild,bild.de,DE,asia,2022-07-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.vip,Bild,bild.de,DE,vip,2022-07-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.eu.com,Bild,bild.de,DE,eu.com,2022-07-24,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.llc,Bild,bild.de,DE,llc,2022-07-25,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.ws,Bild,bild.de,DE,ws,2022-09-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+bild.work,Bild,bild.de,DE,work,2022-09-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegel.ltd,Der Spiegel,spiegel.de,DE,ltd,2022-06-29,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27; Correctiv 2024,forensic+journalistic,disinformation_clone,confermato attivo per anni
+spiegel.fun,Der Spiegel,spiegel.de,DE,fun,2022-07-18,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegel.pro,Der Spiegel,spiegel.de,DE,pro,2022-07-20,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegel.co.com,Der Spiegel,spiegel.de,DE,co.com,2022-07-26,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegeli.life,Der Spiegel,spiegel.de,DE,life,2022-07-28,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (spiegeli)
+spiegel.agency,Der Spiegel,spiegel.de,DE,agency,2022-08-06,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegelr.today,Der Spiegel,spiegel.de,DE,today,2022-08-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (spiegelr)
+spiegel.work,Der Spiegel,spiegel.de,DE,work,2022-09-13,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+spiegel.cab,Der Spiegel,spiegel.de,DE,cab,2022-09-15,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+sueddeutsche.me,Sueddeutsche Zeitung,sueddeutsche.de,DE,me,2022-08-18,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+sueddeutsche.online,Sueddeutsche Zeitung,sueddeutsche.de,DE,online,2022-08-20,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+sueddeutsche.cc,Sueddeutsche Zeitung,sueddeutsche.de,DE,cc,2022-09-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+sueddeutsche.co,Sueddeutsche Zeitung,sueddeutsche.de,DE,co,2022-09-13,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+tagesspiegel.ltd,Der Tagesspiegel,tagesspiegel.de,DE,ltd,2022-08-09,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,geo-fenced redirect DE
+tagesspiegel.co,Der Tagesspiegel,tagesspiegel.de,DE,co,2022-09-13,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+tonline.cfd,T-Online,t-online.de,DE,cfd,2022-07-18,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+tonline.life,T-Online,t-online.de,DE,life,2022-07-18,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+t-onlinr.life,T-Online,t-online.de,DE,life,2022-07-31,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinr)
+t-onlinr.live,T-Online,t-online.de,DE,live,2022-07-31,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinr)
+t-onlinr.today,T-Online,t-online.de,DE,today,2022-07-31,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinr)
+t-onlinl.life,T-Online,t-online.de,DE,life,2022-08-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinl)
+t-onlinl.live,T-Online,t-online.de,DE,live,2022-08-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinl)
+t-onlinl.today,T-Online,t-online.de,DE,today,2022-08-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (t-onlinl)
+welt.ltd,Welt,welt.de,DE,ltd,2022-07-28,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,geo-fenced redirect DE
+welt.ws,Welt,welt.de,DE,ws,2022-09-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+welt.media,Welt,welt.de,DE,media,2022-09-15,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+faz.ltd,Frankfurter Allgemeine Zeitung,faz.net,DE,ltd,2022-07-30,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,open index listing; kclient.php
+faz.agency,Frankfurter Allgemeine Zeitung,faz.net,DE,agency,2022-09-13,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+faz.life,Frankfurter Allgemeine Zeitung,faz.net,DE,life,2022-09-15,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+nd-aktuell.net,Neues Deutschland,nd-aktuell.de,DE,net,2022-08-23,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,redirect target di tagesspiegel.ltd
+nd-aktuell.pro,Neues Deutschland,nd-aktuell.de,DE,pro,2022-09-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+nd-aktuell.co,Neues Deutschland,nd-aktuell.de,DE,co,2022-09-13,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+fraiesvolk.com,(portale inventato) Fraies Volk,N/A,DE,com,2022-09-17,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,fake_news_portal,"finta testata, non clone"
+dailymail.cfd,Mail Online,dailymail.co.uk,UK,cfd,2022-07-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+theguardian.co.com,The Guardian,theguardian.com,UK,co.com,2022-07-07,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+20minuts.com,20 Minutes,20minutes.fr,FR,com,2022-06-28,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (20minuts)
+rbk.kiev.ua,RBK Ukraine,rbc.ua,UA,kiev.ua,2022-06-28,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+obozrevatels.com,Obozrevatel,obozrevatel.com,UA,com,2022-09-09,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (obozrevatels)
+rbk.today,RBK Ukraine,rbc.ua,UA,today,2022-07-12,Doppelganger (linked),Russia (non conclusiva),Qurium 2022-09-27,forensic,suspected,(*) linkato ma NON condivide firme infrastrutturali - attribuzione debole
+ansa.ltd,ANSA,ansa.it,IT,ltd,2022-06-28,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,unico clone italiano nel dataset Qurium
+delfl.cc,Delfi,delfi.lt / delfi.lv / delfi.ee,EE/LV/LT,cc,2022-07-14,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,typo-squat (delfl)
+lsm.li,LSM,lsm.lv,LV,li,2022-07-06,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+reuters.cfd,Reuters,reuters.com,US,cfd,2022-07-12,Doppelganger,Russia (SDA/Structura/ANO Dialog),Qurium 2022-09-27,forensic,disinformation_clone,
+fox-news.in,Fox News,foxnews.com,US,in,2024,Doppelganger (Storm-1099),Russia (SDA/Structura/ANO Dialog),DFRLab 2024-09-06,forensic+judicial,disinformation_clone,geo-fenced solo utenti USA
+rrn.media,(portale inventato) Recent Reliable News,N/A,INTL,media,2022,Doppelganger,Russia (SDA/Structura/ANO Dialog),DFRLab 2024-09-06,forensic+judicial,fake_news_portal,"sito di punta, 10 lingue; sequestrato DOJ 2024-09"
+anno3000.altervista.org,Anno 3000,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista
+corrieredelcorsaro.it,Corriere del Corsaro,N/A,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,nome evoca 'Corriere'
+corrieredelmattino.altervista.org,Corriere del Mattino / Giornale del Corriere,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista
+direttanews.it,Diretta News.it,N/A,IT,it,,IT bufale network,N/A (bufala IT),BUTAC; Repubblica 2017-11-21,journalistic,fake_news_site,network italiano bufale documentato Repubblica
+gazzettadellasera.com,Gazzetta della Sera,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,nome evoca 'Gazzetta'
+gazzettinoweb.altervista.org,Gazzettino Web,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista
+ilcazzoquotidiano.altervista.org,Il Cazzo Quotidiano,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista; /blog
+notiziepericolose.blogspot.com,Il Corrispondente,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,blogspot
+facebook.com/IlFalloQuotidiano,Il Fallo Quotidiano,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,account Facebook; nome evoca 'Il Fatto'
+ilfattoquotidaino.it,Il Fatto Quotidaino,ilfattoquotidiano.it,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,typo-squat di ilfattoquotidiano.it (Quotidaino)
+ilgiornaliere.com,Il Giornaliere,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+ilgiomale.it,Il Giomale,ilgiornale.it,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,"typo-squat di ilgiornale.it (Giomale, rn->m)"
+ilgiornaleitaliano.it,Il Giornale Italiano,N/A,IT,it,,IT bufale network,N/A (bufala IT),BUTAC; Bufalopedia 2017-01,debunker,fake_news_site,es. 'foto sensazionali di Venezia'
+ilmattoquotidiano.it,Il Matto Quotidiano,N/A,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,nome evoca 'Il Fatto'
+inews24.it,iNews24.it,N/A,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+ioco.altervista.org,Ioco,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista
+lavocea5stelle.altervista.org,L'Osservatore Politico,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista; tema politico M5S
+liberogiornale.it,Liberogiornale,libero.it / ilgiornale.it,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,nome evoca 'Libero'/'Giornale'
+liberogiornale.com,Liberogiornale,libero.it / ilgiornale.it,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,variante .com
+notiziespericolate.com,Notizie spericolate,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+news24roma.altervista.org,News 24 Roma,N/A,IT,org,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,hosting altervista
+news24tg.com,News24TG,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+news24europa.com,News24europa.com,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+notiziea5stelle.com,Notizie a 5 stelle,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,tema politico M5S
+panorana.it,Panorana,panorama.it,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,typo-squat di panorama.it (Panorana)
+papersera.com,Papersera,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,
+sky24ore.it,Sky 24 ore,sky.it / ilsole24ore.it,IT,it,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,fusione nomi 'Sky'+'24 ore'
+strafattiquotidiani.wordpress.com,Strafatti Quotidiani,N/A,IT,com,,IT bufale network,N/A (bufala IT),BUTAC/Bufalopedia,debunker,fake_news_site,wordpress
+ilgiornaledeiticinesi.info,Il Giornale dei Ticinesi,N/A,CH,info,,IT/CH satira,satira dichiarata,BUTAC/Bufalopedia,debunker,satire_recognizable,Ticino (CH)
+lercio.it,Lercio,N/A,IT,it,,IT satira,satira dichiarata,BUTAC/Bufalopedia,debunker,satire_recognizable,testata satirica nota
+ticinoinforna.com,Ticino Inforna,N/A,CH,com,,IT/CH satira,satira dichiarata,BUTAC/Bufalopedia,debunker,satire_recognizable,Ticino (CH)
+twitter.com/cbugliano,Comune di Bugliano,N/A,IT,com,,IT satira,satira dichiarata,BUTAC/Bufalopedia,debunker,satire_recognizable,comune inesistente; anche Facebook
+twitter.com/VigileVittorino,Vigile Vittorino,N/A,IT,com,,IT satira,satira dichiarata,BUTAC/Bufalopedia,debunker,satire_recognizable,personaggio parodia
+AIDAA,AIDAA (associazione),N/A,IT,,,IT fonte sospetta,fonte ricorrente bufale,BUTAC; ENPA Milano,journalistic,suspect_source,associazione fonte ricorrente di bufale animaliste
+Associazione Agitalia,Associazione Agitalia,N/A,IT,,,IT fonte sospetta,fonte ricorrente bufale,BUTAC; Il Tirreno 2015-01-14,journalistic,suspect_source,'fabbrica delle bufale' (Il Tirreno)
+Avvocato Giacinto Canzona,Avv. Giacinto Canzona,N/A,IT,,,IT fonte sospetta,personaggio fittizio,BUTAC/Bufalopedia,debunker,suspect_source,nome ricorrente in bufale
+Ermes Maiolica,Ermes Maiolica,N/A,IT,,,IT fonte sospetta,autore dichiarato di bufale,BUTAC/Bufalopedia,debunker,suspect_source,noto creatore di bufale/esperimenti
+Lorenzo Croce,Lorenzo Croce,N/A,IT,,,IT fonte sospetta,fonte ricorrente bufale,BUTAC/Bufalopedia,debunker,suspect_source,legato ad AIDAA
+Proto Group,Proto Group,N/A,IT,,,IT fonte sospetta,fonte ricorrente bufale,Bufalopedia 2017-10,debunker,suspect_source,es. bufala Weinstein
+Senatore Cirenga,Senatore Cirenga,N/A,IT,,,IT fonte sospetta,personaggio fittizio,BUTAC,debunker,suspect_source,senatore inesistente (bufala 'emendamento Cirenga')
+bbspot.com,BBspot,N/A,US,com,,IT/EN satira,satira/parodia,Bufalopedia 2020-05-05,debunker,satire_recognizable,tech satira
+betootaadvocate.com,Betoota Advocate,N/A,AU,com,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,satira australiana nota
+collegehumor.com,College Humor,N/A,US,com,,satira,umorismo dichiarato,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+dailybuzzlive.com,Daily Buzz Live,N/A,US,com,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,clickbait/bufale
+dailycurrant.com,Daily Currant,N/A,US,com,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+empirenews.net,Empire News,N/A,US,net,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,
+empiresports.co,Empire Sports News,N/A,US,co,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,sport
+freewoodpost.com,Free Wood Post,N/A,US,com,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+huzlers.com,Huzlers,N/A,US,com,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,clickbait/bufale
+journaldemourreal.com,Journal de Mourreal,N/A,CA,com,,satira,satira dichiarata (FR),Bufalopedia 2020-05-05,debunker,satire_recognizable,parodia Journal de Montreal (Quebec)
+lightlybraisedturnip.com,Lightly Brazed Turnip,N/A,US,com,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+en.mediamass.net,Mediamass,N/A,INTL,net,,satira,satira/parodia celebrità,Bufalopedia 2020-05-05,debunker,satire_recognizable,bufale su celebrita
+nationalreport.net,National Report,N/A,US,net,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,noto per bufale virali
+newsexaminer.net,News Examiner,N/A,US,net,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,
+newyorker.com/humor/borowitz-report,The Borowitz Report,N/A,US,com,,satira,satira dichiarata (New Yorker),Bufalopedia 2020-05-05,debunker,satire_recognizable,rubrica satirica del New Yorker
+thenewsnerd.com,The News Nerd,N/A,US,com,,satira,satira/bufale,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+theonion.com,The Onion,N/A,US,com,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,testata satirica piu nota al mondo
+thepoke.co.uk,The Poke,N/A,UK,co.uk,,satira,satira dichiarata,Bufalopedia 2020-05-05,debunker,satire_recognizable,
+weeklyworldnews.com,Weekly World News,N/A,US,com,,satira,tabloid parodia,Bufalopedia 2020-05-05,debunker,satire_recognizable,tabloid parodistico storico
+worldnewsdailyreport.com,World Daily News Report,N/A,US,com,,fake news,fabbrica di bufale,Bufalopedia 2020-05-05,debunker,fake_news_site,noto per bufale virali
+rebubblica.altervista.org,Rebubblica,repubblica.it,IT,org,,IT bufale network,N/A (bufala IT),Bufalopedia 2020-05-05,debunker,fake_news_site,"typo-squat Repubblica; OFFLINE (dismesso, segnalato da Bufalopedia)"

@@ -139,3 +139,14 @@
 {"source_id": "UN News Centre", "source_type": "default", "label": 85.0, "url": "https://news.un.org", "rss": "https://news.un.org/feed/subscribe/en/news/all/rss.xml"}
 {"source_id": "ZDNet", "source_type": "default", "label": 85.0, "url": "https://www.zdnet.com", "rss": "https://www.zdnet.com/rss/"}
 {"source_id": "Axios Pro Rata", "source_type": "default", "label": 85.0, "url": "https://www.axios.com/pro/pro-rata", "rss": null}
+{"source_id": "https://bild.pics", "source_type": "news", "label": 10.0, "url": "https://bild.pics", "rss": "https://bild.pics/rss.xml"}
+{"source_id": "Corriere del Corsaro", "source_type": "news", "label": 10.0, "url": "https://corrieredelcorsaro.it", "rss": "https://corrieredelcorsaro.it/feed/"}
+{"source_id": "Diretta News.it", "source_type": "news", "label": 10.0, "url": "https://direttanews.it", "rss": "https://direttanews.it/feed/"}
+{"source_id": "Il Corrispondente", "source_type": "news", "label": 10.0, "url": "https://notiziepericolose.blogspot.com", "rss": "https://notiziepericolose.blogspot.com/rss.xml"}
+{"source_id": "iNews24.it", "source_type": "news", "label": 10.0, "url": "https://inews24.it", "rss": "https://inews24.it/feed/"}
+{"source_id": "Strafatti Quotidiani", "source_type": "news", "label": 10.0, "url": "https://strafattiquotidiani.wordpress.com", "rss": "https://strafattiquotidiani.wordpress.com/feed/"}
+{"source_id": "Daily Buzz Live", "source_type": "news", "label": 10.0, "url": "https://dailybuzzlive.com", "rss": "https://dailybuzzlive.com/feed/"}
+{"source_id": "Empire News", "source_type": "news", "label": 10.0, "url": "https://empirenews.net", "rss": "https://empirenews.net/feed/"}
+{"source_id": "Empire Sports News", "source_type": "news", "label": 10.0, "url": "https://empiresports.co", "rss": "https://empiresports.co/feed/"}
+{"source_id": "News Examiner", "source_type": "news", "label": 10.0, "url": "https://newsexaminer.net", "rss": "https://newsexaminer.net/feed/"}
+{"source_id": "World Daily News Report", "source_type": "news", "label": 10.0, "url": "https://worldnewsdailyreport.com", "rss": "https://worldnewsdailyreport.com/feed/"}
