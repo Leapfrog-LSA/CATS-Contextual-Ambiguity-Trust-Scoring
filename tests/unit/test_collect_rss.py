@@ -2,13 +2,7 @@ import json
 
 import pytest
 
-from cats.calibration.collect_rss import (
-    attach_messages,
-    main,
-    parse_feed,
-    parse_timestamp,
-    strip_html,
-)
+from cats.calibration.collect_rss import attach_messages, main, parse_feed, parse_timestamp, strip_html
 
 RSS2 = """<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
