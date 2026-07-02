@@ -63,9 +63,35 @@ balance before investing in message collection.
 > annotation for a true gold standard (see
 > [eu_ai_act/data_governance_art10.md](eu_ai_act/data_governance_art10.md)).
 
-**Next step:** attach message histories (e.g. via the `rss` feeds in the
-registry) to each source, producing the `{..., "messages": [...]}` shape below,
-then run `build_dataset`.
+**Next step:** attach message histories to each source, producing the
+`{..., "messages": [...]}` shape below, then run `build_dataset`.
+
+### Attaching message histories from the RSS feeds
+
+The registry already carries each source's `rss` feed (from the catalogue).
+`cats.calibration.collect_rss` fetches those feeds (RSS 2.0 / RSS 1.0 / Atom),
+turns each entry into a timestamped message (title + summary, HTML stripped,
+dates normalised to ISO-8601 UTC) and emits the labelled sources:
+
+```bash
+python -m cats.calibration.collect_rss \
+    --labels labels.jsonl \
+    --out labelled_sources.jsonl
+    # --min-messages 3      # skip sources with fewer usable entries
+    # --max-messages 200    # keep only the N most recent entries per source
+    # --since 2026-01-01T00:00:00Z   # drop older entries
+    # --timeout 15 --workers 8       # HTTP timeout / concurrent fetches
+```
+
+Sources with no feed, an unreachable/unparseable feed, or fewer than
+`--min-messages` usable entries are skipped with a diagnostic, so the output
+only contains sources `build_dataset` can use. Defensive parsing: responses are
+size-capped (`--max-bytes`) and documents carrying a DTD are rejected.
+
+> **Snapshot caveat.** An RSS feed only exposes the *recent* window of a
+> source's activity (typically 10–50 entries). That is enough for the signal
+> pipeline, but re-run the collector periodically and merge snapshots if you
+> want longer histories — silence/volatility estimates improve with span.
 
 ### Generating the `signals` automatically from labelled sources
 
@@ -125,7 +151,8 @@ because the post-build records carry no timestamp.
 
 ```
 sources.csv + external ratings
-        │  label_from_ratings        → label registry (+ messages, e.g. via RSS)
+        │  label_from_ratings        → label registry
+        │  collect_rss               → + messages from the RSS feeds
         ▼
 labelled sources ──split──▶ train/ holdout
         │ build_dataset                    │ build_dataset
