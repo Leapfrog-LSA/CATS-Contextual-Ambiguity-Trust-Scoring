@@ -234,8 +234,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("  source_type distribution:")
     for st, n in sorted(stats.by_source_type.items()):
         print(f"    {st:12s} {n}")
-    print("\nNext: attach message histories (e.g. via the RSS feeds) to each source,")
-    print("then: python -m cats.calibration.build_dataset --input <sources+messages> --out dataset.jsonl")
+    print("\nNext: attach message histories from the RSS feeds:")
+    print(f"  python -m cats.calibration.collect_rss --labels {args.out} --out labelled_sources.jsonl")
     return 0
 
 
