@@ -1,0 +1,25 @@
+{
+  "metric": "spearman",
+  "score": 0.192069,
+  "baseline_score": -0.221157,
+  "improvement": 0.413225,
+  "groups": [
+    "default",
+    "news"
+  ],
+  "generations": 80,
+  "weights": {
+    "default": {
+      "coherence": 0.007309,
+      "volatility": 0.241257,
+      "silence": 0.02057,
+      "gaming": 0.730865
+    },
+    "news": {
+      "coherence": 0.04368,
+      "volatility": 0.925563,
+      "silence": 0.010374,
+      "gaming": 0.020383
+    }
+  }
+}

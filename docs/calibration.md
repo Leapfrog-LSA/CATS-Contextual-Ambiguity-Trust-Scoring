@@ -92,6 +92,26 @@ size-capped (`--max-bytes`) and documents carrying a DTD are rejected.
 > source's activity (typically 10–50 entries). That is enough for the signal
 > pipeline, but re-run the collector periodically and merge snapshots if you
 > want longer histories — silence/volatility estimates improve with span.
+> A single snapshot also weakens the *temporal split*: fast-publishing outlets
+> all share "now" as their last activity while sporadic (often low-quality)
+> sources sort into the past, so the holdout ends up label-flat.
+
+### Accumulating history across snapshots
+
+The scheduled workflow [`collect-rss.yml`](../.github/workflows/collect-rss.yml)
+fetches the registry weekly and commits dated snapshots under
+`data/snapshots/`. `cats.calibration.merge_snapshots` unions them into
+cumulative per-source histories (messages deduplicated on
+`(timestamp, text)`, newest metadata wins):
+
+```bash
+python -m cats.calibration.merge_snapshots \
+    --inputs data/snapshots/*.jsonl --out labelled_sources.jsonl
+```
+
+The strongest validation this enables: calibrate on the merged history up to a
+cutoff, then validate on a **later snapshot** the calibrator never saw
+(`split --cutoff <date of the last calibration snapshot>`).
 
 ### Generating the `signals` automatically from labelled sources
 

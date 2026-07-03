@@ -1,0 +1,10 @@
+{"source_type": "news", "signals": {"coherence": 13.745, "volatility": 10.2679, "silence": 0.0, "gaming": 54.1074}, "label": 70.0}
+{"source_type": "news", "signals": {"coherence": 16.4319, "volatility": 0.0, "silence": 0.0, "gaming": 61.9802}, "label": 85.0}
+{"source_type": "news", "signals": {"coherence": 18.7472, "volatility": 30.0, "silence": 0.0, "gaming": 55.965}, "label": 10.0}
+{"source_type": "news", "signals": {"coherence": 16.802, "volatility": 0.0, "silence": 0.0, "gaming": 71.6292}, "label": 70.0}
+{"source_type": "news", "signals": {"coherence": 25.3781, "volatility": 6.8966, "silence": 0.0, "gaming": 66.3216}, "label": 70.0}
+{"source_type": "news", "signals": {"coherence": 16.2828, "volatility": 3.022, "silence": 0.0, "gaming": 67.6689}, "label": 85.0}
+{"source_type": "news", "signals": {"coherence": 19.2662, "volatility": 2.2727, "silence": 0.0, "gaming": 65.8777}, "label": 70.0}
+{"source_type": "news", "signals": {"coherence": 35.3486, "volatility": 8.1633, "silence": 0.0, "gaming": 72.6597}, "label": 85.0}
+{"source_type": "news", "signals": {"coherence": 36.2786, "volatility": 0.0, "silence": 0.0, "gaming": 58.0115}, "label": 85.0}
+{"source_type": "news", "signals": {"coherence": 28.7275, "volatility": 4.5198, "silence": 2.2599, "gaming": 89.7347}, "label": 85.0}

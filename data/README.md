@@ -1,0 +1,77 @@
+# Calibration input data
+
+## `Fonti_OSINT.csv`
+OSINT source catalogue v5.25, 2026-06-17 (5 275 sources, 311 with an RSS feed;
+the human-readable consolidated edition lives in
+[`Fonti_OSINT_CONSOLIDATO.md`](Fonti_OSINT_CONSOLIDATO.md)). Input for
+`python -m cats.calibration.label_from_ratings --sources data/Fonti_OSINT.csv`.
+v5.25 adds three non-RSS data sources (FRED, Finnhub, AISStream) over v5.22 —
+the RSS-bearing set is unchanged, so `labels.jsonl` is identical under both.
+
+## `ratings.csv` — distant-supervision reliability ratings
+`domain,rating` for **104 of the 310** unique RSS-bearing catalogue domains,
+on the Media Bias/Fact Check *Factual Reporting* scale
+(`Very High | High | Mostly Factual | Mixed | Low | Very Low`) — use
+`--ratings data/ratings.csv --scale mbfc`.
+
+### Provenance and method
+- Every rating is the **Factual Reporting** level assigned by
+  [Media Bias/Fact Check](https://mediabiasfactcheck.com) (MBFC) to that outlet;
+  the per-domain MBFC page and retrieval date are recorded in
+  [`ratings_provenance.csv`](ratings_provenance.csv). Ratings were collected on
+  2026-07-02 via web search over MBFC's public pages (one query per domain;
+  low-probability long-tail domains — mostly Italian regional/trade press —
+  were probed with grouped/sampled queries). No rating was invented: domains
+  MBFC does not cover are simply absent and are dropped by the joiner.
+- **Attribution:** ratings are © Media Bias/Fact Check and are used here as
+  factual reference data for research/calibration with attribution. Re-verify
+  against the linked MBFC pages before any redistribution; MBFC updates
+  ratings over time.
+
+### Caveats (see also `docs/calibration.md`)
+- MBFC coverage skews to English-language and major international outlets:
+  the 104 matched domains under-represent the catalogue's Italian long tail.
+- The label distribution has **no Low/Very Low** sources (48 High,
+  30 Mostly Factual, 24 Mixed, 2 Very High): calibration will mostly learn to
+  rank the upper-middle of the scale. Adding a few known-unreliable feeds
+  would widen the ordinal spread.
+- Domain-level ratings apply to every path under the host, and ratings carry
+  MBFC's own editorial perspective — treat results as indicative
+  (distant-supervision caveats in `docs/eu_ai_act/data_governance_art10.md`).
+
+## `disinfo_sources.csv` — known low-reliability sources
+Curated registry of documented disinformation/fake-news domains (114 rows,
+deduplicated): the Russian **Doppelganger** clone network (Qurium 2022-09-27,
+DFRLab/DOJ 2024 — forensic attribution) and the Italian *bufale* network plus
+known fake-news factories (BUTAC/Bufalopedia, Repubblica). Columns include the
+impersonated outlet, attribution, evidence level and a `cats_flag`
+(`disinformation_clone | fake_news_site | fake_news_portal | satire_recognizable
+| suspect_source`).
+
+Used to widen the ordinal spread of `labels.jsonl`: domains flagged
+`fake_news_site | disinformation_clone | fake_news_portal` whose RSS feed is
+still alive are appended with label **10.0** (MBFC "Very Low" equivalent —
+membership in a documented disinformation network is stronger evidence than a
+rating). `satire_recognizable` entries (declared satire, e.g. Lercio, The
+Onion) are **excluded** from labels: satire is not disinformation and MBFC does
+not place it on the factual-reporting scale. `suspect_source` entries are
+people/organisations without feeds and are ignored. Of the 87 probed domains,
+11 had a live feed on 2026-07-02 (most Doppelganger clones are seized/offline).
+
+## `labels.jsonl`
+Output of step 1 (`label_from_ratings`) over the catalogue + ratings above
+(141 sources, labels 50–95), **plus** 11 very-low (10.0) sources appended from
+`disinfo_sources.csv` as described above — 152 total. Next step:
+
+```bash
+python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
+```
+
+## Pipeline outputs (snapshot 2026-07-02)
+`labelled_sources.jsonl` (49 sources / 1 595 messages), temporal 80/20 split
+(`train_sources` / `holdout_sources`), built datasets (`train.jsonl` /
+`holdout.jsonl`, `COHERENCE_BACKEND=sbert`) and `calibrated_weights.json`
+(spearman, seed 7). ⚠️ Single-snapshot caveat: mainstream feeds publish hourly,
+disinfo sites sporadically, so the temporal split puts every low-label source
+in *train* — the holdout cannot yet measure low-end discrimination. Validate
+low-end ranking against a **future** snapshot instead.
