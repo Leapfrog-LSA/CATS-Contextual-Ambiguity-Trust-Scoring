@@ -7,7 +7,7 @@
 
 | Field | Value |
 |---|---|
-| Generated (UTC) | 2026-07-02 15:51:10Z |
+| Generated (UTC) | 2026-07-03 08:14:45Z |
 | Holdout dataset | `data/holdout.jsonl` |
 | Samples (n) | 10 |
 | Weights | data/calibrated_weights.json |
@@ -19,10 +19,10 @@ between predicted scores and ground-truth labels, not absolute error.
 
 | Metric | Value |
 |---|---|
-| Spearman rank correlation | **+0.038** |
-| Pairwise concordance (AUC-like) | **0.524** |
+| Spearman rank correlation | **-0.422** |
+| Pairwise concordance (AUC-like) | **0.276** |
 | Band agreement (exact) | 0.0% |
-| Band agreement (within 1 band) | 0.0% |
+| Band agreement (within 1 band) | 10.0% |
 
 > v2.0 target: AUC-ROC ≥ 0.78 on a labelled OSINT dataset. Pairwise concordance
 > above is the AUC-like analogue for ordinal labels.
@@ -31,14 +31,14 @@ between predicted scores and ground-truth labels, not absolute error.
 
 | Band | n | Mean predicted | Mean label |
 |---|---|---|---|
-| very_low | 9 | 6.8 | 80.0 |
-| low | 1 | 22.2 | 85.0 |
+| very_low | 9 | 6.0 | 78.3 |
+| low | 1 | 29.7 | 10.0 |
 
 ### Per source type
 
 | Source type | n | Spearman | Concordance |
 |---|---|---|---|
-| news | 10 | 0.038 | 0.524 |
+| news | 10 | -0.422 | 0.276 |
 
 ## Conditions & caveats
 
