@@ -1,8 +1,12 @@
 # Calibration input data
 
 ## `Fonti_OSINT.csv`
-OSINT source catalogue v5.22 (5 272 sources, 311 with an RSS feed). Input for
+OSINT source catalogue v5.25, 2026-06-17 (5 275 sources, 311 with an RSS feed;
+the human-readable consolidated edition lives in
+[`Fonti_OSINT_CONSOLIDATO.md`](Fonti_OSINT_CONSOLIDATO.md)). Input for
 `python -m cats.calibration.label_from_ratings --sources data/Fonti_OSINT.csv`.
+v5.25 adds three non-RSS data sources (FRED, Finnhub, AISStream) over v5.22 —
+the RSS-bearing set is unchanged, so `labels.jsonl` is identical under both.
 
 ## `ratings.csv` — distant-supervision reliability ratings
 `domain,rating` for **104 of the 310** unique RSS-bearing catalogue domains,
