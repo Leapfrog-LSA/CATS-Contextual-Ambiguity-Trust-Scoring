@@ -2,35 +2,30 @@
 
 > **Trust intelligence for OSINT sources — not fact-checking, but source reliability over time.**
 
-[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions)
-[![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md)
-[![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
+[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions) [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE/) [![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md) [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
 
----
+***
 
 ## What is CATS?
 
-| ❌ Fact-checking | ✅ CATS |
-|---|---|
+| ❌ Fact-checking             | ✅ CATS                                                         |
+| --------------------------- | -------------------------------------------------------------- |
 | "Is this information true?" | **"How reliable is this source, in this context, right now?"** |
 
-CATS analyses the *behavioural patterns* of a source over time — narrative consistency, sentiment volatility, temporal gaps, and signs of algorithmic manipulation — and returns a transparent, explainable trust score.
+CATS analyses the _behavioural patterns_ of a source over time — narrative consistency, sentiment volatility, temporal gaps, and signs of algorithmic manipulation — and returns a transparent, explainable trust score.
 
----
+***
 
 ## Signals
 
-| Signal | What it measures | Method |
-|---|---|---|
-| **Coherence** | Entity/argument consistency across messages | spaCy NER + Jaccard (or optional Sentence-BERT) similarity |
-| **Volatility** | Abrupt narrative tone changes | TextBlob (or optional BERT) sentiment spike detection |
-| **Silence** | Anomalous temporal gaps in publishing | Gap analysis vs. source-type thresholds |
-| **Gaming** | Signs of algorithmic manipulation | Repetition + TTR + burst + vocab diversity |
+| Signal         | What it measures                            | Method                                                     |
+| -------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| **Coherence**  | Entity/argument consistency across messages | spaCy NER + Jaccard (or optional Sentence-BERT) similarity |
+| **Volatility** | Abrupt narrative tone changes               | TextBlob (or optional BERT) sentiment spike detection      |
+| **Silence**    | Anomalous temporal gaps in publishing       | Gap analysis vs. source-type thresholds                    |
+| **Gaming**     | Signs of algorithmic manipulation           | Repetition + TTR + burst + vocab diversity                 |
 
----
+***
 
 ## Try it in 5 lines (no infrastructure)
 
@@ -48,13 +43,11 @@ result = score([
 print(result["trust_score"], result["band"], result["explanation"]["primary_driver"])
 ```
 
-Install with `pip install -r requirements.txt` (plus `make nlp-download` for
-full-fidelity coherence — without it the NER backend degrades to a neutral
-value). The full API below adds persistence, auditing and GDPR endpoints.
+Install with `pip install -r requirements.txt` (plus `make nlp-download` for full-fidelity coherence — without it the NER backend degrades to a neutral value). The full API below adds persistence, auditing and GDPR endpoints.
 
 Or try it in the browser: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/blob/main/examples/cats_lite_demo.ipynb)
 
----
+***
 
 ## Quick Start (full deployment)
 
@@ -76,9 +69,9 @@ uvicorn cats.api.main:app --reload
 make test
 ```
 
-> **Generate a secure AUDIT_ENCRYPTION_KEY**: `make generate-key`
+> **Generate a secure AUDIT\_ENCRYPTION\_KEY**: `make generate-key`
 
----
+***
 
 ## API Example
 
@@ -112,25 +105,25 @@ curl -s -X POST http://localhost:8000/v1/cats/evaluate \
 }
 ```
 
----
+***
 
 ## Trust Score Bands
 
-| Score | Band | Recommended Action |
-|---|---|---|
-| 80–100 | `high` | Usable for OSINT |
-| 60–79  | `medium_high` | Cross-validate key claims |
-| 40–59  | `medium` | Human review recommended |
-| 20–39  | `low` | Human review required |
-| 0–19   | `very_low` | Do not use without validation |
+| Score  | Band          | Recommended Action            |
+| ------ | ------------- | ----------------------------- |
+| 80–100 | `high`        | Usable for OSINT              |
+| 60–79  | `medium_high` | Cross-validate key claims     |
+| 40–59  | `medium`      | Human review recommended      |
+| 20–39  | `low`         | Human review required         |
+| 0–19   | `very_low`    | Do not use without validation |
 
 > ⚠️ Scores are **ordinal rankings**, not absolute probabilities (WP 4.3).
 
----
+***
 
 ## Architecture
 
-![CATS — 9-phase OSINT evaluation pipeline](docs/cats_scheme.png)
+![CATS — 9-phase OSINT evaluation pipeline](.gitbook/assets/cats_scheme.png)
 
 ```
 Client (HTTPS + Bearer token)
@@ -150,50 +143,49 @@ Client (HTTPS + Bearer token)
                     + APScheduler purge
 ```
 
-The nginx reverse proxy (TLS, rate limiting, security headers) is configured in
-[`deploy/nginx.conf`](deploy/nginx.conf) and started by `make docker-up`.
+The nginx reverse proxy (TLS, rate limiting, security headers) is configured in [`deploy/nginx.conf`](deploy/nginx.conf) and started by `make docker-up`.
 
 See [docs/architecture.md](docs/architecture.md) for full signal and security details.
 
----
+***
 
 ## Documentation
 
-| Document | Description |
-|---|---|
-| [docs/api.md](docs/api.md) | Full API reference |
-| [docs/architecture.md](docs/architecture.md) | Signal algorithms, weight matrix, security design |
-| [docs/compliance.md](docs/compliance.md) | GDPR + EU AI Act compliance |
-| [docs/eu_ai_act/](docs/eu_ai_act/) | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
-| [docs/calibration.md](docs/calibration.md) | Empirical weight calibration (genetic search) |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Development guide |
-| [SECURITY.md](SECURITY.md) | Vulnerability reporting |
+| Document                                     | Description                                         |
+| -------------------------------------------- | --------------------------------------------------- |
+| [docs/api.md](docs/api.md)                   | Full API reference                                  |
+| [docs/architecture.md](docs/architecture.md) | Signal algorithms, weight matrix, security design   |
+| [docs/compliance.md](docs/compliance.md)     | GDPR + EU AI Act compliance                         |
+| [docs/eu\_ai\_act/](docs/eu_ai_act/)         | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
+| [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
+| [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
+| [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |
+| [SECURITY.md](SECURITY.md)                   | Vulnerability reporting                             |
 
----
+***
 
 ## Known Limitations (WP 4.1)
 
-- **NLP accuracy ~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
-- **Uncalibrated parameters**: thresholds are initial estimates; signal weights can now be empirically tuned with [`cats.calibration`](docs/calibration.md), but band thresholds remain unvalidated
-- **Small validation set (July 2026)**: calibration/validation currently rests on 50 RSS-labelled sources; see [calibration findings](docs/calibration_findings_2026-07.md) for the honest numbers (full-dataset concordance 0.78, holdout 0.71) and their caveats
-- **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
-- **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
+* **NLP accuracy \~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
+* **Uncalibrated parameters**: thresholds are initial estimates; signal weights can now be empirically tuned with [`cats.calibration`](docs/calibration.md), but band thresholds remain unvalidated
+* **Small validation set (July 2026)**: calibration/validation currently rests on 50 RSS-labelled sources; see [calibration findings](docs/calibration_findings_2026-07.md) for the honest numbers (full-dataset concordance 0.78, holdout 0.71) and their caveats
+* **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
+* **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
 
----
+***
 
 ## Roadmap
 
-| Version | Status | Key features |
-|---|---|---|
-| **v1.0** | ✅ | spaCy NER · 9-phase pipeline · GDPR API · Docker |
-| **v1.1** | ✅ | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx |
-| **v1.2** | ✅ | Sentence-BERT coherence · explainer attribution · weight calibration |
-| **v1.3** | ✅ | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation |
-| v2.0 | 2027 | AUC-ROC ≥ 0.78 · full EU AI Act Annex IV technical documentation |
+| Version  | Status | Key features                                                                                                       |
+| -------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| **v1.0** | ✅      | spaCy NER · 9-phase pipeline · GDPR API · Docker                                                                   |
+| **v1.1** | ✅      | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx                  |
+| **v1.2** | ✅      | Sentence-BERT coherence · explainer attribution · weight calibration                                               |
+| **v1.3** | ✅      | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation |
+| v2.0     | 2027   | AUC-ROC ≥ 0.78 · full EU AI Act Annex IV technical documentation                                                   |
 
----
+***
 
 ## License
 
-[MIT](LICENSE) — technical@cats-system.org
+[MIT](LICENSE/) — technical@cats-system.org
