@@ -11,10 +11,11 @@ def _signal(name, value, confidence=0.5):
 
 class TestAggregateScore:
     def test_weighted_average(self):
+        # volatility is negative-polarity: 60 enters as 100-60=40.
         signals = [_signal("coherence", 80), _signal("volatility", 60)]
         weights = {"coherence": 0.6, "volatility": 0.4}
         score = aggregate_score(signals, weights)
-        assert abs(score - 72.0) < 0.01
+        assert abs(score - 64.0) < 0.01
 
     def test_missing_weight_uses_default(self):
         signals = [_signal("coherence", 100)]
@@ -23,6 +24,24 @@ class TestAggregateScore:
 
     def test_empty_signals(self):
         assert aggregate_score([], {}) == 50.0
+
+    def test_negative_polarity_signals_are_inverted(self):
+        # A pathological source: silent, volatile, gamed. High raw values on
+        # the negative signals must LOWER the score, not raise it.
+        bad = [_signal("silence", 90), _signal("volatility", 90), _signal("gaming", 90)]
+        good = [_signal("silence", 5), _signal("volatility", 5), _signal("gaming", 5)]
+        weights = {"silence": 0.4, "volatility": 0.3, "gaming": 0.3}
+        assert aggregate_score(bad, weights) < 20.0
+        assert aggregate_score(good, weights) > 80.0
+
+    def test_all_neutral_signals_score_neutral(self):
+        signals = [
+            _signal("coherence", 50),
+            _signal("volatility", 50),
+            _signal("silence", 50),
+            _signal("gaming", 50),
+        ]
+        assert abs(aggregate_score(signals, DEFAULT_WEIGHTS) - 50.0) < 0.01
 
 
 class TestDetermineBand:

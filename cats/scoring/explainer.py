@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from cats.scoring.engine import NEGATIVE_POLARITY, reliability_value
 from cats.signals.types import SignalResult
 
 # A-01: WP 4.1/4.3 disclaimer
@@ -16,12 +17,17 @@ def generate_explanation(
     signals: List[SignalResult],
     weights: Dict[str, float],
 ) -> Dict:
-    weighted = {s.name: s.value * weights.get(s.name, 0.0) for s in signals}
+    # Contributions are computed on the reliability axis: negative-polarity
+    # signals (volatility/silence/gaming) are inverted exactly as in
+    # aggregate_score, so contribution/score_share_pct decompose the actual score.
+    weighted = {s.name: reliability_value(s) * weights.get(s.name, 0.0) for s in signals}
     total = sum(weighted.values())
     details = [
         {
             "signal": s.name,
             "value": round(s.value, 2),
+            "polarity": "negative" if s.name in NEGATIVE_POLARITY else "positive",
+            "reliability_value": round(reliability_value(s), 2),
             "weight": round(weights.get(s.name, 0.0), 2),
             "contribution": round(weighted[s.name], 2),
             # Share of the weighted score attributable to this signal (SHAP-like
@@ -39,8 +45,9 @@ def generate_explanation(
         "signals": details,
         "primary_driver": primary_driver,
         "methodology": (
-            "Weighted aggregation of 4 behavioural signals; score_share_pct is "
-            "each signal's share of the weighted score"
+            "Weighted aggregation of 4 behavioural signals on a common "
+            "reliability axis (negative-polarity signals inverted as 100 - value); "
+            "score_share_pct is each signal's share of the weighted score"
         ),
         "disclaimer": _DISCLAIMER,
     }
