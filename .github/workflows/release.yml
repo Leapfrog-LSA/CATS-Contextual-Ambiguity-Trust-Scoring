@@ -1,0 +1,41 @@
+name: Publish to PyPI
+
+# Publishes the cats-scoring package on every GitHub Release via PyPI
+# "trusted publishing" (OIDC) — no API tokens stored in the repo.
+# One-time setup on pypi.org: project "cats-scoring" → Publishing →
+# add GitHub publisher (owner: Leapfrog-LSA, repo:
+# CATS-Contextual-Ambiguity-Trust-Scoring, workflow: release.yml,
+# environment: pypi). Docs: https://docs.pypi.org/trusted-publishers/
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # manual re-publish of the current ref
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install build
+      - run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # OIDC token for PyPI trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
