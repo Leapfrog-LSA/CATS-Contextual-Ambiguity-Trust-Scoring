@@ -43,7 +43,7 @@ result = score([
 print(result["trust_score"], result["band"], result["explanation"]["primary_driver"])
 ```
 
-Install with `pip install -r requirements.txt` (plus `make nlp-download` for full-fidelity coherence — without it the NER backend degrades to a neutral value). The full API below adds persistence, auditing and GDPR endpoints.
+Install from PyPI: `pip install cats-scoring` (add `cats-scoring[sbert]` for the multilingual coherence backend, and `python -m spacy download it_core_news_lg` for full-fidelity NER coherence — without it the signal degrades to a neutral value). The full API below adds persistence, auditing and GDPR endpoints.
 
 Or try it in the browser: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/blob/main/examples/cats_lite_demo.ipynb)
 

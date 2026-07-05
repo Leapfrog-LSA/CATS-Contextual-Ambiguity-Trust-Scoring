@@ -150,3 +150,11 @@
 {"source_id": "Empire Sports News", "source_type": "news", "label": 10.0, "url": "https://empiresports.co", "rss": "https://empiresports.co/feed/"}
 {"source_id": "News Examiner", "source_type": "news", "label": 10.0, "url": "https://newsexaminer.net", "rss": "https://newsexaminer.net/feed/"}
 {"source_id": "World Daily News Report", "source_type": "news", "label": 10.0, "url": "https://worldnewsdailyreport.com", "rss": "https://worldnewsdailyreport.com/feed/"}
+{"source_id": "Natural News", "source_type": "news", "label": 10.0, "url": "https://naturalnews.com", "rss": "https://naturalnews.com/rss.xml"}
+{"source_id": "Global Research", "source_type": "news", "label": 30.0, "url": "https://globalresearch.ca", "rss": "https://globalresearch.ca/feed/"}
+{"source_id": "Before It's News", "source_type": "news", "label": 30.0, "url": "https://beforeitsnews.com", "rss": "https://beforeitsnews.com/rss"}
+{"source_id": "Activist Post", "source_type": "news", "label": 30.0, "url": "https://activistpost.com", "rss": "https://activistpost.com/feed/"}
+{"source_id": "WND (World Net Daily)", "source_type": "news", "label": 30.0, "url": "https://wnd.com", "rss": "https://wnd.com/feed/"}
+{"source_id": "Veterans Today", "source_type": "news", "label": 10.0, "url": "https://veteranstoday.com", "rss": "https://veteranstoday.com/feed/"}
+{"source_id": "RT News", "source_type": "news", "label": 10.0, "url": "https://rt.com", "rss": "https://www.rt.com/feed/"}
+{"source_id": "David Icke", "source_type": "news", "label": 10.0, "url": "https://davidicke.com", "rss": "https://davidicke.com/feed/"}
