@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GDPR Compliant](https://img.shields.io/badge/GDPR-Art.13--22-blue)](docs/compliance.md)
+[![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md)
 [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
 
 ---
@@ -32,7 +32,29 @@ CATS analyses the *behavioural patterns* of a source over time — narrative con
 
 ---
 
-## Quick Start
+## Try it in 5 lines (no infrastructure)
+
+No database, no Redis, no API keys — the signal pipeline as a plain library call:
+
+```python
+from cats.lite import score
+
+result = score([
+    {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
+    {"timestamp": "2026-01-01T12:00:00Z", "text": "I sindacati commentano il piano."},
+    {"timestamp": "2026-01-02T09:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+], source_type="news")
+
+print(result["trust_score"], result["band"], result["explanation"]["primary_driver"])
+```
+
+Install with `pip install -r requirements.txt` (plus `make nlp-download` for
+full-fidelity coherence — without it the NER backend degrades to a neutral
+value). The full API below adds persistence, auditing and GDPR endpoints.
+
+---
+
+## Quick Start (full deployment)
 
 ```bash
 # 1. Clone and configure
@@ -106,7 +128,7 @@ curl -s -X POST http://localhost:8000/v1/cats/evaluate \
 
 ## Architecture
 
-![CATS — 9-phase OSINT evaluation pipeline](CATS%20SCHEME.png)
+![CATS — 9-phase OSINT evaluation pipeline](docs/cats_scheme.png)
 
 ```
 Client (HTTPS + Bearer token)

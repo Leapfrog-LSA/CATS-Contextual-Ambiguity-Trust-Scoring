@@ -41,6 +41,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.3.0] — 2026-07-05
 
+### Added
+- **`cats.lite`** — zero-infrastructure scoring: `from cats.lite import score`
+  runs the 4-signal pipeline + aggregation as a plain library call (no
+  PostgreSQL, no Redis, no API keys). Same signals, same explainability,
+  same caveats as `/evaluate`.
+- `CITATION.cff` for academic citation.
+
 ### Changed
 - **Signal polarity fix in `aggregate_score`** — the higher-is-worse signals
   (volatility, silence, gaming) are now inverted (`100 − value`) before the
