@@ -47,6 +47,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   PostgreSQL, no Redis, no API keys). Same signals, same explainability,
   same caveats as `/evaluate`.
 - `CITATION.cff` for academic citation.
+- PyPI-ready packaging: the project builds as **`cats-scoring`** with the
+  library-surface dependencies only (`pip install cats-scoring[sbert]` for the
+  multilingual coherence backend); the API deployment stack stays in
+  `requirements.txt`. Colab demo notebook in `examples/cats_lite_demo.ipynb`.
 
 ### Changed
 - **Signal polarity fix in `aggregate_score`** — the higher-is-worse signals
