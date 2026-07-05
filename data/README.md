@@ -61,7 +61,12 @@ people/organisations without feeds and are ignored. Of the 87 probed domains,
 ## `labels.jsonl`
 Output of step 1 (`label_from_ratings`) over the catalogue + ratings above
 (141 sources, labels 50–95), **plus** 11 very-low (10.0) sources appended from
-`disinfo_sources.csv` as described above — 152 total. Next step:
+`disinfo_sources.csv` as described above, **plus** 8 MBFC-rated Low (30.0) /
+Very Low (10.0) outlets with live RSS feeds appended directly (Natural News,
+Global Research, Before It's News, Activist Post, WND, Veterans Today, RT News,
+David Icke — ratings re-verified on the linked MBFC pages on 2026-07-05, rows
+in `ratings_provenance.csv`; they are appended rather than joined because they
+are not in the `Fonti_OSINT` catalogue) — **160 total**. Next step:
 
 ```bash
 python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
