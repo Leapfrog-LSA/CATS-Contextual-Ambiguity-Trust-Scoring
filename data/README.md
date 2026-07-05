@@ -67,11 +67,14 @@ Output of step 1 (`label_from_ratings`) over the catalogue + ratings above
 python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
 ```
 
-## Pipeline outputs (snapshot 2026-07-02)
-`labelled_sources.jsonl` (49 sources / 1 595 messages), temporal 80/20 split
+## Pipeline outputs (merged snapshots 2026-07-02/03/05)
+`labelled_sources.jsonl` = `merge_snapshots` over the three snapshots in
+`data/snapshots/` (50 sources / 3 426 messages), temporal 80/20 split
 (`train_sources` / `holdout_sources`), built datasets (`train.jsonl` /
 `holdout.jsonl`, `COHERENCE_BACKEND=sbert`) and `calibrated_weights.json`
-(spearman, seed 7). ⚠️ Single-snapshot caveat: mainstream feeds publish hourly,
-disinfo sites sporadically, so the temporal split puts every low-label source
-in *train* — the holdout cannot yet measure low-end discrimination. Validate
-low-end ranking against a **future** snapshot instead.
+(spearman, seed 7, **v1.3.0 polarity-corrected engine** — weights calibrated
+under ≤ 1.2.x are invalid). Numbers and analysis in
+`docs/calibration_findings_2026-07.md`. ⚠️ Caveat: mainstream feeds publish
+hourly, disinfo sites sporadically, so the temporal split puts every low-label
+source in *train* — low-end discrimination is currently measured on the
+full-dataset diagnostic; validate against a **future** snapshot (tracked).

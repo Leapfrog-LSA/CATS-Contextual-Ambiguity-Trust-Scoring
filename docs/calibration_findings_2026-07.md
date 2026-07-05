@@ -2,8 +2,9 @@
 
 Empirical findings from the first real calibration runs (snapshots
 2026-07-02/03, 49 labelled sources, labels 10–95 including 10 documented
-disinformation sources — see `data/README.md`). They motivate the two open
-work items: future-snapshot validation and the signal-polarity decision.
+disinformation sources — see `data/README.md`). They motivated the
+signal-polarity fix shipped in v1.3.0 (§3) and the still-open
+future-snapshot validation.
 
 ## 1. Per-signal discriminative power
 
@@ -51,7 +52,36 @@ higher-is-worse signals before aggregation, or allowing signed weights) is the
 single highest-leverage change available**, worth more than any recalibration
 under the current architecture.
 
-## 3. Remaining caveats
+## 3. Resolution — polarity fix shipped in v1.3.0 (2026-07-05)
+
+The experiment above was promoted to the engine: since v1.3.0
+`aggregate_score` inverts volatility/silence/gaming (`100 − value`) before the
+weighted mean (see `architecture.md → Signal Polarity & Scoring` and the
+CHANGELOG). Re-running the full pipeline on the three merged snapshots
+(2026-07-02/03/05; 50 sources, 3 426 messages) with the corrected engine,
+SBERT coherence, temporal 80/20 split, seed 7:
+
+| | pre-fix (merged 2-day) | v1.3.0 (merged 3-day) |
+|---|---:|---:|
+| Train Spearman — static baseline | −0.18 … 0.19 | **+0.56** |
+| Train Spearman — calibrated | 0.19 | **+0.66** |
+| Holdout Spearman (calibrated) | −0.42 | **+0.36** |
+| Holdout concordance | 0.28 | **0.71** |
+| Holdout band agreement | 0% exact | **40% exact, 100% within 1** |
+| Full-dataset Spearman (diagnostic) | 0.14 | **+0.58** |
+| Full-dataset concordance (diagnostic) | 0.57 | **0.78** |
+
+The full-dataset band table is now semantically coherent: all four sources
+predicted `very_low`/`low` are label-10 disinformation sources, and the single
+`high` prediction is the label-95 source. The static weights are positively
+correlated for the first time (+0.56 train) — with a common reliability axis
+they behave as sensible priors instead of ranking backwards.
+
+Calibrated weights (news group): silence 0.48, coherence 0.36, gaming 0.13,
+volatility 0.03 — consistent with §1: silence carries most of the signal,
+coherence adds rank information under the SBERT backend.
+
+## 4. Remaining caveats
 
 - n=49 with a 10-source holdout: all numbers are indicative, not declarative.
   The scheduled snapshot collection (`.github/workflows/collect-rss.yml`) plus

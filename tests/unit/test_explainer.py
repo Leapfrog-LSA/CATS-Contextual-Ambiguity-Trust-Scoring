@@ -39,10 +39,28 @@ def test_score_share_and_primary_driver():
     result = generate_explanation(50.0, "medium", signals, weights)
 
     shares = {d["signal"]: d["score_share_pct"] for d in result["signals"]}
-    # coherence: 80*0.5=40, gaming: 20*0.5=10 -> total 50 -> 80% / 20%
-    assert shares["coherence"] == 80.0
-    assert shares["gaming"] == 20.0
+    # coherence: 80*0.5=40; gaming is negative-polarity: (100-20)*0.5=40 -> 50% / 50%
+    assert shares["coherence"] == 50.0
+    assert shares["gaming"] == 50.0
     assert sum(shares.values()) == 100.0
+
+
+def test_negative_polarity_signal_contributes_on_reliability_axis():
+    signals = [
+        SignalResult(name="coherence", value=50.0, confidence=0.9),
+        SignalResult(name="silence", value=90.0, confidence=0.9),  # very silent -> unreliable
+    ]
+    weights = {"coherence": 0.5, "silence": 0.5}
+    result = generate_explanation(30.0, "low", signals, weights)
+
+    details = {d["signal"]: d for d in result["signals"]}
+    assert details["silence"]["polarity"] == "negative"
+    assert details["silence"]["value"] == 90.0
+    assert details["silence"]["reliability_value"] == 10.0
+    assert details["silence"]["contribution"] == 5.0
+    assert details["coherence"]["polarity"] == "positive"
+    assert details["coherence"]["reliability_value"] == 50.0
+    # High silence must NOT drive the score up: coherence dominates.
     assert result["primary_driver"] == "coherence"
 
 

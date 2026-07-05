@@ -260,14 +260,14 @@ Spearman           : +0.993
 Band agreement     : 33.3% exact, 100.0% within 1 band
 ```
 
-> **Why the static weights can rank backwards.** `aggregate_score` is a
-> non-negative weighted average, so it treats every signal as "higher = better".
-> But three of the four signals (volatility, silence, gaming) are
-> "higher = *worse*". A non-negative weighting therefore cannot invert them; on
-> data where those signals dominate, the static estimates anti-correlate with
-> reliability and calibration compensates mostly by loading weight onto
-> coherence. Treat the static weights as a placeholder, not a validated baseline
-> (WP 4.1). This is a recorded design decision — see
+> **Polarity note (changed in v1.3.0).** Since v1.3.0 `aggregate_score` inverts
+> the higher-is-worse signals (volatility, silence, gaming: `100 − value`)
+> before the weighted average, so all weights are non-negative importances on a
+> common reliability axis. Weights calibrated under the pre-1.3 engine are
+> **invalid** — recalibrate. On ≤ 1.2.x the sample numbers above could even
+> come out anti-correlated for the static weights; the July 2026 findings
+> ([calibration_findings_2026-07.md](calibration_findings_2026-07.md)) document
+> the defect on real data and the motivation for the change — see
 > [architecture.md → Signal Polarity & Scoring](architecture.md#signal-polarity--scoring-design-decision).
 
 ## 5. Accuracy declaration (EU AI Act Art. 15)

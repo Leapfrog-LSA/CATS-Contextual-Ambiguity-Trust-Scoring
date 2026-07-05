@@ -39,6 +39,41 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.3.0] — 2026-07-05
+
+### Added
+- **`cats.lite`** — zero-infrastructure scoring: `from cats.lite import score`
+  runs the 4-signal pipeline + aggregation as a plain library call (no
+  PostgreSQL, no Redis, no API keys). Same signals, same explainability,
+  same caveats as `/evaluate`.
+- `CITATION.cff` for academic citation.
+- PyPI-ready packaging: the project builds as **`cats-scoring`** with the
+  library-surface dependencies only (`pip install cats-scoring[sbert]` for the
+  multilingual coherence backend); the API deployment stack stays in
+  `requirements.txt`. Colab demo notebook in `examples/cats_lite_demo.ipynb`.
+
+### Changed
+- **Signal polarity fix in `aggregate_score`** — the higher-is-worse signals
+  (volatility, silence, gaming) are now inverted (`100 − value`) before the
+  weighted average, so every signal enters the score as a reliability
+  contribution. On ≤ 1.2.x the one empirically informative signal (silence)
+  entered the average backwards, making calibrated weights rank a documented
+  disinformation source *highest* on the July 2026 holdout (Spearman −0.42 →
+  +0.32 with the fix; band agreement 0% → 90% within one band). See
+  `docs/calibration_findings_2026-07.md` and the updated design decision in
+  `docs/architecture.md`.
+- `/explain` signal details now include `polarity` and `reliability_value`
+  (the inverted value actually aggregated); `contribution`/`score_share_pct`
+  are computed on the reliability axis so they decompose the real score.
+
+### Breaking
+- Trust scores are **not comparable** with scores produced by ≤ 1.2.x.
+- Weights calibrated under the pre-1.3 engine are invalid — recalibrate with
+  `python -m cats.calibration` (recalibrated weights for the July 2026
+  snapshots ship in `data/calibrated_weights.json`).
+
+---
+
 ## [1.2.0] — 2026-06-29
 
 ### Added

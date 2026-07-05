@@ -74,34 +74,34 @@ The four signals **do not share a common polarity**:
 | silence | **negative** | more anomalous gaps → *less* reliable |
 | gaming | **negative** | more manipulation signs → *less* reliable |
 
-`aggregate_score` (Phase 7) is a **non-negative weighted mean**, so it treats
-every signal as "higher = better". Because the weights cannot be negative, the
-aggregation **cannot invert** the three negative-polarity signals. Two
-consequences follow:
+**Decision (v1.3.0): `aggregate_score` inverts the negative-polarity signals
+(`100 − value` for volatility/silence/gaming) before the weighted mean.** Every
+term enters the average as a *reliability contribution*, weights stay
+non-negative and interpretable as importances, and `/explain` reports both the
+raw `value` and the inverted `reliability_value` per signal
+(`cats.scoring.engine.NEGATIVE_POLARITY` / `reliability_value`).
 
-1. **The static weight matrix above is a placeholder, not a validated baseline**
-   (WP 4.1). On data where the negative-polarity signals carry the signal,
-   reliable ranking depends almost entirely on calibration loading weight onto
-   coherence. The eval harness makes this measurable: on
-   `examples/calibration_sample.jsonl` the static weights score Spearman
-   **−0.89** (anti-correlated) versus **+0.99** after calibration — see
-   [calibration.md](calibration.md).
-2. A weighted mean of mixed-polarity signals is **not** a faithful reliability
-   model on its own; it leans on calibration to approximate the right ordering.
+History of this decision:
 
-**Decision (current iteration): keep the engine as-is and document the
-limitation; do not change scoring semantics now.** Options deliberately *not*
-taken yet:
+- **≤ v1.2.x** the engine was a plain non-negative weighted mean that treated
+  every signal as "higher = better" — a documented placeholder (WP 4.1). The
+  July 2026 calibration runs on real data
+  ([calibration_findings_2026-07.md](calibration_findings_2026-07.md)) showed
+  the defect was not theoretical: silence — the one informative signal, and
+  semantically "higher = worse" — entered the average backwards, so the
+  calibrated weights ranked a documented disinformation source **highest** in
+  the holdout (Spearman −0.42). The identical calibration with inverted
+  negative signals reached holdout Spearman +0.32 and 90% band agreement
+  within one band, motivating the change.
+- The alternative (**signed weights**) was rejected: it makes the weight
+  simplex unbounded, the GA search space larger, and the explanation surface
+  ("negative importance") harder to read than an explicit polarity table.
 
-- **Invert negative signals before aggregation** (e.g. use `100 − value` for
-  volatility/silence/gaming), making all signals positive-polarity and the
-  weights interpretable as importance.
-- **Allow signed weights** so the aggregation can encode polarity directly.
-
-Both alter scoring semantics and band thresholds and would need re-validation on
-labelled data, so they are deferred to the NLP/scoring hardening on the roadmap
-(v2.0). Until then, **always calibrate before relying on scores**, and treat the
-static weights as an unvalidated starting point.
+Consequences: scores produced from v1.3.0 onwards are **not comparable** with
+scores from earlier versions, and weights calibrated under the old engine are
+invalid — recalibrate (see [calibration.md](calibration.md)). The static
+matrix above remains an unvalidated starting point: **always calibrate before
+relying on scores.**
 
 ## Security Design
 
