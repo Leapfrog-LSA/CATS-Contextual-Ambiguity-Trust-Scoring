@@ -127,6 +127,24 @@ GDPR Art. 22 — contest an automated decision.
 
 ---
 
+## POST /contest/{contest_id}/resolve
+
+Close a pending contest (the human decision on a GDPR Art. 22 appeal).
+Tenant-scoped; resolving an already-resolved contest returns **409**.
+
+**Request**
+```json
+{ "status": "upheld", "response": "Re-evaluated with fresh messages; band corrected." }
+```
+`status` must be `upheld` or `rejected`.
+
+**Response 200**
+```json
+{ "contest_id": 42, "status": "upheld", "resolved_at": "2026-07-05T12:00:00+00:00" }
+```
+
+---
+
 ## GET /stats
 
 Aggregate statistics across all evaluations.

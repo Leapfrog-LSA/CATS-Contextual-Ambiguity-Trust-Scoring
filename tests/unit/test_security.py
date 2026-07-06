@@ -62,3 +62,49 @@ class TestTenantResolution:
         monkeypatch.setattr(settings, "api_keys", "lonely")
         assert verify_api_key("lonely") is True
         assert resolve_tenant("lonely") == "default"
+
+
+class TestRateLimitKeying:
+    def test_bucket_is_per_api_key_and_hashed(self):
+        from unittest.mock import Mock
+
+        from cats.core.security import rate_limit_id
+
+        req = Mock()
+        bucket = rate_limit_id("secret-key", req)
+        assert bucket.startswith("key:")
+        assert "secret-key" not in bucket  # raw secrets never reach Redis keys
+        assert bucket == rate_limit_id("secret-key", req)  # stable
+        assert bucket != rate_limit_id("other-key", req)  # fair per key
+
+    def test_falls_back_to_ip_without_key(self, monkeypatch):
+        from unittest.mock import Mock
+
+        from cats.core.security import rate_limit_id
+
+        monkeypatch.setattr(settings, "trust_proxy_headers", True)
+        req = Mock()
+        req.headers = {"X-Forwarded-For": "1.2.3.4"}
+        assert rate_limit_id("", req) == "ip:1.2.3.4"
+
+
+class TestClientIpTrust:
+    def _req(self, xff, host="10.0.0.9"):
+        from unittest.mock import Mock
+
+        req = Mock()
+        req.headers = {"X-Forwarded-For": xff} if xff else {}
+        req.client.host = host
+        return req
+
+    def test_xff_honoured_when_trusted(self, monkeypatch):
+        from cats.core.security import get_client_ip
+
+        monkeypatch.setattr(settings, "trust_proxy_headers", True)
+        assert get_client_ip(self._req("1.2.3.4, 5.6.7.8")) == "1.2.3.4"
+
+    def test_xff_ignored_when_untrusted(self, monkeypatch):
+        from cats.core.security import get_client_ip
+
+        monkeypatch.setattr(settings, "trust_proxy_headers", False)
+        assert get_client_ip(self._req("1.2.3.4")) == "10.0.0.9"

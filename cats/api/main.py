@@ -10,12 +10,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+import cats
 from cats.api.routes.evaluate import router as evaluate_router
 from cats.audit.logger import purge_expired_audits
 from cats.core.config import settings
 from cats.core.db import AsyncSessionLocal
 from cats.core.metrics import HTTP_LATENCY, HTTP_REQUESTS
-from cats.core.security import init_jwt_keys, init_redis
+from cats.core.security import init_redis
 from cats.signals.coherence import init_nlp
 
 # N-06: JSON structured logging. Use structlog-native processors + a filtering
@@ -38,7 +39,6 @@ logger = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.environment)
-    init_jwt_keys()  # S-01
     await init_redis()  # S-03
     init_nlp(settings.spacy_model)  # N-01: singleton
 
@@ -56,7 +56,7 @@ async def _purge_job():
         await purge_expired_audits(db)
 
 
-app = FastAPI(title="CATS API", version="1.2.0", lifespan=lifespan)
+app = FastAPI(title="CATS API", version=cats.__version__, lifespan=lifespan)
 
 if settings.cors_origins:
     app.add_middleware(
@@ -121,11 +121,14 @@ async def health():
     from cats.signals.coherence import nlp
 
     checks: dict = {"api": "ok"}
+    # Exception details are logged, not returned: raw error strings can leak
+    # DSNs/internal hostnames to any caller of an unauthenticated endpoint.
     try:
         await redis_client.ping()
         checks["redis"] = "ok"
     except Exception as e:
-        checks["redis"] = f"error:{e}"
+        logger.warning("health_check_failed", component="redis", error=str(e))
+        checks["redis"] = "error"
     try:
         from sqlalchemy import text
 
@@ -133,11 +136,12 @@ async def health():
             await conn.execute(text("SELECT 1"))
             checks["database"] = "ok"
     except Exception as e:
-        checks["database"] = f"error:{e}"
+        logger.warning("health_check_failed", component="database", error=str(e))
+        checks["database"] = "error"
     checks["nlp"] = "ok" if nlp else "not_loaded"
 
     overall = "healthy" if all(v == "ok" for v in checks.values()) else "degraded"
-    return {"status": overall, "checks": checks}
+    return {"status": overall, "checks": checks, "version": cats.__version__}
 
 
 @app.get("/metrics")

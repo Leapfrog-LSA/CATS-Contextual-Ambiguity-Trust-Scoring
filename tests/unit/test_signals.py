@@ -122,3 +122,38 @@ class TestGaming:
         ]
         r = compute_gaming(msgs)
         assert r.repetition_score > 0
+
+
+class TestGamingVocabFloor:
+    def test_short_corpus_vocab_subscore_is_neutral(self):
+        from cats.signals.gaming import _vocab_diversity
+
+        # 10-49 tokens: no evidence of vocabulary collapse -> neutral 0.0,
+        # not the maximum 1.0 (which inflated gaming by +25 points).
+        assert _vocab_diversity(["parola"] * 20) == 0.0
+
+    def test_long_corpus_vocab_subscore_measures_uniformity(self):
+        from cats.signals.gaming import _vocab_diversity
+
+        assert _vocab_diversity(["stessa"] * 100) > 0.9
+        varied = [f"parola{i}" for i in range(100)]
+        assert _vocab_diversity(varied) == 0.0
+
+
+class TestSilenceThresholds:
+    def test_threshold_table_covers_all_source_types(self):
+        from cats.signals.silence import SOURCE_TYPE_THRESHOLDS, threshold_for
+
+        assert set(SOURCE_TYPE_THRESHOLDS) == {"social", "news", "default"}
+        assert threshold_for("blog") == SOURCE_TYPE_THRESHOLDS["default"]
+
+    def test_explicit_threshold_overrides_table(self):
+        msgs = [
+            Message(timestamp="2026-01-01T00:00:00+00:00", text="a"),
+            Message(timestamp="2026-01-02T00:00:00+00:00", text="b"),  # 24h gap
+        ]
+        strict = compute_silence(msgs, "news", anomaly_threshold_hours=1.0)
+        lax = compute_silence(msgs, "news", anomaly_threshold_hours=100.0)
+        assert strict.value == 100.0
+        assert lax.value == 0.0
+        assert strict.metadata["threshold_h"] == 1.0

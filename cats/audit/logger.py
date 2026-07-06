@@ -6,7 +6,7 @@ from typing import Optional
 
 import structlog
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cats.core.config import settings
@@ -67,6 +67,8 @@ async def log_contest(
     user_id: Optional[str] = None,
     tenant_id: str = "default",
 ) -> int:
+    """Stage a contest row and return its id. Does not commit — the caller owns
+    the transaction boundary, consistent with log_evaluation."""
     c = Contest(
         tenant_id=tenant_id,
         trace_id=trace_id,
@@ -76,13 +78,16 @@ async def log_contest(
         created_at=datetime.now(timezone.utc),
     )
     db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    await db.flush()
     return c.id
 
 
-async def get_audit_log(db: AsyncSession, trace_id: str) -> Optional[dict]:
-    r = await db.execute(select(AuditLog).where(AuditLog.trace_id == trace_id).order_by(AuditLog.timestamp.desc()))
+async def get_audit_log(db: AsyncSession, trace_id: str, tenant_id: str = "default") -> Optional[dict]:
+    r = await db.execute(
+        select(AuditLog)
+        .where(AuditLog.trace_id == trace_id, AuditLog.tenant_id == tenant_id)
+        .order_by(AuditLog.timestamp.desc())
+    )
     a = r.scalars().first()
     if not a:
         return None
@@ -110,11 +115,8 @@ async def purge_expired_audits(db: AsyncSession) -> None:
         return
     try:
         cutoff = datetime.now(timezone.utc) - timedelta(days=settings.audit_retention_days)
-        res = await db.execute(select(AuditLog).where(AuditLog.timestamp < cutoff))
-        old = res.scalars().all()
-        for row in old:
-            await db.delete(row)
+        res = await db.execute(delete(AuditLog).where(AuditLog.timestamp < cutoff))
         await db.commit()
-        logger.info("purge_done", deleted=len(old))
+        logger.info("purge_done", deleted=res.rowcount)
     finally:
         await redis.delete("cats:purge_lock")

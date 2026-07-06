@@ -23,6 +23,9 @@ class TrustScore(Base):
     signals: Mapped[dict] = mapped_column(JSONB, nullable=False)
     weights: Mapped[dict] = mapped_column(JSONB, nullable=False)
     context_data: Mapped[Optional[dict]] = mapped_column("context_data", JSONB)
+    # Aggregation-engine version the score was computed under (scoring/engine.py
+    # ENGINE_VERSION). NULL = row scored before versioning existed (pre-1.3).
+    engine_version: Mapped[Optional[str]] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, nullable=False)
     __table_args__ = (Index("idx_source_created", "source_id", "created_at"),)
 

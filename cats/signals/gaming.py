@@ -34,8 +34,11 @@ def _burst(messages: List[Message]) -> float:
 
 
 def _vocab_diversity(tokens: List[str]) -> float:
+    # Below the sample-size floor there is no evidence of vocabulary collapse:
+    # return the neutral 0.0 (returning 1.0 here would hand every short corpus
+    # a spurious +25 gaming points).
     if len(tokens) < 50:
-        return 1.0
+        return 0.0
     return 1.0 - min(len(set(tokens)) / len(tokens), 1.0)
 
 

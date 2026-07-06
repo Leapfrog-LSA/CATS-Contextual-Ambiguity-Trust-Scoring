@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,9 +12,11 @@ class Settings(BaseSettings):
 
     # Optional multi-tenant API keys: CSV of "key:tenant" pairs. Keys not listed
     # here (e.g. cats_api_key / cats_api_key_prev) resolve to the "default" tenant.
-    api_keys: Optional[str] = None
-
-    jwt_access_token_expire_minutes: int = 30
+    # Documented as CATS_API_KEYS; the bare API_KEYS spelling is also accepted.
+    api_keys: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("CATS_API_KEYS", "API_KEYS"),
+    )
 
     database_url: str
     db_pool_size: int = 10
@@ -47,7 +50,17 @@ class Settings(BaseSettings):
 
     # Optional path to a calibrated weights file (see cats.calibration);
     # falls back to the static per-source-type estimates when unset.
-    weights_file: Optional[str] = None
+    # Documented as CATS_WEIGHTS_FILE; the bare WEIGHTS_FILE spelling is also
+    # accepted.
+    weights_file: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("CATS_WEIGHTS_FILE", "WEIGHTS_FILE"),
+    )
+
+    # Trust X-Forwarded-For / proxy headers for client-IP extraction (rate
+    # limiting, audit). Keep enabled behind the bundled nginx; disable when the
+    # app is exposed directly, otherwise clients can spoof their IP.
+    trust_proxy_headers: bool = True
 
     environment: str = "production"
     log_level: str = "INFO"

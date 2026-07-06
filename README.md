@@ -128,7 +128,7 @@ curl -s -X POST http://localhost:8000/v1/cats/evaluate \
 ```
 Client (HTTPS + Bearer token)
         │
-   nginx (TLS 1.3 · rate 30 req/min)
+   nginx (rate 30 req/min · TLS 1.3 ready)
         │
    FastAPI — 9-phase pipeline
    ├─ POST /v1/cats/evaluate
@@ -143,7 +143,7 @@ Client (HTTPS + Bearer token)
                     + APScheduler purge
 ```
 
-The nginx reverse proxy (TLS, rate limiting, security headers) is configured in [`deploy/nginx.conf`](deploy/nginx.conf) and started by `make docker-up`.
+The nginx reverse proxy (rate limiting, security headers) is configured in [`deploy/nginx.conf`](deploy/nginx.conf) and started by `make docker-up`. It listens on HTTP by default; a commented TLS 1.3 server block (with cert instructions) is provided in the same file — enable it before any non-local deployment.
 
 See [docs/architecture.md](docs/architecture.md) for full signal and security details.
 

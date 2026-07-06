@@ -12,7 +12,10 @@ COPY cats/ cats/
 COPY alembic.ini .
 COPY alembic/ alembic/
 
-RUN python -m spacy download it_core_news_lg
+# NLTK_DATA must be a world-readable path: corpora are downloaded as root at
+# build time but read by the non-root `cats` user at runtime.
+ENV NLTK_DATA=/usr/local/share/nltk_data
+RUN python -m spacy download it_core_news_lg && python -m textblob.download_corpora
 
 USER cats
 EXPOSE 8000
