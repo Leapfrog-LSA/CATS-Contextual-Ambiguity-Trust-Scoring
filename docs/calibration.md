@@ -219,12 +219,23 @@ Point the `CATS_WEIGHTS_FILE` setting at the output file:
 
 ```bash
 # .env
-CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json
+CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json   # e.g. data/calibrated_weights.json
 ```
 
 `cats.scoring.weights.get_dynamic_weights` loads this table at runtime and uses
 it per source-type group, falling back to the static estimates when the setting
 is unset or the file is missing/invalid.
+
+> **Validated for production (28 Jul 2026).** `data/calibrated_weights.json`
+> was validated on a **future** snapshot the calibrator never saw: pairwise
+> concordance **0.755** (> 0.70), Spearman **+0.553**, band agreement 79.2%
+> within one band, with the low tail discriminating correctly (see
+> [calibration_findings_2026-07-28.md](calibration_findings_2026-07-28.md) and
+> the Art. 15 accuracy declaration). These are the recommended production
+> weights. **Caveat:** the result rests mostly on the *silence* signal;
+> coherence/volatility/gaming still carry little rank information (roadmap
+> item), so re-validate before relying on CATS against an adversary who can
+> manage their publishing cadence.
 
 ## 4. Evaluate scoring quality (eval harness)
 

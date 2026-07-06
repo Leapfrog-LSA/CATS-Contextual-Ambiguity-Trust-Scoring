@@ -34,8 +34,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v2.0 (2027)
 
 ### Planned
-- Empirical calibration on a labelled dataset (target AUC-ROC ≥ 0.78)
+- Signal-hardening so discriminative power does not rest on `silence` alone
+  (the 28 Jul 2026 future-snapshot validation showed coherence/volatility/
+  gaming carry little rank information even on 4 weeks of history —
+  `docs/calibration_findings_2026-07-28.md`)
 - Full EU AI Act Annex IX documentation
+
+### Changed
+- **Calibrated weights validated on a future snapshot (28 Jul 2026)** and
+  shipped as the recommended production table in `data/calibrated_weights.json`
+  (point `CATS_WEIGHTS_FILE` at it). Calibrated on the merged 02/03/05-Jul
+  snapshots, evaluated on the unseen 06-Jul snapshot: pairwise concordance
+  **0.755** (> 0.70 target), Spearman **+0.553**, 79.2% band agreement within
+  one band, low tail discriminating correctly. Accuracy declaration and
+  `docs/calibration_findings_2026-07-28.md` updated.
 
 ---
 

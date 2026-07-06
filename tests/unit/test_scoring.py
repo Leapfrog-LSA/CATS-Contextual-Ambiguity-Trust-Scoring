@@ -95,3 +95,24 @@ class TestWeights:
     def test_unknown_source_uses_defaults(self):
         w = get_dynamic_weights({"source_type": "blog"})
         assert w == DEFAULT_WEIGHTS
+
+
+class TestValidateWeights:
+    def test_rounded_calibrated_weights_accepted_and_normalised(self):
+        # A calibrated file rounds each weight independently, so a valid table
+        # can sum to 1.000001. The loader must accept it (not fall back to
+        # static) and renormalise to an exact sum.
+        from cats.scoring.weights import _validate_weights
+
+        w = _validate_weights({"coherence": 0.395030, "volatility": 0.076897, "silence": 0.469124, "gaming": 0.058949})
+        assert abs(sum(w.values()) - 1.0) < 1e-9
+
+    def test_genuinely_malformed_weights_rejected(self):
+        import pytest
+
+        from cats.scoring.weights import _validate_weights
+
+        with pytest.raises(ValueError):
+            _validate_weights({"coherence": 0.5, "volatility": 0.9})  # sums to 1.4
+        with pytest.raises(ValueError):
+            _validate_weights({"coherence": 0.0, "volatility": 0.0})  # sums to 0
