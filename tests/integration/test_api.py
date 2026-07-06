@@ -11,7 +11,7 @@ import pytest
 os.environ.setdefault("CATS_API_KEY", "test-api-key")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://cats:cats@localhost:5432/cats_test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
-os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTE=")
+os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=")
 os.environ.setdefault("ENVIRONMENT", "test")
 
 try:

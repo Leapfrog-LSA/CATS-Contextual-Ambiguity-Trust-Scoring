@@ -117,6 +117,8 @@ async def purge_expired_audits(db: AsyncSession) -> None:
         cutoff = datetime.now(timezone.utc) - timedelta(days=settings.audit_retention_days)
         res = await db.execute(delete(AuditLog).where(AuditLog.timestamp < cutoff))
         await db.commit()
-        logger.info("purge_done", deleted=res.rowcount)
+        # DELETE returns a CursorResult; the base Result type mypy sees has no
+        # rowcount, so read it defensively.
+        logger.info("purge_done", deleted=getattr(res, "rowcount", -1))
     finally:
         await redis.delete("cats:purge_lock")
