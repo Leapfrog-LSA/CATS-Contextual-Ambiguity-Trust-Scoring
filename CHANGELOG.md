@@ -39,6 +39,46 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.3.1] — 2026-07-05
+
+### Fixed
+- **`CATS_WEIGHTS_FILE` and `CATS_API_KEYS` were silently ignored** — the
+  settings fields only matched the bare `WEIGHTS_FILE`/`API_KEYS` names, so
+  calibrated weights and multi-tenant keys configured as documented never
+  loaded. Both documented spellings are now accepted (validation aliases).
+- Gaming: corpora under 50 tokens no longer receive a spurious maximum
+  vocabulary-uniformity sub-score (+25 points); the sub-score is neutral (0).
+- `/health` no longer returns raw exception strings (could leak DSNs/internal
+  hostnames on an unauthenticated endpoint); details are logged instead.
+  The payload now includes the running version.
+- Audit purge uses a single `DELETE` statement instead of loading and deleting
+  expired rows one by one.
+- API version string was hardcoded at 1.2.0; now read from `cats.__version__`.
+
+### Added
+- `POST /v1/cats/contest/{contest_id}/resolve` — close a pending contest
+  (`upheld`/`rejected` + response, tenant-scoped, audit-logged): the GDPR
+  Art. 22 appeal flow now has its human-decision endpoint. Migration `003`
+  adds `trust_scores.engine_version`.
+- `/explain` flags rows scored under an older aggregation engine
+  (`engine_mismatch`) instead of silently re-decomposing them with current
+  semantics.
+- `TRUST_PROXY_HEADERS` setting: `X-Forwarded-For` is honoured only when
+  enabled (default true, matching the bundled nginx); rate limiting is now
+  keyed per API key (hashed) instead of per client IP.
+- Per-source-type silence thresholds table
+  (`signals/silence.py:SOURCE_TYPE_THRESHOLDS`; all defaults remain 72 h —
+  changing values requires recalibration).
+- Docker image now downloads the TextBlob corpora (world-readable
+  `NLTK_DATA`), so container sentiment matches `make nlp-download` installs.
+
+### Removed
+- Unused JWT machinery (`create_access_token`/`verify_token`/`init_jwt_keys`)
+  and the `python-jose` dependency: no route ever consumed tokens — auth is
+  API-key based. `cryptography` unpinned to `<50`.
+
+---
+
 ## [1.3.0] — 2026-07-05
 
 ### Added

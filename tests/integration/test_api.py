@@ -11,7 +11,7 @@ import pytest
 os.environ.setdefault("CATS_API_KEY", "test-api-key")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://cats:cats@localhost:5432/cats_test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
-os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTE=")
+os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=")
 os.environ.setdefault("ENVIRONMENT", "test")
 
 try:
@@ -158,6 +158,63 @@ class TestContestEndpoint:
             headers=api_headers,
         )
         assert r.status_code == 422
+
+    async def test_contest_resolution_flow(self, client, api_headers):
+        # evaluate -> contest -> resolve; a second resolve conflicts (409)
+        ev = await client.post(
+            "/v1/cats/evaluate",
+            json={
+                "source_id": "test:contest-flow",
+                "messages": [
+                    {"timestamp": "2026-01-01T08:00:00Z", "text": "Primo messaggio di prova sufficiente."},
+                    {"timestamp": "2026-01-01T09:00:00Z", "text": "Secondo messaggio di prova sufficiente."},
+                ],
+            },
+            headers=api_headers,
+        )
+        assert ev.status_code == 200
+        trace_id = ev.json()["trace_id"]
+
+        c = await client.post(
+            f"/v1/cats/contest/{trace_id}",
+            json={"reason": "The evaluation window missed recent activity."},
+            headers=api_headers,
+        )
+        assert c.status_code == 200
+        contest_id = c.json()["contest_id"]
+
+        res = await client.post(
+            f"/v1/cats/contest/{contest_id}/resolve",
+            json={"status": "upheld", "response": "Re-evaluated with fresh data; decision revised."},
+            headers=api_headers,
+        )
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "upheld"
+        assert body["resolved_at"]
+
+        again = await client.post(
+            f"/v1/cats/contest/{contest_id}/resolve",
+            json={"status": "rejected", "response": "Attempting to resolve twice should conflict."},
+            headers=api_headers,
+        )
+        assert again.status_code == 409
+
+    async def test_resolve_invalid_status_rejected(self, client, api_headers):
+        r = await client.post(
+            "/v1/cats/contest/999999/resolve",
+            json={"status": "maybe", "response": "Status outside the allowed set."},
+            headers=api_headers,
+        )
+        assert r.status_code == 422
+
+    async def test_resolve_unknown_contest_404(self, client, api_headers):
+        r = await client.post(
+            "/v1/cats/contest/999999/resolve",
+            json={"status": "rejected", "response": "No such contest exists in this tenant."},
+            headers=api_headers,
+        )
+        assert r.status_code == 404
 
 
 class TestStatsEndpoint:

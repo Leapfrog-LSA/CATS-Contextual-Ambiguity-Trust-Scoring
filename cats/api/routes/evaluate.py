@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from datetime import datetime, timezone
 from functools import partial
 
 import structlog
@@ -11,6 +12,8 @@ from cats.api.schemas import (
     BatchEvaluateRequest,
     BatchEvaluateResponse,
     ContestRequest,
+    ContestResolveRequest,
+    ContestResolveResponse,
     ContestResponse,
     EvaluateRequest,
     EvaluateResponse,
@@ -20,10 +23,10 @@ from cats.api.schemas import (
 from cats.audit.logger import log_contest, log_evaluation
 from cats.core.db import get_db
 from cats.core.metrics import EVALUATIONS, TRUST_SCORE
-from cats.core.models import TrustScore
+from cats.core.models import Contest, TrustScore
 from cats.core.security import api_key_bearer, get_client_ip, get_tenant
 from cats.pipeline.normalizer import normalize_messages
-from cats.scoring.engine import aggregate_score, determine_band, requires_human_review
+from cats.scoring.engine import ENGINE_VERSION, aggregate_score, determine_band, requires_human_review
 from cats.scoring.explainer import generate_explanation
 from cats.scoring.weights import get_dynamic_weights
 from cats.signals.coherence import compute_coherence
@@ -73,6 +76,7 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
             signals={s.name: {"value": s.value, "confidence": s.confidence} for s in signals},
             weights=weights,
             context_data=context,
+            engine_version=ENGINE_VERSION,
         )
     )
     await log_evaluation(
@@ -119,7 +123,19 @@ async def explain(trace_id: str, request: Request, db: AsyncSession = Depends(ge
     if not ts:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Trace ID not found")
     sigs = [SignalResult(name=n, value=d["value"], confidence=d["confidence"]) for n, d in ts.signals.items()]
-    return ExplainResponse(trace_id=trace_id, explanation=generate_explanation(ts.score, ts.band, sigs, ts.weights))
+    explanation = generate_explanation(ts.score, ts.band, sigs, ts.weights)
+    # Rows scored under an older aggregation engine cannot be faithfully
+    # re-decomposed with current semantics (v1.3 changed signal polarity):
+    # surface the mismatch instead of silently explaining a different score.
+    if ts.engine_version != ENGINE_VERSION:
+        explanation["engine_mismatch"] = {
+            "scored_with": ts.engine_version or "pre-1.3",
+            "explained_with": ENGINE_VERSION,
+            "note": "Score was computed under a previous aggregation engine; "
+            "the per-signal decomposition below uses current semantics and "
+            "may not sum to the stored score. Re-evaluate for a faithful explanation.",
+        }
+    return ExplainResponse(trace_id=trace_id, explanation=explanation)
 
 
 @router.post("/contest/{trace_id}", response_model=ContestResponse, dependencies=[Depends(api_key_bearer)])
@@ -129,7 +145,38 @@ async def contest(trace_id: str, body: ContestRequest, request: Request, db: Asy
     if not r.scalars().first():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Trace ID not found")
     cid = await log_contest(db, trace_id, body.reason, tenant_id=tenant_id)  # D-02: returns cid
+    await db.commit()
     return ContestResponse(contest_id=cid, status="pending")
+
+
+@router.post(
+    "/contest/{contest_id}/resolve",
+    response_model=ContestResolveResponse,
+    dependencies=[Depends(api_key_bearer)],
+)
+async def resolve_contest(
+    contest_id: int, body: ContestResolveRequest, request: Request, db: AsyncSession = Depends(get_db)
+):
+    """Close a pending contest (GDPR Art. 22: the human decision on the appeal)."""
+    tenant_id = get_tenant(request)
+    r = await db.execute(select(Contest).where(Contest.id == contest_id, Contest.tenant_id == tenant_id))
+    c = r.scalars().first()
+    if not c:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Contest not found")
+    if c.status != "pending":
+        raise HTTPException(status.HTTP_409_CONFLICT, f"Contest already resolved ({c.status})")
+    c.status = body.status
+    c.response = body.response
+    c.resolved_at = datetime.now(timezone.utc)
+    await log_evaluation(
+        db,
+        c.trace_id,
+        {"event": "contest_resolved", "contest_id": contest_id, "status": body.status},
+        ip=get_client_ip(request),
+        tenant_id=tenant_id,
+    )
+    await db.commit()
+    return ContestResolveResponse(contest_id=contest_id, status=c.status, resolved_at=c.resolved_at.isoformat())
 
 
 @router.post("/review/{trace_id}", dependencies=[Depends(api_key_bearer)])

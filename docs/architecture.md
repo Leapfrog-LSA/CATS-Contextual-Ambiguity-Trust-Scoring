@@ -3,7 +3,7 @@
 ## Pipeline Overview
 
 ```
-Client (HTTPS + JWT/API-Key)
+Client (HTTPS + API key)
     │
 nginx (TLS 1.3 · rate 30 req/min per IP)
     │
@@ -45,7 +45,9 @@ FastAPI (async, Python 3.11)
 
 ### Silence
 - Sorts message timestamps; computes inter-message gaps in hours
-- Anomaly = gap > threshold (default 72 h, configurable per source type)
+- Anomaly = gap > threshold (`signals/silence.py:SOURCE_TYPE_THRESHOLDS`, per
+  source type; currently 72 h for every type — changing a value alters signal
+  semantics and requires recalibration)
 - Score = (anomalies / gaps) × 100
 
 ### Gaming
@@ -110,7 +112,6 @@ relying on scores.**
 | API authentication | `Authorization: Bearer <key>` with dual-key rotation |
 | Rate limiting | Redis sliding-window Lua script, 30 req/min per IP |
 | Audit storage | AES-256-GCM encrypted JSONB in PostgreSQL |
-| JWT | RS256 with ephemeral keypair per process startup |
 | IP extraction | Safe `X-Forwarded-For` parsing (first IP only) |
 | Data retention | Nightly APScheduler job; distributed lock via Redis |
 | Container | Non-root user; read-only filesystem |

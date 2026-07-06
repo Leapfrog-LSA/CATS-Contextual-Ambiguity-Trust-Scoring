@@ -50,7 +50,7 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://cats:cats@localhost:5432/cats_test
       REDIS_URL: redis://localhost:6379/0
       CATS_API_KEY: test-api-key
-      AUDIT_ENCRYPTION_KEY: dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTE=
+      AUDIT_ENCRYPTION_KEY: dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=
       ENVIRONMENT: test
     steps:
       - uses: actions/checkout@v4

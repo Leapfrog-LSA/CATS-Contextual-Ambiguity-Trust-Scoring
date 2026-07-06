@@ -57,6 +57,17 @@ class ContestResponse(BaseModel):
     status: str
 
 
+class ContestResolveRequest(BaseModel):
+    status: str = Field(..., pattern="^(upheld|rejected)$")
+    response: str = Field(..., min_length=10, max_length=4000)
+
+
+class ContestResolveResponse(BaseModel):
+    contest_id: int
+    status: str
+    resolved_at: str
+
+
 class StatsResponse(BaseModel):
     total_evaluations: int
     average_score: float
@@ -66,4 +77,4 @@ class StatsResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     checks: Dict[str, str]
-    version: str = "1.2.0"
+    version: str

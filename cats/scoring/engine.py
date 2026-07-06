@@ -9,6 +9,11 @@ from cats.signals.types import SignalResult
 # and weights stay interpretable as non-negative importances.
 NEGATIVE_POLARITY = frozenset({"volatility", "silence", "gaming"})
 
+# Bump when aggregation semantics change (scores stop being comparable).
+# Stored on every TrustScore row so /explain can flag rows scored under an
+# older engine instead of silently re-decomposing them with current semantics.
+ENGINE_VERSION = "1.3"
+
 
 def reliability_value(signal: SignalResult) -> float:
     """Signal value on the reliability axis (negative-polarity signals inverted)."""
