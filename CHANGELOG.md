@@ -37,7 +37,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Signal-hardening so discriminative power does not rest on `silence` alone
   (the 28 Jul 2026 future-snapshot validation showed coherence/volatility/
   gaming carry little rank information even on 4 weeks of history —
-  `docs/calibration_findings_2026-07-28.md`)
+  `docs/calibration_findings_2026-07-28.md`). Investigation into a fifth
+  **domain-provenance** signal (`docs/signal_research_2026-07.md`,
+  `research/domain_provenance_spike.py`) shows it is orthogonal to the four
+  behavioural signals and closes the regular-cadence-clone gap (holdout
+  concordance 0.755 → 0.775); candidate for v2.0 pending calibration/re-validation.
+- Content-credibility signal for fake-news on ordinary domains (the low-tail
+  class domain structure cannot catch).
 - Full EU AI Act Annex IX documentation
 
 ### Changed
