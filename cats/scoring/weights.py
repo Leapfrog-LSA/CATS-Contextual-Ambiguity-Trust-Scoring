@@ -26,9 +26,14 @@ _STATIC_WEIGHTS: Dict[str, Dict[str, float]] = {
 
 
 def _validate_weights(w: Dict[str, float]) -> Dict[str, float]:
-    if abs(sum(w.values()) - 1.0) > 1e-6:
-        raise ValueError(f"Weights must sum to 1.0, got {sum(w.values())}")
-    return w
+    total = sum(w.values())
+    # Reject only genuinely malformed tables. A calibrated file rounds each
+    # weight independently, so a valid one can sum to e.g. 1.000001 — that must
+    # not be rejected (it would silently fall back to static weights). Accept a
+    # loose tolerance, then renormalise so downstream aggregation is exact.
+    if total <= 0 or abs(total - 1.0) > 1e-3:
+        raise ValueError(f"Weights must sum to ~1.0, got {total}")
+    return {k: v / total for k, v in w.items()}
 
 
 @functools.lru_cache(maxsize=1)
