@@ -46,14 +46,34 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   class domain structure cannot catch).
 - Full EU AI Act Annex IX documentation
 
+---
+
+## [1.4.0] — 2026-07-07
+
+### Added
+- Validated calibrated weights shipped as the recommended production table in
+  `data/calibrated_weights.json` — point `CATS_WEIGHTS_FILE` at it.
+- Cloud setup guide for Claude Code on the web (`docs/cloud_setup.md`):
+  environment setup script, CI-mirrored test env vars, and per-phase network
+  access for running linters and the test suite in a fresh cloud session.
+
 ### Changed
-- **Calibrated weights validated on a future snapshot (28 Jul 2026)** and
-  shipped as the recommended production table in `data/calibrated_weights.json`
-  (point `CATS_WEIGHTS_FILE` at it). Calibrated on the merged 02/03/05-Jul
-  snapshots, evaluated on the unseen 06-Jul snapshot: pairwise concordance
-  **0.755** (> 0.70 target), Spearman **+0.553**, 79.2% band agreement within
-  one band, low tail discriminating correctly. Accuracy declaration and
-  `docs/calibration_findings_2026-07-28.md` updated.
+- **Calibrated weights validated on a future snapshot (28 Jul 2026).**
+  Calibrated on the merged 02/03/05-Jul snapshots, evaluated on the unseen
+  06-Jul snapshot: pairwise concordance **0.755** (> 0.70 target), Spearman
+  **+0.553**, 79.2% band agreement within one band, low tail discriminating
+  correctly. Accuracy declaration and `docs/calibration_findings_2026-07-28.md`
+  updated.
+
+### Fixed
+- Calibrated weight files whose independently-rounded entries summed to just off
+  1.0 (e.g. 1.000001) were rejected by `_validate_weights`, silently falling
+  back to the static table so the calibrated weights never loaded. The check now
+  accepts a loose tolerance and renormalises, and rejects only genuinely
+  malformed tables (sum ≤ 0 or off by > 1e-3).
+- Audit purge reads the deleted-row count defensively (`getattr`) — the DELETE
+  `CursorResult` exposes `rowcount`, but the base `Result` type does not, which
+  broke the mypy CI check.
 
 ---
 
