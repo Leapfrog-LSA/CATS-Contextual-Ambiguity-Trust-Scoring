@@ -176,13 +176,24 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 
 ## Roadmap
 
-| Version  | Status | Key features                                                                                                       |
-| -------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
-| **v1.0** | ✅      | spaCy NER · 9-phase pipeline · GDPR API · Docker                                                                   |
-| **v1.1** | ✅      | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx                  |
-| **v1.2** | ✅      | Sentence-BERT coherence · explainer attribution · weight calibration                                               |
-| **v1.3** | ✅      | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation |
-| v2.0     | 2027   | AUC-ROC ≥ 0.78 · full EU AI Act Annex IV technical documentation                                                   |
+### Done
+
+| Version    | Status | Key features                                                                                                        |
+| ---------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| **v1.0**   | ✅      | spaCy NER · 9-phase pipeline · GDPR API · Docker                                                                    |
+| **v1.1**   | ✅      | BERT Italian sentiment · multi-tenant PostgreSQL · batch endpoint · Prometheus `/metrics` · nginx                   |
+| **v1.2**   | ✅      | Sentence-BERT coherence · explainer attribution · weight calibration                                                |
+| **v1.3**   | ✅      | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation · `cats.lite` + PyPI packaging |
+| **v1.3.1** | ✅      | `CATS_WEIGHTS_FILE`/`CATS_API_KEYS` alias fix · contest-resolution endpoint (GDPR Art. 22) · per-key rate limiting  |
+
+Already merged for the next release (unreleased): calibrated weights **validated on a future snapshot** (28 Jul 2026, holdout concordance 0.755 > 0.70 target) and shipped as the recommended production table in `data/calibrated_weights.json`; domain-provenance signal spike (`research/domain_provenance_spike.py`) showing +0.02 holdout concordance.
+
+### Pending — v2.0 (2027)
+
+1. **Signal hardening** — discriminative power currently rests on `silence` alone; the fifth **domain-provenance** signal is a v2.0 candidate pending calibration and re-validation (see `docs/signal_research_2026-07.md`).
+2. **Content-credibility signal** — catch fake news published on ordinary domains, which domain structure alone cannot detect.
+3. **AUC-ROC ≥ 0.78** on a larger validation set.
+4. **Full EU AI Act technical documentation** (Annex IV/IX).
 
 ***
 
