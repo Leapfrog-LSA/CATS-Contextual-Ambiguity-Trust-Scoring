@@ -135,6 +135,8 @@ Client (HTTPS + Bearer token)
    ├─ POST /v1/cats/batch                ← evaluate up to 50 sources at once
    ├─ GET  /v1/cats/explain/{trace_id}   ← GDPR Art.14/22
    ├─ POST /v1/cats/contest/{trace_id}   ← GDPR Art.22
+   ├─ POST /v1/cats/contest/{id}/resolve ← GDPR Art.22 (human decision)
+   ├─ POST /v1/cats/review/{trace_id}    ← flag for human review
    ├─ GET  /v1/cats/stats
    └─ GET  /health  /metrics
         │                │
@@ -158,6 +160,8 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/compliance.md](docs/compliance.md)     | GDPR + EU AI Act compliance                         |
 | [docs/eu\_ai\_act/](docs/eu_ai_act/)         | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
+| [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation (concordance 0.755)      |
+| [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |
 | [SECURITY.md](SECURITY.md)                   | Vulnerability reporting                             |
@@ -167,8 +171,9 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 ## Known Limitations (WP 4.1)
 
 * **NLP accuracy \~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
-* **Uncalibrated parameters**: thresholds are initial estimates; signal weights can now be empirically tuned with [`cats.calibration`](docs/calibration.md), but band thresholds remain unvalidated
-* **Small validation set (July 2026)**: calibration/validation currently rests on 50 RSS-labelled sources; see [calibration findings](docs/calibration_findings_2026-07.md) for the honest numbers (full-dataset concordance 0.78, holdout 0.71) and their caveats
+* **Partially calibrated parameters**: signal weights are empirically calibrated with [`cats.calibration`](docs/calibration.md) and validated on a future snapshot (`data/calibrated_weights.json`), but band thresholds and silence thresholds remain unvalidated initial estimates
+* **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [28 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
+* **Single dominant signal**: discrimination currently rests almost entirely on `silence` (holdout ρ −0.43; coherence/volatility/gaming carry ~no rank information) — an adversary publishing on a regular cadence would collapse scores toward chance; see [signal research](docs/signal_research_2026-07.md) for the v2.0 hardening work
 * **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
 * **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
 
