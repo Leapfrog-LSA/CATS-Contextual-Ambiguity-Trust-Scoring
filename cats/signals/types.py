@@ -41,3 +41,15 @@ class GamingResult(SignalResult):
     ttr_score: float = 0.0
     burst_score: float = 0.0
     vocab_score: float = 0.0
+
+
+@dataclass
+class DomainProvenanceResult(SignalResult):
+    # `value` is a 0-100 red-flag score (higher = more impersonation/clone
+    # signals) — a higher-is-worse signal, to be inverted at aggregation like
+    # volatility/silence/gaming when/if it is wired into scoring.
+    suspicious_tld: bool = False
+    free_host: bool = False
+    typosquat: bool = False
+    brand_on_bad_tld: bool = False
+    host: str = ""
