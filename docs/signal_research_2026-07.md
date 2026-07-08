@@ -99,3 +99,18 @@ failure mode that defeats silence.
 This spike is intentionally **not** wired into the production pipeline: adding a
 scoring signal changes band semantics and needs its own calibration and
 re-validation. The evidence above is to inform that decision, not pre-empt it.
+
+## Update — integrated (ENGINE 1.4)
+
+The maintainers approved integration. Domain-provenance ships **not** as a fifth
+weighted signal but as an **asymmetric post-aggregation penalty**
+(`score − 0.6 × domain_red_flag`, clamped at 0) — a symmetric weighted term
+would reward clean domains and inflate the low tail, since most fake-news lives
+on ordinary domains scoring 0. The four calibrated behavioural weights are
+unchanged. Re-validated through the *production* scoring path
+(`cats.scoring.engine` + `cats.signals.domain_provenance`) on the same future
+holdout: concordance **0.755 → 0.775**, Spearman **+0.553 → +0.595**, all three
+corrections low-reliability clones. Reproduce with
+`research/validate_domain_penalty.py`. See `docs/architecture.md` →
+*Domain-provenance penalty*. The content-credibility signal for the low-recall
+tail (fake-news on ordinary domains) remains the open work item.

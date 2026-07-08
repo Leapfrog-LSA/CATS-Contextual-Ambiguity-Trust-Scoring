@@ -70,3 +70,26 @@ def test_score_share_zero_total_is_safe():
     result = generate_explanation(0.0, "very_low", signals, weights)
     assert result["signals"][0]["score_share_pct"] == 0.0
     assert result["primary_driver"] == "coherence"
+
+
+def test_domain_penalty_is_reported_separately():
+    signals = [
+        SignalResult(name="coherence", value=70.0, confidence=0.8),
+        SignalResult(name="domain_provenance", value=65.0, confidence=1.0, metadata={"reasons": ["suspicious_tld"]}),
+    ]
+    weights = {"coherence": 1.0}
+    result = generate_explanation(30.0, "low", signals, weights)
+
+    # domain-provenance is a penalty, not a weighted signal: it must NOT appear
+    # in the behavioural decomposition.
+    assert [d["signal"] for d in result["signals"]] == ["coherence"]
+    penalty = result["domain_penalty"]
+    assert penalty["domain_red_flag_score"] == 65.0
+    assert penalty["penalty_applied"] == 39.0  # 0.6 * 65
+    assert penalty["metadata"]["reasons"] == ["suspicious_tld"]
+
+
+def test_no_domain_penalty_block_without_domain_signal():
+    signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
+    result = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})
+    assert "domain_penalty" not in result

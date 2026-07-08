@@ -35,3 +35,23 @@ def test_score_rejects_empty_messages():
         score([], load_nlp=False)
     with pytest.raises(ValueError):
         score([{"timestamp": "", "text": ""}], load_nlp=False)
+
+
+def test_clone_url_penalises_and_reports_domain():
+    base = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
+    clone = score(_MESSAGES, source_type="news", load_nlp=False, url="https://spiegel.ltd")
+    assert clone["trust_score"] < base["trust_score"]
+    assert "domain_provenance" in clone["signals"]
+    assert "domain_penalty" in clone["explanation"]
+    assert clone["explanation"]["domain_penalty"]["domain_red_flag_score"] == 65.0
+
+
+def test_clean_url_does_not_change_score():
+    base = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
+    clean = score(_MESSAGES, source_type="news", load_nlp=False, explain=False, url="https://www.corriere.it")
+    assert clean["trust_score"] == base["trust_score"]
+
+
+def test_no_url_keeps_four_signals():
+    result = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
+    assert set(result["signals"]) == {"coherence", "volatility", "silence", "gaming"}

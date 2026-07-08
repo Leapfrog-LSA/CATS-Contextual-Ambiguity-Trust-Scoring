@@ -33,15 +33,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — v2.0 (2027)
 
+### Added
+- **Domain-provenance penalty (ENGINE 1.4).** Signal-hardening so discriminative
+  power no longer rests on `silence` alone: impersonation/clone domains
+  (rare/cheap TLDs, free-hosting subdomains, brand typo-squats) now lower a
+  source's score via an asymmetric post-aggregation penalty
+  (`score − 0.6 × domain_red_flag`, clamped at 0), applied when a source URL is
+  supplied (`context["url"]`, `cats.lite.score(url=…)`). Red-flags come from
+  general domain structure only, never the labelled disinfo set. Validated on
+  the 28 Jul 2026 future holdout: pairwise concordance **0.755 → 0.775**, every
+  correction a low-reliability clone (reproduce via
+  `research/validate_domain_penalty.py`). The four calibrated behavioural weights
+  are unchanged; `/explain` reports the penalty separately. Not a weighted fifth
+  signal — a symmetric term would reward clean domains and inflate the low tail
+  (fake-news on ordinary domains). See `docs/architecture.md`,
+  `docs/signal_research_2026-07.md`.
+
 ### Planned
-- Signal-hardening so discriminative power does not rest on `silence` alone
-  (the 28 Jul 2026 future-snapshot validation showed coherence/volatility/
-  gaming carry little rank information even on 4 weeks of history —
-  `docs/calibration_findings_2026-07-28.md`). Investigation into a fifth
-  **domain-provenance** signal (`docs/signal_research_2026-07.md`,
-  `research/domain_provenance_spike.py`) shows it is orthogonal to the four
-  behavioural signals and closes the regular-cadence-clone gap (holdout
-  concordance 0.755 → 0.775); candidate for v2.0 pending calibration/re-validation.
 - Content-credibility signal for fake-news on ordinary domains (the low-tail
   class domain structure cannot catch).
 - Full EU AI Act Annex IX documentation

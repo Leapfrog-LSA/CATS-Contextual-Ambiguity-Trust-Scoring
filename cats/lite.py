@@ -48,11 +48,17 @@ for _k, _v in _LITE_ENV_DEFAULTS.items():
     os.environ.setdefault(_k, _v)
 
 from cats.pipeline.normalizer import normalize_messages  # noqa: E402
-from cats.scoring.engine import aggregate_score, determine_band, requires_human_review  # noqa: E402
+from cats.scoring.engine import (  # noqa: E402
+    aggregate_score,
+    apply_domain_penalty,
+    determine_band,
+    requires_human_review,
+)
 from cats.scoring.explainer import generate_explanation  # noqa: E402
 from cats.scoring.weights import get_dynamic_weights  # noqa: E402
 from cats.signals import coherence  # noqa: E402
 from cats.signals.coherence import compute_coherence  # noqa: E402
+from cats.signals.domain_provenance import compute_domain_provenance  # noqa: E402
 from cats.signals.gaming import compute_gaming  # noqa: E402
 from cats.signals.silence import compute_silence  # noqa: E402
 from cats.signals.types import SignalResult  # noqa: E402
@@ -88,12 +94,15 @@ def score(
     weights: Optional[Dict[str, float]] = None,
     explain: bool = True,
     load_nlp: bool = True,
+    url: Optional[str] = None,
 ) -> Dict:
-    """Score one source's message history with the CATS 4-signal pipeline.
+    """Score one source's message history with the CATS signal pipeline.
 
     ``messages``: list of ``{"timestamp": ISO-8601, "text": str}`` dicts.
     ``weights``: optional signal-name -> weight override; defaults to the
     static/calibrated table for ``source_type`` (``CATS_WEIGHTS_FILE`` honoured).
+    ``url``: optional source URL/domain. When given, the domain-provenance
+    penalty is applied (impersonation/clone red-flags only lower the score).
 
     Returns ``{trust_score, band, requires_human_review, signals, explanation}``.
     """
@@ -103,14 +112,18 @@ def score(
     if not msgs:
         raise ValueError("no valid messages after normalisation (need timestamp + text)")
 
-    signals: List[SignalResult] = [
+    behavioural: List[SignalResult] = [
         compute_coherence(msgs),
         compute_volatility(msgs),
         compute_silence(msgs, source_type),
         compute_gaming(msgs),
     ]
     w = weights or get_dynamic_weights({"source_type": source_type})
-    value = aggregate_score(signals, w)
+    value = aggregate_score(behavioural, w)
+
+    domain = compute_domain_provenance(url or "")
+    value = apply_domain_penalty(value, domain)
+    signals: List[SignalResult] = behavioural + ([domain] if domain.confidence > 0 else [])
     band = determine_band(value)
     result = {
         "trust_score": round(value, 2),
