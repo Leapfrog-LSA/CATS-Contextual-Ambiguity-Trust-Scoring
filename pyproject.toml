@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cats-scoring"
-version = "1.4.0"
+version = "1.5.0"
 description = "Contextual Ambiguity & Trust Scoring — trust intelligence for OSINT sources"
 readme = "README.md"
 license = {text = "MIT"}
