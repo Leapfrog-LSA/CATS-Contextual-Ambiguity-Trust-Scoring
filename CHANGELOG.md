@@ -33,6 +33,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — v2.0 (2027)
 
+### Planned
+- Content-credibility signal for fake-news on ordinary domains (the low-tail
+  class domain structure cannot catch).
+- Full EU AI Act Annex IX documentation
+
+---
+
+## [1.5.0] — 2026-07-08
+
 ### Added
 - **Domain-provenance penalty (ENGINE 1.4).** Signal-hardening so discriminative
   power no longer rests on `silence` alone: impersonation/clone domains
@@ -49,10 +58,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (fake-news on ordinary domains). See `docs/architecture.md`,
   `docs/signal_research_2026-07.md`.
 
-### Planned
-- Content-credibility signal for fake-news on ordinary domains (the low-tail
-  class domain structure cannot catch).
-- Full EU AI Act Annex IX documentation
+### Changed
+- **`ENGINE_VERSION` 1.3 → 1.4.** Scores of sources evaluated with a red-flagged
+  URL are not comparable with earlier engines; `/explain` flags rows scored
+  under a previous engine. Sources evaluated without a URL are unaffected.
 
 ---
 
