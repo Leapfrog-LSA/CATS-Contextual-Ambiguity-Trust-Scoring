@@ -26,10 +26,17 @@ from cats.core.metrics import EVALUATIONS, TRUST_SCORE
 from cats.core.models import Contest, TrustScore
 from cats.core.security import api_key_bearer, get_client_ip, get_tenant
 from cats.pipeline.normalizer import normalize_messages
-from cats.scoring.engine import ENGINE_VERSION, aggregate_score, determine_band, requires_human_review
+from cats.scoring.engine import (
+    ENGINE_VERSION,
+    aggregate_score,
+    apply_domain_penalty,
+    determine_band,
+    requires_human_review,
+)
 from cats.scoring.explainer import generate_explanation
 from cats.scoring.weights import get_dynamic_weights
 from cats.signals.coherence import compute_coherence
+from cats.signals.domain_provenance import compute_domain_provenance
 from cats.signals.gaming import compute_gaming
 from cats.signals.silence import compute_silence
 from cats.signals.types import SignalResult
@@ -57,9 +64,19 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
         loop.run_in_executor(None, partial(compute_silence, msgs, context.get("source_type", "social"))),
         loop.run_in_executor(None, compute_gaming, msgs),
     )
-    signals: list[SignalResult] = list(raw_signals)
+    behavioural: list[SignalResult] = list(raw_signals)
     weights = get_dynamic_weights(context)
-    score = aggregate_score(signals, weights)
+    score = aggregate_score(behavioural, weights)
+
+    # Domain-provenance is an asymmetric penalty, not a weighted signal (see
+    # engine.apply_domain_penalty): computed from the source URL when supplied,
+    # it only lowers the score for impersonation/clone domains. It is cheap
+    # (pure string structure, no NLP), so it runs inline. Included in the
+    # reported/stored signals only when a URL was actually assessed.
+    domain = compute_domain_provenance(str(context.get("url") or ""))
+    score = apply_domain_penalty(score, domain)
+    signals: list[SignalResult] = behavioural + ([domain] if domain.confidence > 0 else [])
+
     band = determine_band(score)
     review = requires_human_review(score, band, signals)
 

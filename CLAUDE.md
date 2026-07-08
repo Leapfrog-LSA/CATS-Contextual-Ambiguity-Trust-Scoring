@@ -37,6 +37,12 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   disinformation source *highest*.
 - **Weights sum to ~1.0** and are renormalised in `cats/scoring/weights.py`; the
   calibrated production table is `data/calibrated_weights.json` (`CATS_WEIGHTS_FILE`).
+- **Domain-provenance is a penalty, not a weighted signal.** It is *not* in
+  `SIGNAL_NAMES` and *not* calibrated. `apply_domain_penalty` subtracts
+  `0.6 × domain_red_flag` after the weighted mean (ENGINE 1.4), only ever
+  lowering a clone/impersonation domain's score. Do not add it to `SIGNAL_NAMES`
+  or the weight table — a symmetric weighted term would reward clean domains and
+  inflate the low tail. See `docs/architecture.md` → *Domain-provenance penalty*.
 - **Changing band semantics requires recalibration + re-validation.** Adding or
   removing a signal, or changing thresholds (band cutoffs 80/60/40/20, silence
   72 h in `signals/silence.py`), invalidates the calibrated weights. Recalibrate

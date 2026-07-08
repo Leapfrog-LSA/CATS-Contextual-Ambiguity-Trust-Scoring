@@ -105,6 +105,34 @@ invalid — recalibrate (see [calibration.md](calibration.md)). The static
 matrix above remains an unvalidated starting point: **always calibrate before
 relying on scores.**
 
+### Domain-provenance penalty (ENGINE 1.4)
+
+The four behavioural signals read a source's *messages* and are structurally
+blind to infrastructure impersonation — clone domains (`spiegel.ltd`,
+`bild.pics`) whose content is plausible but whose *domain* is the deception.
+A source that publishes on a regular cadence defeats `silence`, the only
+strongly informative behavioural signal ([signal_research_2026-07.md](signal_research_2026-07.md)).
+
+**Decision (ENGINE 1.4): domain-provenance is applied as an *asymmetric
+penalty*, not a fifth weighted signal.** After the behavioural weighted mean,
+`apply_domain_penalty` subtracts `0.6 × domain_red_flag_score` (clamped at 0),
+where the red-flag score (0–100) comes from general domain structure only
+(rare/cheap TLDs, free-hosting subdomains, edit distance to a fixed brand list —
+never the labelled disinfo set). It is computed only when the source URL is
+supplied (`context["url"]` / `cats.lite.score(url=…)`), so it is backward
+compatible.
+
+Why a penalty and not a weighted signal: a symmetric weighted term would treat a
+clean domain (red-flag 0) as maximally reliable and *raise* its score — but most
+fake-news lives on ordinary domains scoring 0, so that would wrongly inflate the
+low tail. The penalty only ever lowers scores, for impersonation/clone domains.
+Coefficient `0.6` validated on the 28-Jul-2026 future holdout: pairwise
+concordance **0.755 → 0.775** with every correction landing on a low-reliability
+clone (reproduce via `research/validate_domain_penalty.py`). The four calibrated
+behavioural weights are unchanged. Scores of sources evaluated with a
+red-flagged URL are not comparable with ENGINE 1.3 scores (`/explain` flags the
+mismatch).
+
 ## Security Design
 
 | Control | Implementation |

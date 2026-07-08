@@ -1,6 +1,12 @@
 import pytest
 
-from cats.scoring.engine import aggregate_score, determine_band, requires_human_review
+from cats.scoring.engine import (
+    DOMAIN_PENALTY_WEIGHT,
+    aggregate_score,
+    apply_domain_penalty,
+    determine_band,
+    requires_human_review,
+)
 from cats.scoring.weights import DEFAULT_WEIGHTS, get_dynamic_weights
 from cats.signals.types import SignalResult
 
@@ -116,3 +122,27 @@ class TestValidateWeights:
             _validate_weights({"coherence": 0.5, "volatility": 0.9})  # sums to 1.4
         with pytest.raises(ValueError):
             _validate_weights({"coherence": 0.0, "volatility": 0.0})  # sums to 0
+
+
+class TestApplyDomainPenalty:
+    def _domain(self, value, confidence=1.0):
+        return SignalResult(name="domain_provenance", value=value, confidence=confidence)
+
+    def test_clean_domain_is_no_op(self):
+        # A clean domain (value 0) must never change the score — the penalty is
+        # asymmetric and only lowers scores for red-flag domains.
+        assert apply_domain_penalty(73.0, self._domain(0.0)) == 73.0
+
+    def test_clone_domain_is_penalised(self):
+        # spiegel.ltd scores 65 -> penalty 0.6*65 = 39.
+        assert abs(apply_domain_penalty(73.0, self._domain(65.0)) - (73.0 - DOMAIN_PENALTY_WEIGHT * 65.0)) < 1e-9
+
+    def test_penalty_clamps_at_zero(self):
+        assert apply_domain_penalty(10.0, self._domain(100.0)) == 0.0
+
+    def test_no_domain_passthrough(self):
+        assert apply_domain_penalty(55.0, None) == 55.0
+
+    def test_zero_confidence_domain_passthrough(self):
+        # No URL supplied -> zero confidence -> score unchanged.
+        assert apply_domain_penalty(55.0, self._domain(0.0, confidence=0.0)) == 55.0
