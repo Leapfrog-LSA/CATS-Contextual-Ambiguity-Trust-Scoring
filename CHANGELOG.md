@@ -39,6 +39,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   v1.5.0/ENGINE 1.4, strengths, open risks (single-signal discrimination,
   small validation set, unvalidated thresholds, pending legal TODOs, minor
   repo inconsistencies) and a 15-point phased roadmap.
+- The `SessionStart` hook promised by `docs/cloud_setup.md` now actually ships
+  (`.claude/hooks/session-start.sh` + `.claude/settings.json`): cloud-only,
+  idempotent fallback for the environment setup script — installs the dev/test
+  stack and the Italian NLP assets on a cold container, fast no-op on a warm one.
+
+### Fixed
+- Alembic migrations now honour the `DATABASE_URL` environment variable
+  (falling back to `alembic.ini`): `alembic upgrade head` / `make db-migrate`
+  previously always targeted the hardcoded localhost `cats` database and
+  failed in the CI/cloud test environments, which configure `cats_test`.
+- `CONTRIBUTING.md` no longer directs pull requests at the non-existent
+  `develop` branch (PRs target `main`); the inert `develop` push trigger was
+  removed from CI.
+- README license links pointed at `LICENSE/` (404 on GitHub); now `LICENSE`.
+- The future-snapshot validation was misdated "28 July 2026" in the findings
+  title and its citations — it ran on **6 July 2026** (commit `2b41982`).
+  Living docs and code comments now carry the correct date; the findings
+  filename and released changelog entries are kept for link stability.
 
 ### Planned
 - Content-credibility signal for fake-news on ordinary domains (the low-tail

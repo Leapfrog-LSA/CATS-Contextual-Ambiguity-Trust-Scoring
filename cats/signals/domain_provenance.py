@@ -4,7 +4,7 @@ The four behavioural signals (coherence, volatility, silence, gaming) all read a
 source's *messages*. They are structurally blind to infrastructure-based
 impersonation — Doppelganger-style clones (`spiegel.ltd`, `bild.pics`,
 `ansa.ltd`) whose *content* is plausible but whose *domain* is the deception. The
-28-Jul-2026 future-snapshot validation showed CATS's discrimination rests almost
+06-Jul-2026 future-snapshot validation showed CATS's discrimination rests almost
 entirely on `silence`, so a clone that simply publishes on a regular cadence
 defeats the only informative behavioural signal. A signal computed from the
 domain is orthogonal to the behavioural four and closes exactly that gap

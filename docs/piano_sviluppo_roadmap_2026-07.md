@@ -115,6 +115,11 @@ compilarle (regola di repo).
 | c | `docs/cloud_setup.md` afferma che la repo «spedisce» un hook `SessionStart` in `.claude/hooks/session-start.sh`, ma la directory `.claude/` non esiste | `docs/cloud_setup.md` §1 |
 | d | Il link licenza del README punta a `LICENSE/` (con slash: 404 su GitHub); la datazione "28 luglio" dei findings è successiva alla release 1.5.0 (8 lug) che li cita | `README.md`, `docs/calibration_findings_2026-07-28.md` |
 
+> **Aggiornamento (9 lug 2026):** tutte e quattro le incoerenze sono state
+> risolte con la Fase A della roadmap (stesso branch di questo documento). La
+> data reale della validazione è il **6 luglio 2026** (commit `2b41982`); il
+> nome file dei findings resta invariato per stabilità dei link.
+
 ## 4. Principi del piano (vincoli non negoziabili)
 
 - **Ogni modifica alla semantica dello scoring** (segnali, soglie, coefficienti)
@@ -130,18 +135,19 @@ compilarle (regola di repo).
 
 ## 5. Roadmap
 
-### Fase A — Igiene di repository (v1.5.x, effort basso, subito)
+### Fase A — Igiene di repository (v1.5.x, effort basso) — ✅ completata il 9 lug 2026
 
-1. **Allineare `CONTRIBUTING.md` al flusso reale**: PR verso `main`, rimozione
+1. ✅ **Allineare `CONTRIBUTING.md` al flusso reale**: PR verso `main`, rimozione
    dei riferimenti a `develop` (anche dal trigger `push` della CI, oggi inerte).
-2. **Far onorare `DATABASE_URL` ad Alembic** (`alembic/env.py`), così
+2. ✅ **Far onorare `DATABASE_URL` ad Alembic** (`alembic/env.py`), così
    `make db-migrate` e la procedura di `docs/cloud_setup.md` funzionano su
    qualunque database configurato, non solo sul DB `cats` hardcoded.
-3. **Aggiungere l'hook `.claude/hooks/session-start.sh` + `.claude/settings.json`
-   promessi da `docs/cloud_setup.md`** (o correggere la guida), così le sessioni
-   cloud fredde si auto-configurano davvero.
-4. **Micro-fix documentali**: link `LICENSE/` → `LICENSE` nel README; chiarire
-   la data dei findings "2026-07-28" (refuso probabile per 28 giu / 8 lug).
+3. ✅ **Aggiungere l'hook `.claude/hooks/session-start.sh` + `.claude/settings.json`
+   promessi da `docs/cloud_setup.md`**, così le sessioni cloud fredde si
+   auto-configurano davvero (idempotente, solo cloud, fallback dello script di setup).
+4. ✅ **Micro-fix documentali**: link `LICENSE/` → `LICENSE` nel README; datazione
+   dei findings corretta al **6 lug 2026** (data del commit di validazione) nei
+   documenti vivi e nei commenti del codice, nome file invariato per i link.
 
 ### Fase B — Dati e misura (continua, prerequisito di tutto il resto)
 
@@ -198,7 +204,7 @@ compilarle (regola di repo).
 
 ---
 
-**Sequenza consigliata**: A subito (una PR, mezza giornata); B parte ora e non
+**Sequenza consigliata**: A completata (9 lug 2026); B parte ora e non
 si ferma; C in ordine 7→8→9→10 con 11 come spike opzionale; D quando B ha
 prodotto un holdout ≥ 100 sorgenti; E appena disponibile l'interlocutore
 legale. Il criterio che tiene insieme tutto: **nessun segnale nuovo entra in

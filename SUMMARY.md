@@ -11,7 +11,7 @@
   * [CATS Architecture](docs/architecture.md)
   * [Weight Calibration](docs/calibration.md)
   * [Calibration findings — July 2026 snapshots](docs/calibration_findings_2026-07.md)
-  * [Future-snapshot validation — 28 July 2026](docs/calibration_findings_2026-07-28.md)
+  * [Future-snapshot validation — 6 July 2026](docs/calibration_findings_2026-07-28.md)
   * [Signal discriminative power — investigation](docs/signal_research_2026-07.md)
   * [CATS Compliance Documentation](docs/compliance.md)
   * [CATS — EU AI Act Conformity Documentation](docs/eu_ai_act/README.md)

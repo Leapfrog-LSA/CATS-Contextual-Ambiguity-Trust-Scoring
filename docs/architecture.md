@@ -126,7 +126,7 @@ Why a penalty and not a weighted signal: a symmetric weighted term would treat a
 clean domain (red-flag 0) as maximally reliable and *raise* its score — but most
 fake-news lives on ordinary domains scoring 0, so that would wrongly inflate the
 low tail. The penalty only ever lowers scores, for impersonation/clone domains.
-Coefficient `0.6` validated on the 28-Jul-2026 future holdout: pairwise
+Coefficient `0.6` validated on the 06-Jul-2026 future holdout: pairwise
 concordance **0.755 → 0.775** with every correction landing on a low-reliability
 clone (reproduce via `research/validate_domain_penalty.py`). The four calibrated
 behavioural weights are unchanged. Scores of sources evaluated with a

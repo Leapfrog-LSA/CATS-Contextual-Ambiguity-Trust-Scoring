@@ -226,7 +226,7 @@ CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json   # e.g. data/calibrated_weig
 it per source-type group, falling back to the static estimates when the setting
 is unset or the file is missing/invalid.
 
-> **Validated for production (28 Jul 2026).** `data/calibrated_weights.json`
+> **Validated for production (6 Jul 2026).** `data/calibrated_weights.json`
 > was validated on a **future** snapshot the calibrator never saw: pairwise
 > concordance **0.755** (> 0.70), Spearman **+0.553**, band agreement 79.2%
 > within one band, with the low tail discriminating correctly (see

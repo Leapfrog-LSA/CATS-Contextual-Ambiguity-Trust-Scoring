@@ -1,7 +1,7 @@
 """Research spike (task #8): does a domain-provenance signal add discriminative
 power beyond the four behavioural signals?
 
-Motivation: the 28-Jul future-snapshot validation showed CATS's discrimination
+Motivation: the 6-Jul future-snapshot validation showed CATS's discrimination
 rests almost entirely on `silence` (holdout rho -0.43); coherence/volatility/
 gaming are near zero even on four weeks of history. A source that publishes on
 a regular cadence therefore defeats the only informative signal. This spike
