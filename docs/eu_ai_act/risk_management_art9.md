@@ -23,9 +23,9 @@ Likelihood/impact: Low / Medium / High. Pre-seeded — extend and quantify.
 |---|---|---|---|---|---|
 | R1 | **Over-reliance**: deployer treats ordinal score as ground truth | High | High | `requires_review` flag; WP 4.3 disclaimer on every `/explain`; "not sole basis" in docs | Instructions for use must state this explicitly (Art. 13) |
 | R2 | **NLP inaccuracy** (~55–62% default) mis-ranks a source | Medium | High | Optional BERT/Sentence-BERT backends; confidence per signal; calibration | Empirical validation pending (WP 4.1) → §Art.15 |
-| R3 | **Language degradation** on non-Italian content | High | Medium | Italian-optimised models documented as a limitation | Detect/flag non-Italian input — TODO |
-| R4 | **Adversarial gaming** evades the gaming signal | Medium | Medium | Gaming signal (repetition/TTR/burst/vocab) | Adversarial robustness testing — TODO |
-| R5 | **Small-sample instability** (few messages) yields unstable scores | Medium | Medium | Min message count via schema; confidence values | Define/expose a minimum-evidence threshold — TODO |
+| R3 | **Language degradation** on non-Italian content | High | Medium | Italian-optimised models documented as a limitation | Detect/flag non-Italian input — TODO (current degrade-silently behaviour pinned in `tests/unit/test_adversarial.py`) |
+| R4 | **Adversarial gaming** evades the gaming signal | Medium | Medium | Gaming signal (repetition/TTR/burst/vocab); domain-provenance penalty (ENGINE 1.4) for clone domains | Regression suite `tests/unit/test_adversarial.py` pins the known evasion (regular cadence neutralises `silence`) and the counter-measure; content-level evasion on clean domains still open (roadmap: content-credibility signal) |
+| R5 | **Small-sample instability** (few messages) yields unstable scores | Medium | Medium | Per-signal confidence values | Define/expose a minimum-evidence threshold — TODO. The schema floor is **one** message, and a single message currently aggregates to a "high" band at zero confidence (pinned in `tests/unit/test_adversarial.py`) |
 | R6 | **Uncalibrated band thresholds** misassign bands | Medium | Medium | Calibration tunes weights | Thresholds remain estimates (WP 4.1) — validate |
 | R7 | **Bias** against source types / regions / languages | Medium | High | source-type aware thresholds | Bias examination — see `data_governance_art10.md` |
 | R8 | **Security / data exposure** | Low | High | TLS 1.3, API-key+JWT auth, rate limiting, AES-256 audit, tenant isolation, non-root | Pen-test / threat model — TODO |
@@ -66,5 +66,9 @@ Order of measures: eliminate/reduce by design → mitigate → provide informati
 
 - Unit/integration tests in `tests/` (signals, scoring, explainer, security,
   schemas, calibration, API).
-- TODO: add risk-driven test cases (adversarial gaming, non-Italian input,
-  minimal-sample inputs) and record results in §Art.15 of the Annex IV doc.
+- Risk-driven adversarial cases for R3/R4/R5 live in
+  `tests/unit/test_adversarial.py` (regular-cadence evasion of `silence`,
+  spam/burst gaming, minimal-sample instability, non-Italian input): they pin
+  current behaviour — including the documented weaknesses — so hardening or
+  regressions surface as test changes.
+- TODO: record the adversarial-testing results in §Art.15 of the Annex IV doc.

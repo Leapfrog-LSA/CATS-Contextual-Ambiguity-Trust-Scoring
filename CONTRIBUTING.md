@@ -22,7 +22,7 @@ make test                     # all tests
 3. Add or update tests in `tests/unit/` and/or `tests/integration/`
 4. Run `make lint` and `make test` — both must pass
 5. Update `CHANGELOG.md` under `[Unreleased]`
-6. Open a Pull Request against `develop`
+6. Open a Pull Request against `main` (the default branch; CI runs on PRs to `main`)
 
 ## Code standards
 

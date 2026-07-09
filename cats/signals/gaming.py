@@ -37,6 +37,12 @@ def _vocab_diversity(tokens: List[str]) -> float:
     # Below the sample-size floor there is no evidence of vocabulary collapse:
     # return the neutral 0.0 (returning 1.0 here would hand every short corpus
     # a spurious +25 gaming points).
+    #
+    # KNOWN REDUNDANCY: above the floor this equals the ttr sub-score
+    # (both are 1 - unique/total), so the gaming mean double-weights TTR —
+    # measured on the July 2026 snapshots in docs/signal_diagnosis_2026-07.md.
+    # Replacing it with a distinct heuristic changes signal semantics and
+    # requires recalibration + future-holdout revalidation; do not "fix" inline.
     if len(tokens) < 50:
         return 0.0
     return 1.0 - min(len(set(tokens)) / len(tokens), 1.0)

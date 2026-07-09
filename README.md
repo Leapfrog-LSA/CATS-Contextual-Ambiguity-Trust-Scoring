@@ -2,7 +2,7 @@
 
 > **Trust intelligence for OSINT sources — not fact-checking, but source reliability over time.**
 
-[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions) [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE/) [![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md) [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
+[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions) [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md) [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
 
 ***
 
@@ -162,6 +162,8 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
 | [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation (concordance 0.755)      |
 | [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
+| [docs/signal\_diagnosis\_2026-07.md](docs/signal_diagnosis_2026-07.md) | Signal ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility+gaming are dead weight |
+| [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |
 | [SECURITY.md](SECURITY.md)                   | Vulnerability reporting                             |
@@ -172,7 +174,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 
 * **NLP accuracy \~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
 * **Partially calibrated parameters**: signal weights are empirically calibrated with [`cats.calibration`](docs/calibration.md) and validated on a future snapshot (`data/calibrated_weights.json`), but band thresholds and silence thresholds remain unvalidated initial estimates
-* **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [28 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
+* **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [6 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
 * **Single dominant signal**: discrimination currently rests almost entirely on `silence` (holdout ρ −0.43; coherence/volatility/gaming carry ~no rank information) — an adversary publishing on a regular cadence would collapse scores toward chance; see [signal research](docs/signal_research_2026-07.md) for the v2.0 hardening work
 * **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
 * **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
@@ -191,7 +193,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | **v1.3**   | ✅      | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation · `cats.lite` + PyPI packaging |
 | **v1.3.1** | ✅      | `CATS_WEIGHTS_FILE`/`CATS_API_KEYS` alias fix · contest-resolution endpoint (GDPR Art. 22) · per-key rate limiting  |
 
-Already merged for the next release (unreleased): calibrated weights **validated on a future snapshot** (28 Jul 2026, holdout concordance 0.755 > 0.70 target) and shipped as the recommended production table in `data/calibrated_weights.json`; domain-provenance signal spike (`research/domain_provenance_spike.py`) showing +0.02 holdout concordance.
+Already merged for the next release (unreleased): calibrated weights **validated on a future snapshot** (6 Jul 2026, holdout concordance 0.755 > 0.70 target) and shipped as the recommended production table in `data/calibrated_weights.json`; domain-provenance signal spike (`research/domain_provenance_spike.py`) showing +0.02 holdout concordance.
 
 ### Pending — v2.0 (2027)
 
@@ -204,4 +206,4 @@ Already merged for the next release (unreleased): calibrated weights **validated
 
 ## License
 
-[MIT](LICENSE/) — technical@cats-system.org
+[MIT](LICENSE) — technical@cats-system.org

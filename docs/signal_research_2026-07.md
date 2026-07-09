@@ -1,6 +1,6 @@
 # Signal discriminative power — investigation (task #8)
 
-The 28-Jul future-snapshot validation ([findings](calibration_findings_2026-07-28.md))
+The 6-Jul future-snapshot validation ([findings](calibration_findings_2026-07-28.md))
 passed (holdout concordance 0.755) but showed CATS's discrimination rests almost
 entirely on **one** of the four signals:
 

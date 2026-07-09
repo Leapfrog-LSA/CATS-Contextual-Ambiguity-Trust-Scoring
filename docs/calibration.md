@@ -226,7 +226,7 @@ CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json   # e.g. data/calibrated_weig
 it per source-type group, falling back to the static estimates when the setting
 is unset or the file is missing/invalid.
 
-> **Validated for production (28 Jul 2026).** `data/calibrated_weights.json`
+> **Validated for production (6 Jul 2026).** `data/calibrated_weights.json`
 > was validated on a **future** snapshot the calibrator never saw: pairwise
 > concordance **0.755** (> 0.70), Spearman **+0.553**, band agreement 79.2%
 > within one band, with the low tail discriminating correctly (see
@@ -236,6 +236,13 @@ is unset or the file is missing/invalid.
 > coherence/volatility/gaming still carry little rank information (roadmap
 > item), so re-validate before relying on CATS against an adversary who can
 > manage their publishing cadence.
+>
+> **Backend requirement:** these weights were calibrated with the **SBERT**
+> coherence backend, and the ablation diagnosis
+> ([signal_diagnosis_2026-07.md](signal_diagnosis_2026-07.md)) shows coherence
+> is the second-largest contributor to the validated concordance (LOSO
+> −0.139). Deploy them with `COHERENCE_BACKEND=sbert`; with the default NER
+> backend (or a missing spaCy model) that contribution is forfeited.
 
 ## 4. Evaluate scoring quality (eval harness)
 

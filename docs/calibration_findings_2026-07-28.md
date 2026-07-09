@@ -1,4 +1,10 @@
-# Future-snapshot validation — 28 July 2026
+# Future-snapshot validation — 6 July 2026
+
+> **Dating note.** This validation was run on **6 July 2026** (commit
+> `2b41982`, on the 2026-07-06 holdout snapshot). The original title and this
+> file's name said "28 July" — a dating slip that propagated into other
+> documents before it was caught. The filename (and the released CHANGELOG
+> entries that cite it) are kept as-is for link stability.
 
 This is the honest temporal validation the earlier findings deferred: calibrate
 on **past** snapshots only, then evaluate on a **later snapshot the calibrator

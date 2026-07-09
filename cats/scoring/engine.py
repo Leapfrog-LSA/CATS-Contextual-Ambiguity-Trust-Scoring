@@ -13,7 +13,7 @@ NEGATIVE_POLARITY = frozenset({"volatility", "silence", "gaming"})
 # signal: it only ever *lowers* the score (impersonation/clone red-flags), never
 # raises it. A symmetric weighted term would reward a clean domain — and most
 # fake-news lives on ordinary domains that score 0, so that would wrongly inflate
-# the low tail. Coefficient validated on the 28-Jul-2026 future holdout: applying
+# the low tail. Coefficient validated on the 06-Jul-2026 future holdout: applying
 # `score - 0.6 * domain_red_flag` moved pairwise concordance 0.755 -> 0.775 and
 # corrected regular-cadence clones that `silence` misses
 # (docs/signal_research_2026-07.md).

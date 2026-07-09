@@ -33,6 +33,61 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — v2.0 (2027)
 
+### Added
+- Repo analysis, development plan and numbered roadmap
+  (`docs/piano_sviluppo_roadmap_2026-07.md`): state of the project at
+  v1.5.0/ENGINE 1.4, strengths, open risks (single-signal discrimination,
+  small validation set, unvalidated thresholds, pending legal TODOs, minor
+  repo inconsistencies) and a 15-point phased roadmap.
+- The `SessionStart` hook promised by `docs/cloud_setup.md` now actually ships
+  (`.claude/hooks/session-start.sh` + `.claude/settings.json`): cloud-only,
+  idempotent fallback for the environment setup script — installs the dev/test
+  stack and the Italian NLP assets on a cold container, fast no-op on a warm one.
+- Adversarial robustness regression suite (`tests/unit/test_adversarial.py`)
+  turning the Art. 9 risk-register TODOs for R3/R4/R5 into executable tests:
+  regular publishing cadence neutralises `silence` and is only caught via the
+  domain penalty (R4); a single message currently aggregates to a "high" band
+  at zero confidence, and the API schema floor is one message (R5); non-Italian
+  input degrades silently with nothing flagging the language mismatch (R3).
+  The tests pin current behaviour — weaknesses included — so signal-hardening
+  work or accidental regressions must surface as deliberate test changes.
+  Risk register §2/§7 updated to reference the suite.
+- Signal ablation/LOSO diagnosis (`research/signal_ablation_spike.py`,
+  findings in `docs/signal_diagnosis_2026-07.md`): on the future holdout,
+  coherence — a near-chance solo ranker (0.528) — is the second-largest
+  contributor to the calibrated aggregate (LOSO −0.139 concordance, it breaks
+  the ties silence leaves), overturning the earlier "likely overfitting"
+  reading; volatility (−0.013) and gaming (−0.005, solo at chance) are the
+  real redesign candidates. Operational note: the calibrated weights assume
+  the SBERT coherence backend — degraded/NER coherence forfeits that
+  contribution.
+- Message-level follow-up diagnosis
+  (`research/gaming_volatility_diagnosis_spike.py`, findings appended to
+  `docs/signal_diagnosis_2026-07.md`): gaming's `vocab` sub-score is
+  arithmetically identical to `ttr` above the 50-token floor (TTR silently
+  double-weighted; constraint note added in `signals/gaming.py`) and its
+  heuristics correlate with newsroom practice, not manipulation — redesign
+  candidate; volatility's 0.4 spike threshold is locally the worst setting
+  tried (0.1–0.3 give ρ ≈ −0.12…−0.15 in the correct direction on both
+  splits, ~3× current information, ceiling: 48.9% of messages have TextBlob
+  polarity exactly 0); silence strengthens slightly and consistently at
+  ≥ 96 h (ρ −0.47 vs −0.43, plateau from 96 h). All candidate changes are
+  gated on the recalibrate → future-holdout revalidate cycle.
+
+### Fixed
+- Alembic migrations now honour the `DATABASE_URL` environment variable
+  (falling back to `alembic.ini`): `alembic upgrade head` / `make db-migrate`
+  previously always targeted the hardcoded localhost `cats` database and
+  failed in the CI/cloud test environments, which configure `cats_test`.
+- `CONTRIBUTING.md` no longer directs pull requests at the non-existent
+  `develop` branch (PRs target `main`); the inert `develop` push trigger was
+  removed from CI.
+- README license links pointed at `LICENSE/` (404 on GitHub); now `LICENSE`.
+- The future-snapshot validation was misdated "28 July 2026" in the findings
+  title and its citations — it ran on **6 July 2026** (commit `2b41982`).
+  Living docs and code comments now carry the correct date; the findings
+  filename and released changelog entries are kept for link stability.
+
 ### Planned
 - Content-credibility signal for fake-news on ordinary domains (the low-tail
   class domain structure cannot catch).
