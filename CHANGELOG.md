@@ -61,6 +61,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   real redesign candidates. Operational note: the calibrated weights assume
   the SBERT coherence backend — degraded/NER coherence forfeits that
   contribution.
+- Message-level follow-up diagnosis
+  (`research/gaming_volatility_diagnosis_spike.py`, findings appended to
+  `docs/signal_diagnosis_2026-07.md`): gaming's `vocab` sub-score is
+  arithmetically identical to `ttr` above the 50-token floor (TTR silently
+  double-weighted; constraint note added in `signals/gaming.py`) and its
+  heuristics correlate with newsroom practice, not manipulation — redesign
+  candidate; volatility's 0.4 spike threshold is locally the worst setting
+  tried (0.1–0.3 give ρ ≈ −0.12…−0.15 in the correct direction on both
+  splits, ~3× current information, ceiling: 48.9% of messages have TextBlob
+  polarity exactly 0); silence strengthens slightly and consistently at
+  ≥ 96 h (ρ −0.47 vs −0.43, plateau from 96 h). All candidate changes are
+  gated on the recalibrate → future-holdout revalidate cycle.
 
 ### Fixed
 - Alembic migrations now honour the `DATABASE_URL` environment variable

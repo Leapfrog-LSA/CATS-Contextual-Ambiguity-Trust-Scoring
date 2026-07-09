@@ -167,15 +167,19 @@ compilarle (regola di repo).
 
 ### Fase C — Hardening dei segnali (v1.6 → v1.9, il cuore tecnico)
 
-7. **Diagnosi dei tre segnali muti prima di inventarne di nuovi** — *diagnosi
-   quantitativa completata il 9 lug 2026* (`research/signal_ablation_spike.py`,
-   findings in `docs/signal_diagnosis_2026-07.md`): coherence (SBERT) è
-   portante come tie-breaker (LOSO −0.139 di concordanza), i pesi morti veri
-   sono volatility (−0.013) e gaming (−0.005, solo = caso); i segnali sono
-   quasi ortogonali. Il backend SBERT è un requisito operativo dei pesi
-   calibrati. *Restano da fare* (richiedono ricomputo a livello messaggio con
-   gli asset NLP): ablation per sub-score di gaming e sweep della soglia spike
-   di volatility.
+7. ✅ **Diagnosi dei tre segnali muti prima di inventarne di nuovi** (9 lug
+   2026 — `research/signal_ablation_spike.py` +
+   `research/gaming_volatility_diagnosis_spike.py`, findings completi in
+   `docs/signal_diagnosis_2026-07.md`): coherence (SBERT) è portante come
+   tie-breaker (LOSO −0.139, requisito operativo SBERT documentato);
+   **gaming ha un sub-score duplicato** (vocab ≡ ttr sopra i 50 token: il TTR
+   pesa doppio) e le sue euristiche misurano la prassi redazionale, non la
+   manipolazione → redesign, non tuning; **volatility alla soglia attuale 0.4
+   è al suo minimo locale** — a 0.1–0.3 porta ρ ≈ −0.12…−0.15 nella direzione
+   giusta su entrambi gli split (~3× l'informazione attuale), col tetto duro
+   del 48.9% di messaggi a polarità 0 (TextBlob su italiano); **silence
+   migliora leggermente a ≥ 96 h** (ρ −0.47 vs −0.43, plateau). Ogni modifica
+   passa dal ciclo ricalibrazione → rivalidazione (→ punto 13).
 8. **Rilevazione lingua + flag input non italiano (R3)**: confidenza ridotta
    esplicita invece di degrado silenzioso dei punteggi.
 9. **Soglia minima di evidenza (R5)**: esporre un requisito minimo di

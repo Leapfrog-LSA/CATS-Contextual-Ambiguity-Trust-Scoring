@@ -85,3 +85,83 @@ concordance closer to the LOSO-coherence figure (≈0.62) than to 0.755.
 
 Caveats: single future holdout, n=53, distant-supervision labels (MBFC);
 `default`-group sources are 2 of 53. Indicative, not certified.
+
+---
+
+## Message-level follow-up (completes roadmap item 7)
+
+The vector-level diagnosis above could not see inside gaming's sub-scores or
+sweep volatility/silence thresholds. This second pass recomputes those from
+the committed snapshot message histories — reproducible via
+[`research/gaming_volatility_diagnosis_spike.py`](../research/gaming_volatility_diagnosis_spike.py)
+(same protocol: train = merged 02/03/05-Jul snapshots n=56, holdout = unseen
+06-Jul snapshot n=53; no NLP model assets needed).
+
+### Gaming: a duplicated sub-score, and heuristics that fire on journalism
+
+| sub-score (higher=worse) | ρ train | ρ holdout |
+|---|---:|---:|
+| repetition | +0.15 | −0.00 |
+| ttr | +0.08 | −0.09 |
+| burst | +0.11 | +0.09 |
+| vocab | +0.08 | −0.09 |
+| aggregated value | +0.17 | −0.01 |
+
+1. **`vocab_score` ≡ `ttr_score` above the 50-token floor** — both compute
+   `1 − unique/total`. Verified: identical in 56/56 train and 52/53 holdout
+   sources. The gaming mean is therefore effectively
+   `(repetition + burst + 2·TTR)/4`: TTR is silently double-weighted, and the
+   four "independent" heuristics are three. A constraint note now sits in
+   `signals/gaming.py`; the fix (a genuinely distinct fourth heuristic, or a
+   3-term mean) changes signal semantics → next recalibration.
+2. **The mild train correlations point the wrong way and don't generalise.**
+   Positive ρ means high "manipulation" sub-scores associate with *reliable*
+   outlets: professional newsrooms post in bursts (breaking news) and reuse
+   templated phrasing (repetition). On the holdout everything collapses to
+   |ρ| ≤ 0.09. No re-weighting of these sub-scores rescues gaming — the
+   heuristics measure newsroom practice, not manipulation. Redesign or
+   removal at the next recalibration.
+
+### Volatility: partially starved, and the 0.4 threshold is the worst setting
+
+| spike threshold | ρ train | ρ holdout |
+|---|---:|---:|
+| 0.1 | −0.12 | −0.12 |
+| 0.3 | −0.14 | −0.15 |
+| **0.4 (current)** | **+0.03** | **−0.05** |
+| 0.6 | −0.03 | −0.13 |
+
+48.9% of holdout messages have TextBlob polarity exactly 0.0 (Italian text
+the sentiment lexicon cannot see), so half the corpus is invisible to the
+signal regardless of threshold — a hard ceiling for the default backend. But
+within that ceiling the current threshold is locally the *worst* choice
+tried: at 0.1–0.3 volatility carries ρ ≈ −0.12…−0.15 **in the semantically
+correct direction, consistently on train and holdout** — roughly 3× its
+current holdout information. Candidate change for the next recalibration
+(threshold change ⇒ full recalibrate + future-holdout revalidation); the BERT
+sentiment backend may raise the ceiling further (untested — needs model
+weights).
+
+### Silence: the 72 h threshold is close to, but not at, its optimum
+
+| threshold (h) | ρ train | ρ holdout |
+|---|---:|---:|
+| 24 | −0.38 | −0.46 |
+| 48 | −0.39 | −0.35 |
+| **72 (current)** | **−0.42** | **−0.43** |
+| 96 | −0.47 | −0.47 |
+| 120–168 | −0.47 | −0.47 |
+
+Raising the anomaly threshold to ≥ 96 h strengthens silence slightly and
+consistently on both splits, and the curve plateaus there. Feeds roadmap
+item 13 (threshold validation) — same recalibration discipline applies.
+
+### Updated bottom line for phase C
+
+Item 7 is complete. The evidence ranks the interventions: (a) fix the
+volatility threshold (~3× its information, trivial change, needs the
+recalibration cycle), (b) silence threshold to 96 h (small consistent gain,
+same cycle), (c) gaming needs redesign, not tuning — its heuristics measure
+newsroom practice and one of its four terms is a duplicate, (d) coherence:
+keep, with the SBERT backend requirement documented above. None of these
+ship without recalibrate → future-holdout revalidate (CLAUDE.md).
