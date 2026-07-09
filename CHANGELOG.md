@@ -33,6 +33,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — v2.0 (2027)
 
+### Added
+- Repo analysis, development plan and numbered roadmap
+  (`docs/piano_sviluppo_roadmap_2026-07.md`): state of the project at
+  v1.5.0/ENGINE 1.4, strengths, open risks (single-signal discrimination,
+  small validation set, unvalidated thresholds, pending legal TODOs, minor
+  repo inconsistencies) and a 15-point phased roadmap.
+
 ### Planned
 - Content-credibility signal for fake-news on ordinary domains (the low-tail
   class domain structure cannot catch).
