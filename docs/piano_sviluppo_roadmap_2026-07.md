@@ -155,10 +155,15 @@ compilarle (regola di repo).
    automatici): obiettivo un holdout futuro ≥ 100 sorgenti con storia
    per-sorgente multi-mese; allargare la coda bassa e la coda lunga italiana
    (oggi MBFC copre 104/310 domini, quasi nessuna testata regionale).
-6. **Trasformare il risk register in test eseguibili**: suite avversariale in
-   CI per i TODO R3/R4/R5 di `risk_management_art9.md` — clone a cadenza
-   regolare (il caso che batte silence), gaming del vocabolario, storie corte,
-   input non italiano — così le regressioni di robustezza si vedono subito.
+   *(processo continuo — gli snapshot si accumulano ogni lunedì)*
+6. ✅ **Trasformare il risk register in test eseguibili** (9 lug 2026): suite
+   avversariale `tests/unit/test_adversarial.py` per i TODO R3/R4/R5 di
+   `risk_management_art9.md` — clone a cadenza regolare (il caso che batte
+   silence, contrastato solo dalla penalità di dominio), gaming spam/burst,
+   messaggio singolo che oggi aggrega a banda "high" a confidenza zero (floor
+   dello schema API: 1 messaggio), input non italiano degradato in silenzio.
+   I test *fissano* il comportamento attuale, debolezze incluse: hardening o
+   regressioni emergono come modifiche deliberate ai test.
 
 ### Fase C — Hardening dei segnali (v1.6 → v1.9, il cuore tecnico)
 

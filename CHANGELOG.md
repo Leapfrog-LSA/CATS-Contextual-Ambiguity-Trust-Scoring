@@ -43,6 +43,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`.claude/hooks/session-start.sh` + `.claude/settings.json`): cloud-only,
   idempotent fallback for the environment setup script — installs the dev/test
   stack and the Italian NLP assets on a cold container, fast no-op on a warm one.
+- Adversarial robustness regression suite (`tests/unit/test_adversarial.py`)
+  turning the Art. 9 risk-register TODOs for R3/R4/R5 into executable tests:
+  regular publishing cadence neutralises `silence` and is only caught via the
+  domain penalty (R4); a single message currently aggregates to a "high" band
+  at zero confidence, and the API schema floor is one message (R5); non-Italian
+  input degrades silently with nothing flagging the language mismatch (R3).
+  The tests pin current behaviour — weaknesses included — so signal-hardening
+  work or accidental regressions must surface as deliberate test changes.
+  Risk register §2/§7 updated to reference the suite.
 
 ### Fixed
 - Alembic migrations now honour the `DATABASE_URL` environment variable
