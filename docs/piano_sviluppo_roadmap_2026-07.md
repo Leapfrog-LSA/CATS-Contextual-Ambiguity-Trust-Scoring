@@ -167,10 +167,15 @@ compilarle (regola di repo).
 
 ### Fase C — Hardening dei segnali (v1.6 → v1.9, il cuore tecnico)
 
-7. **Diagnosi dei tre segnali muti prima di inventarne di nuovi**: ablation
-   per sub-score di gaming, sweep delle soglie (spike volatility 0.4, TTR,
-   burst) contro il dataset accumulato; capire se coherence/volatility/gaming
-   sono recuperabili o strutturalmente ciechi su finestre RSS mensili.
+7. **Diagnosi dei tre segnali muti prima di inventarne di nuovi** — *diagnosi
+   quantitativa completata il 9 lug 2026* (`research/signal_ablation_spike.py`,
+   findings in `docs/signal_diagnosis_2026-07.md`): coherence (SBERT) è
+   portante come tie-breaker (LOSO −0.139 di concordanza), i pesi morti veri
+   sono volatility (−0.013) e gaming (−0.005, solo = caso); i segnali sono
+   quasi ortogonali. Il backend SBERT è un requisito operativo dei pesi
+   calibrati. *Restano da fare* (richiedono ricomputo a livello messaggio con
+   gli asset NLP): ablation per sub-score di gaming e sweep della soglia spike
+   di volatility.
 8. **Rilevazione lingua + flag input non italiano (R3)**: confidenza ridotta
    esplicita invece di degrado silenzioso dei punteggi.
 9. **Soglia minima di evidenza (R5)**: esporre un requisito minimo di

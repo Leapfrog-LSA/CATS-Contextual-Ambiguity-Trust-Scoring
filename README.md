@@ -162,6 +162,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
 | [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation (concordance 0.755)      |
 | [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
+| [docs/signal\_diagnosis\_2026-07.md](docs/signal_diagnosis_2026-07.md) | Signal ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility+gaming are dead weight |
 | [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |

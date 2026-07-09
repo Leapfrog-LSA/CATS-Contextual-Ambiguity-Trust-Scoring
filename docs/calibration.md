@@ -236,6 +236,13 @@ is unset or the file is missing/invalid.
 > coherence/volatility/gaming still carry little rank information (roadmap
 > item), so re-validate before relying on CATS against an adversary who can
 > manage their publishing cadence.
+>
+> **Backend requirement:** these weights were calibrated with the **SBERT**
+> coherence backend, and the ablation diagnosis
+> ([signal_diagnosis_2026-07.md](signal_diagnosis_2026-07.md)) shows coherence
+> is the second-largest contributor to the validated concordance (LOSO
+> −0.139). Deploy them with `COHERENCE_BACKEND=sbert`; with the default NER
+> backend (or a missing spaCy model) that contribution is forfeited.
 
 ## 4. Evaluate scoring quality (eval harness)
 

@@ -52,6 +52,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   The tests pin current behaviour — weaknesses included — so signal-hardening
   work or accidental regressions must surface as deliberate test changes.
   Risk register §2/§7 updated to reference the suite.
+- Signal ablation/LOSO diagnosis (`research/signal_ablation_spike.py`,
+  findings in `docs/signal_diagnosis_2026-07.md`): on the future holdout,
+  coherence — a near-chance solo ranker (0.528) — is the second-largest
+  contributor to the calibrated aggregate (LOSO −0.139 concordance, it breaks
+  the ties silence leaves), overturning the earlier "likely overfitting"
+  reading; volatility (−0.013) and gaming (−0.005, solo at chance) are the
+  real redesign candidates. Operational note: the calibrated weights assume
+  the SBERT coherence backend — degraded/NER coherence forfeits that
+  contribution.
 
 ### Fixed
 - Alembic migrations now honour the `DATABASE_URL` environment variable
