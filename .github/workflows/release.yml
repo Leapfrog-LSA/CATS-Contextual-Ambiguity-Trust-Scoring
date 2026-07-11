@@ -38,4 +38,9 @@ jobs:
         with:
           name: dist
           path: dist/
+      # skip-existing keeps re-publish runs green when the version is already
+      # on PyPI (e.g. a Release page created after a manual workflow_dispatch
+      # publish) instead of failing with "file already exists".
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
