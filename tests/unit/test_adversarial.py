@@ -133,24 +133,28 @@ class TestR4AdversarialEvasion:
 
 
 class TestR5MinimalEvidence:
-    """R5 — few messages yield near-zero-confidence signals, but the aggregate
-    currently reports a HIGH band anyway: negative-polarity signals return 0
-    when they cannot be computed, which inverts to a perfect reliability
-    contribution of 100. Pinned so the minimum-evidence work (roadmap item 9)
-    changes this deliberately."""
+    """R5 — few messages yield near-zero-confidence signals, and the aggregate
+    still reports a HIGH band: negative-polarity signals return 0 when they
+    cannot be computed, which inverts to a perfect reliability contribution.
+    Since the minimum-evidence guardrail (roadmap item 9) landed, that poverty
+    is *flagged*: `evidence.sufficient=false` forces human review. The score
+    itself stays unpenalised — changing it needs the recalibration cycle."""
 
-    def test_single_message_scores_high_with_zero_evidence(self):
+    def test_single_message_high_score_is_flagged_for_review(self):
         result = score(
             [{"timestamp": "2026-01-01T08:00:00Z", "text": "Unico messaggio senza storia."}],
             weights=_DEFAULT_WEIGHTS,
             load_nlp=False,
         )
         # 0.30*50 (neutral coherence) + (0.25+0.25+0.20)*100 (uncomputable
-        # negative signals inverted) = 85.0 — "high" from a single message.
+        # negative signals inverted) = 85.0 — still "high" from one message...
         assert result["trust_score"] == 85.0
         assert result["band"] == "high"
-        assert result["requires_human_review"] is False
         assert all(s["confidence"] == 0.0 for s in result["explanation"]["signals"])
+        # ...but the evidence guardrail now surfaces it and forces review.
+        assert result["evidence"]["sufficient"] is False
+        assert result["evidence"]["messages"] == 1
+        assert result["requires_human_review"] is True
 
     def test_every_signal_reports_zero_confidence_below_its_floor(self):
         # The evidence poverty IS visible per signal — it is just not acted on.
@@ -163,9 +167,8 @@ class TestR5MinimalEvidence:
         assert compute_gaming(single).confidence == 0.0
 
     def test_api_schema_floor_is_one_message(self):
-        # The register cites "min message count via schema" as the R5
-        # mitigation, but the actual floor is ONE message — the mitigation is
-        # weaker than stated.
+        # The schema floor stays at ONE message (backwards compatible): the R5
+        # mitigation is the evidence flag above, not request rejection.
         from cats.api.schemas import EvaluateRequest
 
         req = EvaluateRequest(
@@ -176,10 +179,11 @@ class TestR5MinimalEvidence:
 
 
 class TestR3NonItalianInput:
-    """R3 — the NLP stack is Italian-optimised; non-Italian input degrades
-    silently. Pins the graceful part (no crash, valid result) and the gap
-    (nothing in the output flags the language mismatch) until language
-    detection lands (roadmap item 8)."""
+    """R3 — the NLP stack is Italian-optimised; non-Italian input used to
+    degrade silently. Since the language guardrail (roadmap item 8) landed,
+    the mismatch is detected and flagged (`language.detected`, plus an
+    explanation warning); scores are still computed and never altered by the
+    flag."""
 
     @staticmethod
     def _msgs(texts):
@@ -191,17 +195,19 @@ class TestR3NonItalianInput:
         "Parliament will debate the proposed budget law next week.",
     ]
 
-    def test_english_input_returns_valid_but_unflagged_result(self):
+    def test_english_input_is_flagged(self):
         result = score(self._msgs(self._ENGLISH), source_type="news", weights=_NEWS_WEIGHTS, load_nlp=False)
         assert 0.0 <= result["trust_score"] <= 100.0
         assert result["band"] in set(_BAND_ORDER)
-        # KNOWN GAP (R3 TODO): no language field or warning anywhere in the
-        # output — an English source is scored with Italian-tuned NLP and the
-        # caller cannot tell.
-        assert "language" not in result["explanation"]
-        assert all("language" not in (s["metadata"] or {}) for s in result["explanation"]["signals"])
+        assert result["language"]["detected"] == "other"
+        assert "language_warning" in result["explanation"]
 
-    def test_non_latin_scripts_do_not_crash(self):
+    def test_italian_input_is_not_flagged(self):
+        result = score(_daily_dicts(5), source_type="news", weights=_NEWS_WEIGHTS, load_nlp=False)
+        assert result["language"]["detected"] == "italian"
+        assert "language_warning" not in result["explanation"]
+
+    def test_non_latin_scripts_flagged_and_do_not_crash(self):
         result = score(
             self._msgs(
                 [
@@ -217,3 +223,5 @@ class TestR3NonItalianInput:
         )
         assert 0.0 <= result["trust_score"] <= 100.0
         assert result["band"] in set(_BAND_ORDER)
+        assert result["language"]["detected"] == "other"
+        assert result["language"]["reason"] == "non_latin_script"

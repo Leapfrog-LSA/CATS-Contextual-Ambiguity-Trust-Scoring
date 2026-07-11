@@ -2,6 +2,10 @@ from typing import Dict, List, Optional
 
 from cats.signals.types import SignalResult
 
+# Signals below this confidence carry little evidence; reported per signal and
+# summarised by evidence_summary for visibility (risk R5).
+LOW_EVIDENCE_CONFIDENCE = 0.3
+
 # The four behavioural signals do not share a common polarity (architecture.md →
 # Signal Polarity & Scoring): coherence is "higher = more reliable", the other
 # three are "higher = LESS reliable". Aggregation inverts the negative-polarity
@@ -69,9 +73,38 @@ def determine_band(score: float) -> str:
     return "very_low"
 
 
-def requires_human_review(score: float, band: str, signals: List[SignalResult]) -> bool:
+def evidence_summary(signals: List[SignalResult], n_messages: int, min_messages: int) -> Dict[str, object]:
+    """Summarise the evidence behind one evaluation (risk register R5).
+
+    ``sufficient`` is driven by the message count alone: with fewer than
+    ``min_messages`` messages the negative-polarity signals return 0 for lack
+    of input, which inverts to a perfect reliability contribution — so a
+    near-empty history can aggregate to a high score. The flag makes that
+    poverty explicit (and forces human review); the score and band themselves
+    are NOT changed, since altering them would change scoring semantics and
+    require recalibration. Mean behavioural confidence is reported for
+    visibility only.
+    """
+    behavioural = [s for s in signals if s.name != "domain_provenance"]
+    mean_conf = sum(s.confidence for s in behavioural) / len(behavioural) if behavioural else 0.0
+    return {
+        "messages": n_messages,
+        "min_messages": min_messages,
+        "sufficient": n_messages >= min_messages,
+        "mean_signal_confidence": round(mean_conf, 3),
+    }
+
+
+def requires_human_review(
+    score: float,
+    band: str,
+    signals: List[SignalResult],
+    sufficient_evidence: bool = True,
+) -> bool:
+    if not sufficient_evidence:
+        return True
     if band in {"low", "very_low"}:
         return True
-    if any(s.confidence < 0.3 for s in signals) and score < 50:
+    if any(s.confidence < LOW_EVIDENCE_CONFIDENCE for s in signals) and score < 50:
         return True
     return False

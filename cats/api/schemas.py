@@ -32,6 +32,12 @@ class EvaluateResponse(BaseModel):
     band: str
     requires_review: bool
     signals: List[Dict[str, Any]]
+    # Input-language assessment (risk R3): flags non-Italian input, which the
+    # Italian-optimised NLP degrades on. Never affects the score.
+    language: Optional[Dict[str, Any]] = None
+    # Evidence summary (risk R5): message count vs the configured minimum;
+    # insufficient evidence forces requires_review, never changes the score.
+    evidence: Optional[Dict[str, Any]] = None
 
 
 class BatchEvaluateRequest(BaseModel):

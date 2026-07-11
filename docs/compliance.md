@@ -6,35 +6,42 @@
 |---|---|---|
 | Art. 5(1)(e) | Storage limitation | 90-day audit retention; nightly APScheduler purge with distributed Redis lock |
 | Art. 13–14 | Transparency | `/v1/cats/explain/{trace_id}` returns full signal breakdown + methodology disclaimer |
-| Art. 22 | Right not to be subject to automated decision | `/v1/cats/contest/{trace_id}` endpoint; `requires_review` flag forces human oversight for scores < 40 |
+| Art. 22 | Right not to be subject to automated decision | `/v1/cats/contest/{trace_id}` endpoint; `requires_review` flag forces human oversight for scores < 40 or evaluations below the evidence minimum |
 | Art. 25 | Data protection by design | AES-256-GCM encrypted audit logs; no raw personal data stored in `trust_scores` |
 | Art. 32 | Security of processing | TLS 1.3 (nginx); encrypted audit trail; non-root container; rate limiting |
 
 ## EU AI Act (2024/1689)
 
-CATS is classified as a **Limited Risk AI System** under Article 6(2) / Annex III.
+> **Classification is a pending legal decision, not a settled fact.** Whether
+> CATS is high-risk under Article 6 / Annex III depends on the deployment
+> context (law-enforcement, migration and judicial uses can engage Annex III
+> points 6–8) and must be assessed with legal counsel — see
+> [eu_ai_act/classification.md](eu_ai_act/classification.md). Until that
+> determination is recorded, this repo maintains the documentation below as
+> good practice without asserting a risk class.
 
 | Obligation | CATS Status |
 |---|---|
 | Transparency | Explainability endpoint; disclaimer on every explanation response |
-| Human oversight | `requires_review` flag; contest/review endpoints |
-| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; parameters not empirically calibrated |
+| Human oversight | `requires_review` flag (low bands, or insufficient evidence); contest/review endpoints |
+| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.755 → 0.775 with the domain penalty); band/silence thresholds still initial estimates |
 | Ordinal scoring | WP 4.3 — scores are rankings, not absolute probabilities |
 
 ## Known Limitations (WP 4.1)
 
-- **NLP accuracy ~55–62%**: spaCy NER and TextBlob rule-based sentiment are naive implementations for Italian text
-- **Parameters uncalibrated**: all thresholds (spike_threshold=0.4, silence=72h, gaming min_tokens=10) are initial estimates, not empirically validated on labelled data
+- **NLP accuracy ~55–62% (default backends)**: spaCy NER and TextBlob rule-based sentiment; optional BERT/Sentence-BERT backends available
+- **Thresholds unvalidated**: signal *weights* are calibrated and future-snapshot validated, but the operating thresholds (volatility spike 0.4, silence 72 h, band cutoffs 80/60/40/20) remain initial estimates — the [signal diagnosis](signal_diagnosis_2026-07.md) measured better candidates (spike 0.1–0.3, silence ≥ 96 h), pending the recalibration cycle
 - **Ordinal only**: trust scores represent relative reliability rankings and are **not** suitable as sole basis for autonomous decisions (WP 4.3)
-- **Language**: optimised for Italian (`it_core_news_lg`); other languages will produce degraded results
+- **Language**: optimised for Italian (`it_core_news_lg`); non-Italian input is detected and flagged in the response (`language` block, risk R3) but is still scored with the Italian-tuned stack
 
 ## Roadmap to Higher Accuracy
 
 | Version | Target | Improvement |
 |---|---|---|
-| v1.1 (Q2 2026) | NLP | BERT-based Italian sentiment (replace TextBlob) |
-| v1.2 (Q3 2026) | Coherence | Sentence-BERT similarity; SHAP explainability |
-| v2.0 (2027) | Validation | AUC-ROC ≥ 0.78 on labelled OSINT dataset; full EU AI Act **Annex IV** technical documentation |
+| v1.1–v1.2 | ✅ NLP backends | BERT Italian sentiment · Sentence-BERT coherence · per-signal attribution |
+| v1.4 | ✅ Validation | Calibrated weights validated on a future snapshot (concordance 0.755) |
+| v1.5 | ✅ Hardening | Domain-provenance asymmetric penalty (ENGINE 1.4, 0.755 → 0.775) |
+| v2.0 (2027) | Validation | Concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout; recalibration with the diagnosis inputs; full EU AI Act **Annex IV** technical documentation |
 
 > **Annex IV vs Annex IX.** The general "document the system" artefact under the
 > AI Act is **Annex IV** technical documentation (Art. 11) — *not* Annex IX.

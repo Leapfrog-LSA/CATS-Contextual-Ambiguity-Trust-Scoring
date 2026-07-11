@@ -10,6 +10,7 @@
   * [CATS API Reference](docs/api.md)
   * [CATS Architecture](docs/architecture.md)
   * [Weight Calibration](docs/calibration.md)
+  * [Cloud setup — Claude Code on the web](docs/cloud_setup.md)
   * [Calibration findings — July 2026 snapshots](docs/calibration_findings_2026-07.md)
   * [Future-snapshot validation — 6 July 2026](docs/calibration_findings_2026-07-28.md)
   * [Signal discriminative power — investigation](docs/signal_research_2026-07.md)

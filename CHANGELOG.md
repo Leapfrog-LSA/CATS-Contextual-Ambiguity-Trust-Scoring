@@ -34,6 +34,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v2.0 (2027)
 
 ### Added
+- **Input-language flag (risk R3, roadmap item 8).** Evaluations now assess
+  whether the message corpus is Italian (`cats/pipeline/language.py`: a
+  dependency-free script check + Italian function-word ratio, 205/205 correct
+  on the July snapshot registry, thresholds with a >4× margin). `cats.lite`
+  results and `/evaluate` responses carry a `language` block
+  (`italian`/`other`/`unknown` + confidence), and explanations warn when the
+  Italian-optimised NLP stack is scoring non-Italian text. Flag-only: scores
+  and bands never change. Not persisted — `/explain` does not report it.
+- **Minimum-evidence guardrail (risk R5, roadmap item 9).** New
+  `CATS_MIN_EVIDENCE_MESSAGES` setting (default 3): evaluations on fewer
+  messages report `evidence.sufficient=false` and force
+  `requires_review`/`requires_human_review` — previously a single message
+  aggregated to a "high" band with zero confidence and *no* flag. The
+  `evidence` block (message count, minimum, mean behavioural confidence) is
+  returned by `cats.lite` and `/evaluate`. Flag-only: scores and bands never
+  change (penalising them needs the recalibration cycle). The API schema
+  floor stays 1 message for backwards compatibility.
+
 - Repo analysis, development plan and numbered roadmap
   (`docs/piano_sviluppo_roadmap_2026-07.md`): state of the project at
   v1.5.0/ENGINE 1.4, strengths, open risks (single-signal discrimination,
@@ -74,7 +92,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   ≥ 96 h (ρ −0.47 vs −0.43, plateau from 96 h). All candidate changes are
   gated on the recalibrate → future-holdout revalidate cycle.
 
+### Changed
+- `requires_human_review` / `requires_review` is now `true` for evaluations
+  below the evidence minimum, regardless of score or band (see the
+  minimum-evidence guardrail above).
+
 ### Fixed
+- `docs/compliance.md` asserted CATS is a "Limited Risk AI System" under the
+  EU AI Act — a legal determination that contradicts the *pending*
+  classification decision tracked in `docs/eu_ai_act/classification.md`.
+  Softened to "pending legal decision" with a pointer to the classification
+  prerequisite; the same doc's stale accuracy rows (weights described as
+  uncalibrated) and version roadmap were brought up to the v1.5.0 state.
+- Documentation state sync: `docs/README.md` was an empty stub (now a full
+  index), `CITATION.cff` still cited version 1.3.0 (now 1.5.0),
+  `SUMMARY.md`/README lacked `docs/cloud_setup.md`, the README roadmap was
+  frozen at v1.3.1, and `docs/architecture.md`/`docs/api.md` did not describe
+  the response-time guardrail blocks.
 - Alembic migrations now honour the `DATABASE_URL` environment variable
   (falling back to `alembic.ini`): `alembic upgrade head` / `make db-migrate`
   previously always targeted the hardcoded localhost `cats` database and

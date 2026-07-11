@@ -133,6 +133,24 @@ behavioural weights are unchanged. Scores of sources evaluated with a
 red-flagged URL are not comparable with ENGINE 1.3 scores (`/explain` flags the
 mismatch).
 
+### Response-time guardrails (risk register R3/R5)
+
+Two blocks accompany every evaluation (`/evaluate` response and `cats.lite`
+result). Both are **flags**: they never change the score or the band —
+penalising the score itself would change scoring semantics and require the
+recalibration cycle. Neither is persisted, so `/explain` does not report them.
+
+- **`language`** (`cats/pipeline/language.py`) — Latin-script check plus an
+  Italian function-word ratio (marker set curated against English/French/
+  Spanish collisions; 205/205 correct on the July 2026 snapshot registries).
+  `detected: "other"` means the Italian-optimised NLP stack is scoring foreign
+  text and signal quality is degraded; explanations carry a `language_warning`.
+- **`evidence`** (`engine.evidence_summary`) — message count vs
+  `CATS_MIN_EVIDENCE_MESSAGES` (default 3). Below the minimum the
+  negative-polarity signals cannot fire (0 inverts to a perfect reliability
+  contribution), so a near-empty history can aggregate deceptively high;
+  `sufficient: false` therefore forces `requires_review`.
+
 ## Security Design
 
 | Control | Implementation |

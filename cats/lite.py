@@ -47,11 +47,13 @@ _LITE_ENV_DEFAULTS = {
 for _k, _v in _LITE_ENV_DEFAULTS.items():
     os.environ.setdefault(_k, _v)
 
+from cats.pipeline.language import detect_language  # noqa: E402
 from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
     aggregate_score,
     apply_domain_penalty,
     determine_band,
+    evidence_summary,
     requires_human_review,
 )
 from cats.scoring.explainer import generate_explanation  # noqa: E402
@@ -104,7 +106,11 @@ def score(
     ``url``: optional source URL/domain. When given, the domain-provenance
     penalty is applied (impersonation/clone red-flags only lower the score).
 
-    Returns ``{trust_score, band, requires_human_review, signals, explanation}``.
+    Returns ``{trust_score, band, requires_human_review, signals, language,
+    evidence, explanation}``. ``language`` flags non-Italian input (the NLP
+    stack is Italian-optimised — risk R3); ``evidence`` reports the message
+    count vs ``CATS_MIN_EVIDENCE_MESSAGES`` (risk R5) — an insufficient
+    history forces ``requires_human_review`` but never changes the score.
     """
     if load_nlp:
         init_nlp()
@@ -125,12 +131,27 @@ def score(
     value = apply_domain_penalty(value, domain)
     signals: List[SignalResult] = behavioural + ([domain] if domain.confidence > 0 else [])
     band = determine_band(value)
+
+    from cats.core.config import settings
+
+    language = detect_language(msgs)
+    evidence = evidence_summary(behavioural, len(msgs), settings.min_evidence_messages)
     result = {
         "trust_score": round(value, 2),
         "band": band,
-        "requires_human_review": requires_human_review(value, band, signals),
+        "requires_human_review": requires_human_review(
+            value, band, signals, sufficient_evidence=bool(evidence["sufficient"])
+        ),
         "signals": {s.name: round(s.value, 2) for s in signals},
+        "language": language.as_dict(),
+        "evidence": evidence,
     }
     if explain:
-        result["explanation"] = generate_explanation(value, band, signals, w)
+        explanation = generate_explanation(value, band, signals, w)
+        if language.detected == "other":
+            explanation["language_warning"] = (
+                "Input does not look Italian: the default NLP stack is "
+                "Italian-optimised, so signal quality is degraded (WP 4.1 / risk R3)."
+            )
+        result["explanation"] = explanation
     return result
