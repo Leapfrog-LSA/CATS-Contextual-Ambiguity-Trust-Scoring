@@ -1,0 +1,55 @@
+name: Create GitHub Release
+
+# Manually dispatched: creates a GitHub Release (tag + title + notes) with the
+# runner's GITHUB_TOKEN. Exists because Release objects cannot always be
+# created from restricted environments (e.g. Claude Code cloud sessions: the
+# MCP server has no release-creation tool and the git proxy only allows branch
+# pushes — see docs/cloud_setup.md).
+#
+# Interaction with release.yml (PyPI publish): releases created here use
+# GITHUB_TOKEN, and GitHub suppresses workflow runs triggered by GITHUB_TOKEN
+# events — so publishing this way does NOT re-trigger release.yml. To publish
+# the package for a release created here, run release.yml's own
+# workflow_dispatch (its publish step skips files already on PyPI).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.5.0); created if it does not exist"
+        required: true
+      target:
+        description: "Commit SHA or branch the tag should point at"
+        required: false
+        default: "main"
+      title:
+        description: "Release title (default: CATS <tag>)"
+        required: false
+        default: ""
+      notes:
+        description: "Release notes (markdown). Empty = GitHub auto-generated notes"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          TARGET: ${{ inputs.target }}
+          TITLE: ${{ inputs.title }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          if [ -n "$NOTES" ]; then
+            printf '%s\n' "$NOTES" > /tmp/notes.md
+            gh release create "$TAG" --target "$TARGET" --title "${TITLE:-CATS $TAG}" --notes-file /tmp/notes.md
+          else
+            gh release create "$TAG" --target "$TARGET" --title "${TITLE:-CATS $TAG}" --generate-notes
+          fi
