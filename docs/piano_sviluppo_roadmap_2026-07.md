@@ -180,10 +180,17 @@ compilarle (regola di repo).
    del 48.9% di messaggi a polarità 0 (TextBlob su italiano); **silence
    migliora leggermente a ≥ 96 h** (ρ −0.47 vs −0.43, plateau). Ogni modifica
    passa dal ciclo ricalibrazione → rivalidazione (→ punto 13).
-8. **Rilevazione lingua + flag input non italiano (R3)**: confidenza ridotta
-   esplicita invece di degrado silenzioso dei punteggi.
-9. **Soglia minima di evidenza (R5)**: esporre un requisito minimo di
-   messaggi/estensione temporale e una confidenza complessiva del punteggio.
+8. ✅ **Rilevazione lingua + flag input non italiano (R3)** (9 lug 2026):
+   `cats/pipeline/language.py` — euristica senza dipendenze (script check +
+   ratio di funzionali italiani, 205/205 corretti sul registro degli snapshot,
+   margine >4× sulle soglie); blocco `language` nelle risposte di
+   `/evaluate` e `cats.lite`, warning nelle spiegazioni. Solo flag: i
+   punteggi non cambiano mai.
+9. ✅ **Soglia minima di evidenza (R5)** (9 lug 2026):
+   `CATS_MIN_EVIDENCE_MESSAGES` (default 3) + blocco `evidence` nelle
+   risposte; sotto la soglia `requires_review` è forzato a `true` (prima: 1
+   messaggio → 85/"high" senza flag). Solo flag: punteggi e bande invariati
+   (penalizzarli richiede il ciclo di ricalibrazione).
 10. **Segnale content-credibility** (il lavoro NLP maggiore, già a roadmap
     v2.0): densità di claim, sensazionalismo, pattern di citazione — copre la
     fake news su domini ordinari, invisibile sia ai segnali comportamentali sia

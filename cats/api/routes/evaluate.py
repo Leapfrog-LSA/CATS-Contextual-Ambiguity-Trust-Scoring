@@ -21,16 +21,19 @@ from cats.api.schemas import (
     StatsResponse,
 )
 from cats.audit.logger import log_contest, log_evaluation
+from cats.core.config import settings
 from cats.core.db import get_db
 from cats.core.metrics import EVALUATIONS, TRUST_SCORE
 from cats.core.models import Contest, TrustScore
 from cats.core.security import api_key_bearer, get_client_ip, get_tenant
+from cats.pipeline.language import detect_language
 from cats.pipeline.normalizer import normalize_messages
 from cats.scoring.engine import (
     ENGINE_VERSION,
     aggregate_score,
     apply_domain_penalty,
     determine_band,
+    evidence_summary,
     requires_human_review,
 )
 from cats.scoring.explainer import generate_explanation
@@ -78,7 +81,12 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
     signals: list[SignalResult] = behavioural + ([domain] if domain.confidence > 0 else [])
 
     band = determine_band(score)
-    review = requires_human_review(score, band, signals)
+    # Response-time guardrails (risk register R3/R5): both are flags — they
+    # never change the score or band. Not persisted on the TrustScore row, so
+    # /explain does not report them (documented in the risk register).
+    language = detect_language(msgs)
+    evidence = evidence_summary(behavioural, len(msgs), settings.min_evidence_messages)
+    review = requires_human_review(score, band, signals, sufficient_evidence=bool(evidence["sufficient"]))
 
     EVALUATIONS.labels(band=band).inc()
     TRUST_SCORE.observe(score)
@@ -112,6 +120,8 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
         signals=[
             {"name": s.name, "value": s.value, "confidence": s.confidence, "metadata": s.metadata} for s in signals
         ],
+        language=language.as_dict(),
+        evidence=evidence,
     )
 
 

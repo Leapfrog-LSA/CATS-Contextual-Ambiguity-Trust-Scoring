@@ -44,9 +44,23 @@ Compute the trust score for a source.
     { "name": "volatility", "value": 41.0, "confidence": 0.6, "metadata": {"threshold": 0.4} },
     { "name": "silence",    "value": 20.0, "confidence": 0.7, "metadata": {"threshold_h": 72} },
     { "name": "gaming",     "value": 15.3, "confidence": 0.9, "metadata": {"token_count": 420} }
-  ]
+  ],
+  "language": { "detected": "italian", "confidence": 0.85, "marker_ratio": 0.23, "latin_script_ratio": 1.0 },
+  "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 }
 }
 ```
+
+Two response-time guardrail blocks (both **flags**: they never change `score`
+or `band`, and they are not persisted — `/explain` does not report them):
+
+- **`language`** (risk R3) — the NLP stack is Italian-optimised;
+  `detected: "other"` means the input does not look Italian and signal quality
+  is degraded. Values: `italian` / `other` / `unknown` (insufficient text).
+- **`evidence`** (risk R5) — message count vs the configured
+  `CATS_MIN_EVIDENCE_MESSAGES` (default 3). Below the minimum,
+  `sufficient: false` and `requires_review` is forced `true`: with a
+  near-empty history the negative-polarity signals cannot fire, so the raw
+  score alone can look deceptively high.
 
 ---
 

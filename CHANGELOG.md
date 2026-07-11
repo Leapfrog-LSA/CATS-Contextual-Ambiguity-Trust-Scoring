@@ -34,6 +34,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased] — v2.0 (2027)
 
 ### Added
+- **Input-language flag (risk R3, roadmap item 8).** Evaluations now assess
+  whether the message corpus is Italian (`cats/pipeline/language.py`: a
+  dependency-free script check + Italian function-word ratio, 205/205 correct
+  on the July snapshot registry, thresholds with a >4× margin). `cats.lite`
+  results and `/evaluate` responses carry a `language` block
+  (`italian`/`other`/`unknown` + confidence), and explanations warn when the
+  Italian-optimised NLP stack is scoring non-Italian text. Flag-only: scores
+  and bands never change. Not persisted — `/explain` does not report it.
+- **Minimum-evidence guardrail (risk R5, roadmap item 9).** New
+  `CATS_MIN_EVIDENCE_MESSAGES` setting (default 3): evaluations on fewer
+  messages report `evidence.sufficient=false` and force
+  `requires_review`/`requires_human_review` — previously a single message
+  aggregated to a "high" band with zero confidence and *no* flag. The
+  `evidence` block (message count, minimum, mean behavioural confidence) is
+  returned by `cats.lite` and `/evaluate`. Flag-only: scores and bands never
+  change (penalising them needs the recalibration cycle). The API schema
+  floor stays 1 message for backwards compatibility.
+
 - Repo analysis, development plan and numbered roadmap
   (`docs/piano_sviluppo_roadmap_2026-07.md`): state of the project at
   v1.5.0/ENGINE 1.4, strengths, open risks (single-signal discrimination,
@@ -73,6 +91,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   polarity exactly 0); silence strengthens slightly and consistently at
   ≥ 96 h (ρ −0.47 vs −0.43, plateau from 96 h). All candidate changes are
   gated on the recalibrate → future-holdout revalidate cycle.
+
+### Changed
+- `requires_human_review` / `requires_review` is now `true` for evaluations
+  below the evidence minimum, regardless of score or band (see the
+  minimum-evidence guardrail above).
 
 ### Fixed
 - Alembic migrations now honour the `DATABASE_URL` environment variable

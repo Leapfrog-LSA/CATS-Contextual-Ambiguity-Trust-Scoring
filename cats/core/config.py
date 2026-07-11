@@ -57,6 +57,16 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("CATS_WEIGHTS_FILE", "WEIGHTS_FILE"),
     )
 
+    # Minimum message count for an evaluation to count as sufficiently
+    # evidenced (risk register R5): below it the result is flagged
+    # `requires_review` and `evidence.sufficient=false`. Scores and bands are
+    # NOT changed (that would need recalibration). Documented as
+    # CATS_MIN_EVIDENCE_MESSAGES; the bare spelling is also accepted.
+    min_evidence_messages: int = Field(
+        default=3,
+        validation_alias=AliasChoices("CATS_MIN_EVIDENCE_MESSAGES", "MIN_EVIDENCE_MESSAGES"),
+    )
+
     # Trust X-Forwarded-For / proxy headers for client-IP extraction (rate
     # limiting, audit). Keep enabled behind the bundled nginx; disable when the
     # app is exposed directly, otherwise clients can spoof their IP.

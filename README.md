@@ -101,7 +101,9 @@ curl -s -X POST http://localhost:8000/v1/cats/evaluate \
     {"name": "volatility", "value": 55.0, "confidence": 0.15},
     {"name": "silence",    "value": 0.0,  "confidence": 0.1},
     {"name": "gaming",     "value": 12.8, "confidence": 0.06}
-  ]
+  ],
+  "language": {"detected": "italian", "confidence": 0.3, "marker_ratio": 0.24, "latin_script_ratio": 1.0},
+  "evidence": {"messages": 3, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.152}
 }
 ```
 
@@ -176,7 +178,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 * **Partially calibrated parameters**: signal weights are empirically calibrated with [`cats.calibration`](docs/calibration.md) and validated on a future snapshot (`data/calibrated_weights.json`), but band thresholds and silence thresholds remain unvalidated initial estimates
 * **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [6 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
 * **Single dominant signal**: discrimination currently rests almost entirely on `silence` (holdout ρ −0.43; coherence/volatility/gaming carry ~no rank information) — an adversary publishing on a regular cadence would collapse scores toward chance; see [signal research](docs/signal_research_2026-07.md) for the v2.0 hardening work
-* **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy
+* **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy — non-Italian input is detected and flagged in the response (`language.detected`), but scores are still computed with the Italian-tuned stack
 * **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
 
 ***
