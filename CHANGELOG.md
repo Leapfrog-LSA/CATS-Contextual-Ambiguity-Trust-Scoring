@@ -98,6 +98,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   minimum-evidence guardrail above).
 
 ### Fixed
+- `docs/compliance.md` asserted CATS is a "Limited Risk AI System" under the
+  EU AI Act — a legal determination that contradicts the *pending*
+  classification decision tracked in `docs/eu_ai_act/classification.md`.
+  Softened to "pending legal decision" with a pointer to the classification
+  prerequisite; the same doc's stale accuracy rows (weights described as
+  uncalibrated) and version roadmap were brought up to the v1.5.0 state.
+- Documentation state sync: `docs/README.md` was an empty stub (now a full
+  index), `CITATION.cff` still cited version 1.3.0 (now 1.5.0),
+  `SUMMARY.md`/README lacked `docs/cloud_setup.md`, the README roadmap was
+  frozen at v1.3.1, and `docs/architecture.md`/`docs/api.md` did not describe
+  the response-time guardrail blocks.
 - Alembic migrations now honour the `DATABASE_URL` environment variable
   (falling back to `alembic.ini`): `alembic upgrade head` / `make db-migrate`
   previously always targeted the hardcoded localhost `cats` database and

@@ -89,11 +89,14 @@ transaction); each result carries its own `trace_id`.
 {
   "count": 2,
   "results": [
-    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...] },
-    { "trace_id": "...", "score": 41.0, "band": "medium",      "requires_review": true,  "signals": [...] }
+    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...], "language": {...}, "evidence": {...} },
+    { "trace_id": "...", "score": 41.0, "band": "medium",      "requires_review": true,  "signals": [...], "language": {...}, "evidence": {...} }
   ]
 }
 ```
+
+Each item has the same shape as an `/evaluate` response, including the
+`language` and `evidence` guardrail blocks.
 
 ---
 
