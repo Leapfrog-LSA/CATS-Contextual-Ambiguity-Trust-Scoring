@@ -25,6 +25,8 @@ CATS analyses the _behavioural patterns_ of a source over time — narrative con
 | **Silence**    | Anomalous temporal gaps in publishing       | Gap analysis vs. source-type thresholds                    |
 | **Gaming**     | Signs of algorithmic manipulation           | Repetition + TTR + burst + vocab diversity                 |
 
+On top of the four behavioural signals, an asymmetric **domain-provenance penalty** (ENGINE 1.4, v1.5.0) lowers the score of impersonation/clone domains — rare/cheap TLDs, free-hosting subdomains, brand typo-squats — when a source URL is supplied. It only ever *lowers* scores, never rewards a clean domain (see [architecture](docs/architecture.md)).
+
 ***
 
 ## Try it in 5 lines (no infrastructure)
@@ -163,6 +165,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/eu\_ai\_act/](docs/eu_ai_act/)         | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
 | [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation (concordance 0.755)      |
+| [docs/cloud\_setup.md](docs/cloud_setup.md)  | Running CATS in Claude Code on the web (setup, env, network) |
 | [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
 | [docs/signal\_diagnosis\_2026-07.md](docs/signal_diagnosis_2026-07.md) | Signal ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility+gaming are dead weight |
 | [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
@@ -177,7 +180,8 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 * **NLP accuracy \~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
 * **Partially calibrated parameters**: signal weights are empirically calibrated with [`cats.calibration`](docs/calibration.md) and validated on a future snapshot (`data/calibrated_weights.json`), but band thresholds and silence thresholds remain unvalidated initial estimates
 * **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [6 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
-* **Single dominant signal**: discrimination currently rests almost entirely on `silence` (holdout ρ −0.43; coherence/volatility/gaming carry ~no rank information) — an adversary publishing on a regular cadence would collapse scores toward chance; see [signal research](docs/signal_research_2026-07.md) for the v2.0 hardening work
+* **Discrimination rests on few signals**: `silence` carries most rank information (holdout ρ −0.43) with SBERT `coherence` as a load-bearing tie-breaker (LOSO −0.139 concordance); volatility and gaming contribute ~nothing as currently designed — see the [signal diagnosis](docs/signal_diagnosis_2026-07.md). An adversary on a regular publishing cadence and a clean domain still collapses most of the margin (the ENGINE 1.4 domain penalty catches only infrastructure clones); the adversarial regression suite (`tests/unit/test_adversarial.py`) pins these behaviours
+* **Calibrated weights assume the SBERT coherence backend**: deploy `data/calibrated_weights.json` with `COHERENCE_BACKEND=sbert`, or the coherence contribution is forfeited (~0.62 instead of 0.755 concordance; see [calibration](docs/calibration.md))
 * **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy — non-Italian input is detected and flagged in the response (`language.detected`), but scores are still computed with the Italian-tuned stack
 * **Ordinal scoring only**: not suitable as sole basis for autonomous decisions
 
@@ -194,15 +198,17 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | **v1.2**   | ✅      | Sentence-BERT coherence · explainer attribution · weight calibration                                                |
 | **v1.3**   | ✅      | Signal-polarity fix in aggregation · distant-supervision dataset (MBFC + disinfo networks) · snapshot accumulation · `cats.lite` + PyPI packaging |
 | **v1.3.1** | ✅      | `CATS_WEIGHTS_FILE`/`CATS_API_KEYS` alias fix · contest-resolution endpoint (GDPR Art. 22) · per-key rate limiting  |
+| **v1.4**   | ✅      | Calibrated weights **validated on a future snapshot** (concordance 0.755 > 0.70 target) shipped as the production table · cloud setup guide |
+| **v1.5**   | ✅      | **Domain-provenance asymmetric penalty** (ENGINE 1.4): impersonation/clone domains lower the score; holdout concordance 0.755 → 0.775 |
 
-Already merged for the next release (unreleased): calibrated weights **validated on a future snapshot** (6 Jul 2026, holdout concordance 0.755 > 0.70 target) and shipped as the recommended production table in `data/calibrated_weights.json`; domain-provenance signal spike (`research/domain_provenance_spike.py`) showing +0.02 holdout concordance.
+Already merged for the next release (unreleased): adversarial regression suite from the Art. 9 risk register (`tests/unit/test_adversarial.py`); two-level **signal diagnosis** (coherence is load-bearing via SBERT, volatility threshold mis-set, gaming double-weights TTR — `docs/signal_diagnosis_2026-07.md`); **input-language flag** (R3) and **minimum-evidence guardrail** (R5) in every response; Alembic honours `DATABASE_URL`; dispatchable release workflow. Full plan: [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md).
 
 ### Pending — v2.0 (2027)
 
-1. **Signal hardening** — discriminative power currently rests on `silence` alone; the fifth **domain-provenance** signal is a v2.0 candidate pending calibration and re-validation (see `docs/signal_research_2026-07.md`).
-2. **Content-credibility signal** — catch fake news published on ordinary domains, which domain structure alone cannot detect.
-3. **AUC-ROC ≥ 0.78** on a larger validation set.
-4. **Full EU AI Act technical documentation** (Annex IV/IX).
+1. **Content-credibility signal** — catch fake news published on ordinary domains, which domain structure alone cannot detect (the largest NLP work item).
+2. **Recalibration with the diagnosis inputs** — volatility spike threshold 0.1–0.3 (~3× its current rank information), silence threshold ≥ 96 h, gaming redesign (its `vocab` sub-score duplicates TTR), band-threshold validation; gated on a grown validation set (target: concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout).
+3. **Full EU AI Act technical documentation** (Annex IV) — pending the human/legal high-risk classification decision (`docs/eu_ai_act/`).
+4. **Multilingual support** — beyond the Italian-optimised NLP stack (the language flag is the first step).
 
 ***
 
