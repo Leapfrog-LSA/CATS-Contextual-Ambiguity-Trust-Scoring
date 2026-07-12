@@ -200,8 +200,9 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | **v1.3.1** | ✅      | `CATS_WEIGHTS_FILE`/`CATS_API_KEYS` alias fix · contest-resolution endpoint (GDPR Art. 22) · per-key rate limiting  |
 | **v1.4**   | ✅      | Calibrated weights **validated on a future snapshot** (concordance 0.755 > 0.70 target) shipped as the production table · cloud setup guide |
 | **v1.5**   | ✅      | **Domain-provenance asymmetric penalty** (ENGINE 1.4): impersonation/clone domains lower the score; holdout concordance 0.755 → 0.775 |
+| **v1.6**   | ✅      | **Input-language flag** (R3) + **minimum-evidence guardrail** (R5) in every response · adversarial regression suite · signal diagnosis (`docs/signal_diagnosis_2026-07.md`) · audit fixes: degraded startup without the spaCy model, audit-IP spoofing fix, calibrated weights shipped in Docker, mixed-timezone normalisation, failed-auth throttling |
 
-Already merged for the next release (unreleased): adversarial regression suite from the Art. 9 risk register (`tests/unit/test_adversarial.py`); two-level **signal diagnosis** (coherence is load-bearing via SBERT, volatility threshold mis-set, gaming double-weights TTR — `docs/signal_diagnosis_2026-07.md`); **input-language flag** (R3) and **minimum-evidence guardrail** (R5) in every response; Alembic honours `DATABASE_URL`; dispatchable release workflow. Full plan: [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md).
+Full plan: [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md).
 
 ### Pending — v2.0 (2027)
 

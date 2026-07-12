@@ -31,7 +31,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased] — v2.0 (2027)
+## [Unreleased]
+
+### Planned
+- Content-credibility signal for fake-news on ordinary domains (the low-tail
+  class domain structure cannot catch).
+- Full EU AI Act Annex IX documentation
+- v2.0 (2027): recalibration with the diagnosis inputs, concordance/AUC ≥ 0.78
+  on a ≥ 100-source future holdout
+
+---
+
+## [1.6.0] — 2026-07-12
 
 ### Added
 - **Input-language flag (risk R3, roadmap item 8).** Evaluations now assess
@@ -151,11 +162,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   title and its citations — it ran on **6 July 2026** (commit `2b41982`).
   Living docs and code comments now carry the correct date; the findings
   filename and released changelog entries are kept for link stability.
-
-### Planned
-- Content-credibility signal for fake-news on ordinary domains (the low-tail
-  class domain structure cannot catch).
-- Full EU AI Act Annex IX documentation
 
 ---
 
