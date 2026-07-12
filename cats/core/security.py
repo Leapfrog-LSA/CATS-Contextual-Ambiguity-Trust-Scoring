@@ -114,6 +114,11 @@ class APIKeyBearer(HTTPBearer):
     async def __call__(self, request: Request) -> str:  # type: ignore[override]
         cred: HTTPAuthorizationCredentials = await super().__call__(request)
         if not verify_api_key(cred.credentials):
+            # Failed attempts are rate-limited per client IP: the per-key
+            # limiter below only ever runs for valid keys, so without this an
+            # attacker would get unlimited guesses at the key space.
+            if not await check_rate_limit("authfail:" + get_client_ip(request)):
+                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
         if not await check_rate_limit(rate_limit_id(cred.credentials, request)):
             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded")

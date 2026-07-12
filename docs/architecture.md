@@ -156,8 +156,8 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
 | Control | Implementation |
 |---|---|
 | API authentication | `Authorization: Bearer <key>` with dual-key rotation |
-| Rate limiting | Redis sliding-window Lua script, 30 req/min per IP |
+| Rate limiting | Redis sliding-window Lua script, 30 req/min per API key; failed auth attempts limited per client IP |
 | Audit storage | AES-256-GCM encrypted JSONB in PostgreSQL |
-| IP extraction | Safe `X-Forwarded-For` parsing (first IP only) |
+| IP extraction | Safe `X-Forwarded-For` parsing (first IP only); the bundled nginx **overwrites** the header with the real client address, so clients cannot forge the audited IP |
 | Data retention | Nightly APScheduler job; distributed lock via Redis |
 | Container | Non-root user; read-only filesystem |

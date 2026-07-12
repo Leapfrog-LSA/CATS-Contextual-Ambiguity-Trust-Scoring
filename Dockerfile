@@ -12,6 +12,11 @@ COPY cats/ cats/
 COPY alembic.ini .
 COPY alembic/ alembic/
 
+# Calibrated production weights: without this file in the image, a
+# CATS_WEIGHTS_FILE pointing at it logs a warning and the engine silently
+# falls back to the static (unvalidated) weight estimates.
+COPY data/calibrated_weights.json data/calibrated_weights.json
+
 # NLTK_DATA must be a world-readable path: corpora are downloaded as root at
 # build time but read by the non-root `cats` user at runtime.
 ENV NLTK_DATA=/usr/local/share/nltk_data

@@ -36,11 +36,24 @@ structlog.configure(
 logger = structlog.get_logger()
 
 
+def init_nlp_or_degrade() -> None:
+    """Load the spaCy model, degrading instead of blocking startup.
+
+    A missing/broken model must not prevent the API from serving: NER coherence
+    already returns a neutral zero-confidence value when `nlp` is None, and
+    /health reports the state as "not_loaded" (WP 4.1 graceful degradation).
+    """
+    try:
+        init_nlp(settings.spacy_model)  # N-01: singleton
+    except Exception as exc:
+        logger.warning("spacy_model_unavailable", model=settings.spacy_model, error=str(exc), mode="degraded")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.environment)
     await init_redis()  # S-03
-    init_nlp(settings.spacy_model)  # N-01: singleton
+    init_nlp_or_degrade()
 
     # Q-03: max_instances=1 prevents overlapping purge jobs
     sched = AsyncIOScheduler()
