@@ -41,6 +41,7 @@
 | v1.1–v1.2 | ✅ NLP backends | BERT Italian sentiment · Sentence-BERT coherence · per-signal attribution |
 | v1.4 | ✅ Validation | Calibrated weights validated on a future snapshot (concordance 0.755) |
 | v1.5 | ✅ Hardening | Domain-provenance asymmetric penalty (ENGINE 1.4, 0.755 → 0.775) |
+| v1.6 | ✅ Guardrails & audit fixes | Language flag (R3) · minimum-evidence flag (R5) · adversarial regression suite · audit-IP spoofing fix, degraded NLP startup, calibrated weights shipped in Docker |
 | v2.0 (2027) | Validation | Concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout; recalibration with the diagnosis inputs; full EU AI Act **Annex IV** technical documentation |
 
 > **Annex IV vs Annex IX.** The general "document the system" artefact under the
