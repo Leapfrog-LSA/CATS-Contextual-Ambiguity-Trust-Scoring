@@ -97,7 +97,37 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   below the evidence minimum, regardless of score or band (see the
   minimum-evidence guardrail above).
 
+### Security
+- The bundled nginx now **overwrites** `X-Forwarded-For` with `$remote_addr`
+  instead of appending to it (`$proxy_add_x_forwarded_for`): the app takes the
+  *first* entry of the header and records it in the GDPR audit log, so a
+  client-supplied header could forge the audited IP even behind the proxy.
+  Regression-tested (`tests/unit/test_security.py`).
+- Failed API-key attempts are now rate-limited per client IP (429 beyond the
+  sliding window). Previously the limiter only ran after successful
+  verification, leaving key brute-forcing unthrottled at the app layer.
+- `docker-compose.yml` no longer publishes the app's port 8000 on the host:
+  the API is reachable only through nginx, so the proxy's rate limiting,
+  security headers and `X-Forwarded-For` rewrite cannot be bypassed.
+
 ### Fixed
+- The API now starts when the spaCy model is missing: `lifespan` crashed on a
+  missing/broken `it_core_news_lg`; it now logs `spacy_model_unavailable` and
+  serves in the documented degraded mode (neutral zero-confidence NER
+  coherence, `/health` reports `nlp: "not_loaded"`).
+- The Docker image now ships `data/calibrated_weights.json`. Pointing
+  `CATS_WEIGHTS_FILE` at it inside the container hit the missing-file fallback
+  and silently scored with the static, unvalidated weight estimates.
+- `normalize_messages` sorts chronologically under mixed UTC offsets:
+  timestamps are normalised to UTC before sort/dedup (the previous ISO-string
+  sort mis-ordered mixed-timezone histories, skewing the temporal signals;
+  naive timestamps are taken as UTC). Non-string `text`/`timestamp` entries
+  and non-dict records are now counted and skipped instead of raising
+  `AttributeError` from `cats.lite` on non-text input.
+- `make split` no longer litters the repo root with `train.jsonl` /
+  `holdout.jsonl`: outputs go to the gitignored `data/splits/`, and the CLI's
+  default output names are gitignored at the root as a safety net. Missing
+  `.PHONY` declarations (`docker-logs`, `db-downgrade`, `generate-key`) added.
 - `docs/compliance.md` asserted CATS is a "Limited Risk AI System" under the
   EU AI Act — a legal determination that contradicts the *pending*
   classification decision tracked in `docs/eu_ai_act/classification.md`.

@@ -88,6 +88,77 @@ class TestRateLimitKeying:
         assert rate_limit_id("", req) == "ip:1.2.3.4"
 
 
+class TestFailedAuthRateLimit:
+    """Invalid API-key attempts must be rate-limited per client IP — the
+    per-key limiter only runs after successful verification, so failures
+    would otherwise allow unlimited brute-force guesses."""
+
+    def _request(self, token="wrong-key", ip="9.9.9.9"):
+        from unittest.mock import Mock
+
+        req = Mock()
+        req.headers = {"Authorization": f"Bearer {token}"}
+        req.client.host = ip
+        return req
+
+    async def test_failed_attempts_hit_ip_bucket(self, monkeypatch):
+        import cats.core.security as security
+
+        monkeypatch.setattr(settings, "cats_api_key", "real-key")
+        monkeypatch.setattr(settings, "cats_api_key_prev", None)
+        monkeypatch.setattr(settings, "api_keys", None)
+        monkeypatch.setattr(settings, "trust_proxy_headers", False)
+        buckets = []
+
+        async def fake_limit(client_id):
+            buckets.append(client_id)
+            return True
+
+        monkeypatch.setattr(security, "check_rate_limit", fake_limit)
+        import pytest
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc:
+            await security.APIKeyBearer()(self._request())
+        assert exc.value.status_code == 401
+        assert buckets == ["authfail:9.9.9.9"]
+
+    async def test_failed_attempts_over_limit_get_429(self, monkeypatch):
+        import cats.core.security as security
+
+        monkeypatch.setattr(settings, "cats_api_key", "real-key")
+        monkeypatch.setattr(settings, "cats_api_key_prev", None)
+        monkeypatch.setattr(settings, "api_keys", None)
+        monkeypatch.setattr(settings, "trust_proxy_headers", False)
+
+        async def exhausted(client_id):
+            return False
+
+        monkeypatch.setattr(security, "check_rate_limit", exhausted)
+        import pytest
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc:
+            await security.APIKeyBearer()(self._request())
+        assert exc.value.status_code == 429
+
+
+class TestNginxForwardedForNotAppended:
+    def test_nginx_overwrites_x_forwarded_for(self):
+        """get_client_ip takes the FIRST X-Forwarded-For entry and it lands in
+        the GDPR audit log, so nginx must overwrite the header with
+        $remote_addr — $proxy_add_x_forwarded_for appends to a client-supplied
+        value and would let callers forge the audited IP."""
+        from pathlib import Path
+
+        conf = Path(__file__).resolve().parents[2] / "deploy" / "nginx.conf"
+        text = conf.read_text(encoding="utf-8")
+        # Comments may mention the appending variable; active directives must not.
+        directives = [ln for ln in text.splitlines() if not ln.lstrip().startswith("#")]
+        assert not any("$proxy_add_x_forwarded_for" in ln for ln in directives)
+        assert any("proxy_set_header X-Forwarded-For $remote_addr;" in ln for ln in directives)
+
+
 class TestClientIpTrust:
     def _req(self, xff, host="10.0.0.9"):
         from unittest.mock import Mock
