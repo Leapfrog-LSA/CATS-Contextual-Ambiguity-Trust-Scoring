@@ -158,6 +158,6 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
 | API authentication | `Authorization: Bearer <key>` with dual-key rotation |
 | Rate limiting | Redis sliding-window Lua script, 30 req/min per IP |
 | Audit storage | AES-256-GCM encrypted JSONB in PostgreSQL |
-| IP extraction | Safe `X-Forwarded-For` parsing (first IP only) |
+| IP extraction | nginx *sets* `X-Forwarded-For` to the real peer (`$remote_addr`, not `$proxy_add_...`), so a client cannot inject a spoofed hop; the app honours it only when `TRUST_PROXY_HEADERS` is on |
 | Data retention | Nightly APScheduler job; distributed lock via Redis |
 | Container | Non-root user; read-only filesystem |

@@ -98,6 +98,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   minimum-evidence guardrail above).
 
 ### Fixed
+- **API startup no longer crashes when the spaCy model is missing.** The
+  lifespan called `init_nlp` unguarded, so a deployment without
+  `it_core_news_lg` failed to boot — contradicting the documented graceful
+  degradation and making `/health`'s `nlp: not_loaded` state unreachable. NER
+  coherence now degrades to a neutral value and the app starts (only Docker,
+  which bakes the model in, was unaffected). Found in the July 2026 audit.
+- **Spoofable client IP in the GDPR audit log.** The bundled nginx set
+  `X-Forwarded-For` with `$proxy_add_x_forwarded_for`, which preserves a
+  client-supplied header; the app reads the first hop, so a client could
+  forge the recorded IP. nginx now sets XFF to `$remote_addr` (the real peer).
+- **Calibrated weights now ship in the Docker image.** The Dockerfile copied
+  only `cats/` and `alembic/`, so `CATS_WEIGHTS_FILE=data/calibrated_weights.json`
+  (as documented) pointed at a nonexistent path in the container and weight
+  loading silently fell back to the unvalidated static table. `data/
+  calibrated_weights.json` is now copied in.
+- **Message normalisation ordering and input hygiene.** `normalize_messages`
+  sorted on the ISO string, so mixed-offset timestamps (e.g. `10:00+02:00`
+  vs `09:30Z`) were ordered wrong, corrupting the temporal signals; it also
+  crashed on a non-string `text`/`timestamp`. It now sorts and dedups on the
+  real UTC instant (naive timestamps treated as UTC) and skips non-string
+  fields instead of raising. Regression tests in
+  `tests/unit/test_normalizer_ordering.py`.
+- **Deployment hardening.** `docker-compose` no longer publishes the app's
+  port 8000 to the host (bypassed nginx rate limiting/headers); `make split`
+  outputs (`train.jsonl`/`holdout.jsonl`) and the root `calibrated_weights.json`
+  are git-ignored (with `data/calibrated_weights.json` kept tracked); the
+  Makefile `.PHONY` list covers all targets.
 - `docs/compliance.md` asserted CATS is a "Limited Risk AI System" under the
   EU AI Act — a legal determination that contradicts the *pending*
   classification decision tracked in `docs/eu_ai_act/classification.md`.

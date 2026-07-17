@@ -11,6 +11,10 @@ FROM base AS runtime
 COPY cats/ cats/
 COPY alembic.ini .
 COPY alembic/ alembic/
+# Validated calibrated weights: docs recommend CATS_WEIGHTS_FILE=data/
+# calibrated_weights.json. Without the file in the image, weight loading
+# silently falls back to the unvalidated static table (only a log warning).
+COPY data/calibrated_weights.json data/calibrated_weights.json
 
 # NLTK_DATA must be a world-readable path: corpora are downloaded as root at
 # build time but read by the non-root `cats` user at runtime.

@@ -1,5 +1,6 @@
 .PHONY: install dev-install nlp-download test test-unit test-integration lint format \
-        docker-up docker-down docker-build db-migrate db-revision calibrate eval split report clean help
+        docker-up docker-down docker-build docker-logs db-migrate db-revision db-downgrade \
+        calibrate eval split report generate-key clean help
 
 ## ── Setup ─────────────────────────────────────────────────────────────
 install:

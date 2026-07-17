@@ -40,7 +40,13 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.environment)
     await init_redis()  # S-03
-    init_nlp(settings.spacy_model)  # N-01: singleton
+    # N-01: load the spaCy NER singleton, but never let a missing model stop
+    # startup — NER coherence degrades to a neutral, zero-confidence value and
+    # /health reports nlp: not_loaded (same contract as cats.lite.init_nlp).
+    try:
+        init_nlp(settings.spacy_model)  # singleton
+    except Exception as exc:
+        logger.warning("nlp_init_failed", model=settings.spacy_model, error=str(exc), fallback="neutral_coherence")
 
     # Q-03: max_instances=1 prevents overlapping purge jobs
     sched = AsyncIOScheduler()
