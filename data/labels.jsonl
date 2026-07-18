@@ -31,11 +31,11 @@
 {"source_id": "Daily Maverick", "source_type": "news", "label": 70.0, "url": "https://www.dailymaverick.co.za", "rss": "https://www.dailymaverick.co.za/feed/"}
 {"source_id": "Dawn Investigations", "source_type": "news", "label": 70.0, "url": "https://www.dawn.com/investigations", "rss": null}
 {"source_id": "El Diaro.es", "source_type": "news", "label": 85.0, "url": "https://www.eldiario.es", "rss": "https://www.eldiario.es/rss/"}
-{"source_id": "Mail & Guardian", "source_type": "news", "label": 50.0, "url": "https://mg.co.za", "rss": "https://mg.co.za/feed/"}
+{"source_id": "Mail & Guardian", "source_type": "news", "label": 50.0, "url": "https://mg.co.za", "rss": "https://mg.co.za/rss"}
 {"source_id": "Nation Africa", "source_type": "news", "label": 50.0, "url": "https://nation.africa", "rss": "https://nation.africa/rss/"}
 {"source_id": "Premium Times", "source_type": "news", "label": 70.0, "url": "https://www.premiumtimesng.com", "rss": "https://www.premiumtimesng.com/feed/"}
 {"source_id": "RFI Afrique", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr/fr/afrique", "rss": "https://www.rfi.fr/fr/afrique/rss"}
-{"source_id": "Texas Tribune", "source_type": "news", "label": 85.0, "url": "https://www.texastribune.org", "rss": "https://www.texastribune.org/rss.xml"}
+{"source_id": "Texas Tribune", "source_type": "news", "label": 85.0, "url": "https://www.texastribune.org", "rss": "https://www.texastribune.org/feed/"}
 {"source_id": "The Africa Report", "source_type": "news", "label": 70.0, "url": "https://www.theafricareport.com", "rss": "https://www.theafricareport.com/feed/"}
 {"source_id": "The Conversation", "source_type": "news", "label": 95.0, "url": "https://theconversation.com", "rss": null}
 {"source_id": "The Guardian NG", "source_type": "news", "label": 50.0, "url": "https://guardian.ng", "rss": "https://guardian.ng/feed/"}
@@ -43,7 +43,7 @@
 {"source_id": "ANSA", "source_type": "news", "label": 85.0, "url": "https://www.ansa.it", "rss": "https://www.ansa.it/sito/ansait_rss.xml"}
 {"source_id": "Corriere Economia", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it/economia", "rss": null}
 {"source_id": "Corriere Immigrazione", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it/immigrazione", "rss": null}
-{"source_id": "Digi24 Romania", "source_type": "news", "label": 85.0, "url": "https://www.digi24.ro", "rss": "https://www.digi24.ro/rss.xml"}
+{"source_id": "Digi24 Romania", "source_type": "news", "label": 85.0, "url": "https://www.digi24.ro", "rss": "https://www.digi24.ro/rss"}
 {"source_id": "Euromaidan Press", "source_type": "news", "label": 85.0, "url": "https://euromaidanpress.com", "rss": "https://euromaidanpress.com/feed/"}
 {"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://xml2.corriereobjects.it/rss/homepage.xml"}
 {"source_id": "Il Fatto Quotidiano", "source_type": "news", "label": 85.0, "url": "https://www.ilfattoquotidiano.it", "rss": "https://www.ilfattoquotidiano.it/feed/"}
@@ -65,22 +65,22 @@
 {"source_id": "Irish Examiner", "source_type": "news", "label": 70.0, "url": "https://www.irishexaminer.com", "rss": "https://www.irishexaminer.com/feed/"}
 {"source_id": "Le Monde", "source_type": "news", "label": 85.0, "url": "https://www.lemonde.fr", "rss": null}
 {"source_id": "Le Parisien", "source_type": "news", "label": 85.0, "url": "https://www.leparisien.fr", "rss": "https://www.leparisien.fr/rss/"}
-{"source_id": "Le Soir", "source_type": "news", "label": 85.0, "url": "https://www.lesoir.be", "rss": "https://www.lesoir.be/arc/outboundfeeds/rss/"}
+{"source_id": "Le Soir", "source_type": "news", "label": 85.0, "url": "https://www.lesoir.be", "rss": "https://www.lesoir.be/rss.xml"}
 {"source_id": "Les Décodeurs (Le Monde)", "source_type": "news", "label": 85.0, "url": "https://www.lemonde.fr/les-decodeurs", "rss": null}
 {"source_id": "RFI English", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr/en", "rss": null}
 {"source_id": "RFI Français", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr/fr", "rss": null}
 {"source_id": "Sky News (UK)", "source_type": "news", "label": 85.0, "url": "https://news.sky.com", "rss": "https://news.sky.com/rss"}
 {"source_id": "The Independent", "source_type": "news", "label": 50.0, "url": "https://www.independent.co.uk", "rss": null}
 {"source_id": "The Independent US", "source_type": "news", "label": 50.0, "url": "https://www.independent.co.uk/us", "rss": "https://www.independent.co.uk/us/rss"}
-{"source_id": "The Register", "source_type": "news", "label": 85.0, "url": "https://www.theregister.com", "rss": "https://www.theregister.com/headlines.xml"}
+{"source_id": "The Register", "source_type": "news", "label": 85.0, "url": "https://www.theregister.com", "rss": "https://www.theregister.com/feed/"}
 {"source_id": "Welt", "source_type": "news", "label": 85.0, "url": "https://www.welt.de", "rss": "https://www.welt.de/services/rss-feeds/welt.xml"}
 {"source_id": "444.hu", "source_type": "news", "label": 70.0, "url": "https://444.hu", "rss": "https://444.hu/rss"}
 {"source_id": "B92", "source_type": "news", "label": 50.0, "url": "https://www.b92.net", "rss": "https://www.b92.net/rss/"}
 {"source_id": "BBC Science & Environment", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/news/science_and_environment", "rss": null}
 {"source_id": "Berlingske", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk", "rss": null}
 {"source_id": "Berlingske Business", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk/business", "rss": "https://www.berlingske.dk/service/rss"}
-{"source_id": "Göteborgs-Posten", "source_type": "news", "label": 70.0, "url": "https://www.gp.se", "rss": "https://www.gp.se/feed"}
-{"source_id": "Index.hr", "source_type": "news", "label": 85.0, "url": "https://www.index.hr", "rss": "https://www.index.hr/rss2.xml"}
+{"source_id": "Göteborgs-Posten", "source_type": "news", "label": 70.0, "url": "https://www.gp.se", "rss": "https://www.gp.se/rss"}
+{"source_id": "Index.hr", "source_type": "news", "label": 85.0, "url": "https://www.index.hr", "rss": "https://www.index.hr/rss"}
 {"source_id": "Mediazona", "source_type": "news", "label": 70.0, "url": "https://en.zona.media", "rss": "https://en.zona.media/rss"}
 {"source_id": "Ukrainska Pravda", "source_type": "news", "label": 70.0, "url": "https://www.pravda.com.ua", "rss": "https://www.pravda.com.ua/rss/"}
 {"source_id": "Ukrainska Pravda English", "source_type": "news", "label": 70.0, "url": "https://www.pravda.com.ua/eng", "rss": "https://www.pravda.com.ua/rss/"}
@@ -88,7 +88,7 @@
 {"source_id": "El Financiero", "source_type": "news", "label": 70.0, "url": "https://www.elfinanciero.com.mx", "rss": "https://www.elfinanciero.com.mx/rss"}
 {"source_id": "+972 Arabic (Local Call)", "source_type": "news", "label": 85.0, "url": "https://www.972mag.com/arabic", "rss": null}
 {"source_id": "Al Jazeera Africa", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.com/africa", "rss": "https://www.aljazeera.com/xml/rss/all.xml"}
-{"source_id": "Al Jazeera Arabic", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.net", "rss": "https://www.aljazeera.net/xml/rss/all.xml"}
+{"source_id": "Al Jazeera Arabic", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.net", "rss": "https://www.aljazeera.net/feed"}
 {"source_id": "BBC Arabic", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/arabic", "rss": null}
 {"source_id": "Business Day", "source_type": "news", "label": 50.0, "url": "https://www.businesslive.co.za", "rss": "https://www.businesslive.co.za/rss/"}
 {"source_id": "City Press SA", "source_type": "news", "label": 85.0, "url": "https://www.news24.com/citypress", "rss": null}
@@ -105,13 +105,13 @@
 {"source_id": "RFI Mali", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr/fr/afrique/mali", "rss": null}
 {"source_id": "Rudaw", "source_type": "news", "label": 50.0, "url": "https://www.rudaw.net/english", "rss": "https://www.rudaw.net/english/rss"}
 {"source_id": "Sudan Tribune", "source_type": "news", "label": 70.0, "url": "https://sudantribune.com", "rss": "https://sudantribune.com/rss"}
-{"source_id": "The Citizen", "source_type": "news", "label": 85.0, "url": "https://www.thecitizen.co.tz", "rss": "https://www.thecitizen.co.tz/feed"}
+{"source_id": "The Citizen", "source_type": "news", "label": 85.0, "url": "https://www.thecitizen.co.tz", "rss": "https://www.thecitizen.co.tz/rss.xml"}
 {"source_id": "The Conversation Africa", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/africa", "rss": null}
 {"source_id": "The Monitor", "source_type": "news", "label": 70.0, "url": "https://www.monitor.co.ug", "rss": "https://www.monitor.co.ug/rss"}
 {"source_id": "TRT Africa", "source_type": "news", "label": 50.0, "url": "https://www.trtworld.com/africa", "rss": "https://www.trtworld.com/rss"}
 {"source_id": "Al Jazeera English", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.com", "rss": null}
 {"source_id": "Arab News", "source_type": "news", "label": 50.0, "url": "https://www.arabnews.com", "rss": "https://www.arabnews.com/rss.xml"}
-{"source_id": "Gulf News", "source_type": "news", "label": 50.0, "url": "https://gulfnews.com", "rss": "https://gulfnews.com/rss"}
+{"source_id": "Gulf News", "source_type": "news", "label": 50.0, "url": "https://gulfnews.com", "rss": "https://gulfnews.com/feed/"}
 {"source_id": "Haaretz English", "source_type": "news", "label": 85.0, "url": "https://www.haaretz.com", "rss": "https://www.haaretz.com/rss/feed.xml"}
 {"source_id": "Jerusalem Post", "source_type": "news", "label": 70.0, "url": "https://www.jpost.com", "rss": "https://www.jpost.com/rss/rssfeedsworld.aspx"}
 {"source_id": "Middle East Eye", "source_type": "news", "label": 70.0, "url": "https://www.middleeasteye.net", "rss": "https://www.middleeasteye.net/rss"}
@@ -124,7 +124,7 @@
 {"source_id": "Geo TV", "source_type": "news", "label": 50.0, "url": "https://www.geo.tv", "rss": "https://www.geo.tv/rss"}
 {"source_id": "Hindu Business Line", "source_type": "news", "label": 50.0, "url": "https://www.thehindubusinessline.com", "rss": "https://www.thehindubusinessline.com/feed/"}
 {"source_id": "Jakarta Globe", "source_type": "news", "label": 70.0, "url": "https://jakartaglobe.id", "rss": "https://jakartaglobe.id/feed/"}
-{"source_id": "Manila Bulletin", "source_type": "news", "label": 50.0, "url": "https://mb.com.ph", "rss": "https://mb.com.ph/feed/"}
+{"source_id": "Manila Bulletin", "source_type": "news", "label": 50.0, "url": "https://mb.com.ph", "rss": "https://mb.com.ph/rss/index.xml"}
 {"source_id": "NHK News Web Easy", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/news/easy", "rss": "https://www3.nhk.or.jp/rss/news/cat0.xml"}
 {"source_id": "NHK World Japan", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/nhkworld", "rss": null}
 {"source_id": "Radio New Zealand Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international/pacific-news", "rss": null}
@@ -137,7 +137,7 @@
 {"source_id": "Human Rights Watch", "source_type": "default", "label": 85.0, "url": "https://www.hrw.org", "rss": null}
 {"source_id": "Human Rights Watch News", "source_type": "default", "label": 85.0, "url": "https://www.hrw.org/news", "rss": "https://www.hrw.org/rss.xml"}
 {"source_id": "UN News Centre", "source_type": "default", "label": 85.0, "url": "https://news.un.org", "rss": "https://news.un.org/feed/subscribe/en/news/all/rss.xml"}
-{"source_id": "ZDNet", "source_type": "default", "label": 85.0, "url": "https://www.zdnet.com", "rss": "https://www.zdnet.com/rss/"}
+{"source_id": "ZDNet", "source_type": "default", "label": 85.0, "url": "https://www.zdnet.com", "rss": "https://www.zdnet.com/rss.xml"}
 {"source_id": "Axios Pro Rata", "source_type": "default", "label": 85.0, "url": "https://www.axios.com/pro/pro-rata", "rss": null}
 {"source_id": "https://bild.pics", "source_type": "news", "label": 10.0, "url": "https://bild.pics", "rss": "https://bild.pics/rss.xml"}
 {"source_id": "Corriere del Corsaro", "source_type": "news", "label": 10.0, "url": "https://corrieredelcorsaro.it", "rss": "https://corrieredelcorsaro.it/feed/"}

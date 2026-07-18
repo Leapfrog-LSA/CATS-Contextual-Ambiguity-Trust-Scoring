@@ -24,14 +24,30 @@ sources appear in the snapshots despite 126 registered feeds, and the loss is
 **not random**: the 35 dead feeds cluster at labels 85 (17) and 50 (10), so the
 effective dataset is biased relative to the registry.
 
-The dead feeds are overwhelmingly non-Italian international outlets (Bild, Welt,
-Le Parisien, Sky News UK, Haaretz, ZDNet, AFP, …) whose feed URLs have moved.
-The two Italian ones with known working replacements were fixed:
+The dead feeds are overwhelmingly non-Italian international outlets whose feed
+URLs have moved.
 
-- **Il Corriere della Sera** — `corriere.it/rss/primo_piano.xml` (404) →
-  `xml2.corriereobjects.it/rss/homepage.xml` (200, valid RSS 2.0).
-- **Il Giornale** — `ilgiornale.it/rss` (404) → `ilgiornale.it/feed.xml`
-  (200, valid RSS 2.0).
+## Repair progress
+
+Common feed-path probing (scratchpad aid) plus per-source verification —
+**every replacement checked for HTTP 200 + valid XML *and* correct
+outlet/language** — repaired **14** feeds so far, dropping the registry from
+35 dead to 22 (ok 64 → 78, ≈62% working):
+
+- Italian: **Corriere della Sera** (`→ xml2.corriereobjects.it/rss/homepage.xml`),
+  **Il Giornale** (`→ ilgiornale.it/feed.xml`).
+- Others: Mail & Guardian, Al Jazeera Arabic, Gulf News, Manila Bulletin,
+  Göteborgs-Posten, Texas Tribune, Digi24, Le Soir, The Register, Index.hr,
+  The Citizen, ZDNet — all `→` a verified working feed of the same outlet.
+
+**Deliberately skipped** (a common pattern resolved but to the wrong
+edition/brand — not applied): AFP (pattern gave the French feed; original was
+English), WNYC (its `/feed/` serves sister-site Gothamist), Le Parisien
+(English edition only). These need the correct per-source URL.
+
+Still dead (22): mostly outlets whose feed URL no pattern found — Bild, Welt,
+Sky News UK, Haaretz, ITV News, Jerusalem Post, The National UAE, DPA, and
+others — each needs a manual URL lookup.
 
 ## Recommendation
 

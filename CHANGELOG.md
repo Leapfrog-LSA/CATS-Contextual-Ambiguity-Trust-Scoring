@@ -64,6 +64,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`ilgiornale.it/rss` 404 → `ilgiornale.it/feed.xml`) fixed alongside
   Corriere; the ~33 remaining (mostly non-Italian outlets whose feed URLs
   moved) are flagged for a repair pass.
+- **Feed-repair pass (round 1): 12 more dead feeds fixed** with verified
+  replacements (HTTP 200 + valid XML + confirmed same outlet/language) — Mail &
+  Guardian, Al Jazeera Arabic, Gulf News, Manila Bulletin, Göteborgs-Posten,
+  Texas Tribune, Digi24, Le Soir, The Register, Index.hr, The Citizen, ZDNet.
+  The registry is now **22 dead / 78 ok** (was 35 / 64; ≈62% working).
+  Replacements that resolved to the wrong edition/brand (AFP→French, WNYC→
+  Gothamist, Le Parisien→English) were deliberately skipped, not applied.
 
 ### Fixed
 - **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**
