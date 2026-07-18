@@ -75,3 +75,28 @@ validated. Two directions for when that data exists:
 As with every candidate signal, wiring it changes band semantics and requires
 its own calibration + future-holdout re-validation (`CLAUDE.md`). This spike is
 evidence for that decision, not a pre-emption of it.
+
+## The dataset gap, quantified — what to collect
+
+The confound above is not specific to the 53-source holdout. Measured across
+**all** sources that have collected text (every snapshot merged, n=59) via
+[`research/dataset_language_balance.py`](../research/dataset_language_balance.py):
+
+| Language | low (≤30) | mid (31–69) | high (≥70) | total |
+|---|---:|---:|---:|---:|
+| Italian | 5 | 1 | 3 | 9 |
+| non-Italian | 11 | 4 | 35 | 50 |
+
+ρ(is_italian, label) = **−0.265**: "being Italian" alone predicts a low label,
+because Italian sources cluster in the low band while the high band is almost
+entirely English. Any content feature is therefore contaminated until the set
+is balanced.
+
+**Concrete collection target** (to make language roughly independent of the
+label): add **~41 Italian sources**, overwhelmingly **high-reliability** ones
+(~32 — the scarcest cell: only 3 today vs 35 English), plus ~6 low and ~3 mid.
+This is also the path to the ≥100-source future holdout the v2.0 accuracy
+target needs. It requires a **network session** (RSS/MBFC access) — the
+existing pipeline (`collect_rss` → `label_from_ratings` → `merge_snapshots` →
+`split` → `build_dataset`) already does the collection; only the source list
+and a network-enabled run are missing. No feeds are invented here.
