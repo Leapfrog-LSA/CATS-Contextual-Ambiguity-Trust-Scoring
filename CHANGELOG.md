@@ -47,7 +47,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Planned
 - Content-credibility signal — pending a language-balanced labelled set that
-  can disentangle the confound (see the spike findings above).
+  can disentangle the confound (see the spike findings above). The dataset gap
+  is quantified (`research/dataset_language_balance.py`: ρ(is_italian, label)
+  = −0.265, high-reliability Italian is the scarce cell) and a verified
+  collection runbook is ready for the next network session
+  (`docs/dataset_expansion_runbook.md`).
 - Full EU AI Act **Annex IV** technical documentation (pending the legal
   high-risk classification).
 - v2.0 (2027): recalibration with the diagnosis inputs, concordance/AUC ≥ 0.78
