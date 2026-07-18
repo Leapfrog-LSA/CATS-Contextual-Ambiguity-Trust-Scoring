@@ -44,6 +44,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (n=8), and the feature barely fires except on one overt ALL-CAPS outlet.
   **Not wired**: the committed data cannot validate it — a hard block on the
   language-balanced dataset work.
+- Two verified high-reliability Italian sources added to the labelled set —
+  `repubblica.it` and `open.online`, both MBFC **High** read directly from the
+  MBFC pages (feeds verified reachable): rows appended to `data/ratings.csv`,
+  `data/ratings_provenance.csv` and `data/labels.jsonl`.
+
+### Fixed
+- **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**
+  Executing the dataset expansion surfaced that `data/labels.jsonl` is a curated
+  **merge** of MBFC ratings and the documented-disinfo registry, not
+  reproducible from `ratings.csv` alone: regenerating it straight from
+  `label_from_ratings --scale mbfc` drops 160→141 records, deleting the entire
+  ground-truth **low tail** (Corriere del Corsaro label 10, etc.). The runbook
+  now carries a prominent safety warning and writes MBFC output to a separate
+  file to merge, never overwriting the curated registry. The runbook's earlier
+  "only 3 Italian RSS feeds / add ~30" premise was also corrected: the major
+  Italian nationals are already in the registry; the real gaps are ~2
+  cleanly-addable sources (done) plus catalogue-row deduplication so labelled
+  outlets (`corriere.it`, `ilsole24ore.com`) actually get collected.
 
 ### Planned
 - Content-credibility signal — pending a language-balanced labelled set that

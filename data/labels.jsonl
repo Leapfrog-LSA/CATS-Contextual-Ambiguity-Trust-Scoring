@@ -158,3 +158,5 @@
 {"source_id": "Veterans Today", "source_type": "news", "label": 10.0, "url": "https://veteranstoday.com", "rss": "https://veteranstoday.com/feed/"}
 {"source_id": "RT News", "source_type": "news", "label": 10.0, "url": "https://rt.com", "rss": "https://www.rt.com/feed/"}
 {"source_id": "David Icke", "source_type": "news", "label": 10.0, "url": "https://davidicke.com", "rss": "https://davidicke.com/feed/"}
+{"source_id": "La Repubblica", "source_type": "news", "label": 85.0, "url": "https://www.repubblica.it", "rss": "https://www.repubblica.it/rss/homepage/rss2.0.xml"}
+{"source_id": "Open", "source_type": "news", "label": 85.0, "url": "https://www.open.online", "rss": "https://www.open.online/feed/"}

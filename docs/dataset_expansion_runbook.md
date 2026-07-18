@@ -14,14 +14,39 @@ network level does not reach arbitrary feeds/MBFC, so run it under *Full* or a
 is verified against the current CLIs and data model; nothing here fabricates
 feeds or ratings.
 
-## The real bottleneck (verified, network-free)
+## ⚠️ SAFETY: `data/labels.jsonl` is curated — never regenerate it destructively
 
-`data/Fonti_OSINT.csv` currently holds **only 3 Italian (`Lingua=IT`) sources
-with an RSS feed** (`avvenire.it`, `ilmanifesto.it`, and one already rated). So
-the work is *not* "run the collector on existing feeds" — it is **add ~30
-Italian outlets to the catalogue and their MBFC ratings**, then run the
-pipeline. Separately, `data/ratings.csv` has **no Low/Very Low** entries, so the
-low tail also needs a few known-unreliable Italian feeds.
+`data/labels.jsonl` is **not** reproducible from `Fonti_OSINT.csv` + `ratings.csv`
+alone. Verified (18 Jul 2026): `label_from_ratings --ratings data/ratings.csv
+--scale mbfc --out data/labels.jsonl` produces **141** records vs the committed
+**160**, silently **dropping the entire low tail** (e.g. *Corriere del Corsaro*
+label 10, *Activist Post*/*Before It's News* label 30). Those low-reliability
+labels come from the **documented-disinformation registry**
+(`data/disinfo_sources.csv`), which is merged in separately — MBFC's
+`ratings.csv` has no Low/Very Low entries. **Regenerating the file straight to
+`data/labels.jsonl` deletes the ground-truth low tail — the core of the
+validation.** Always write MBFC output to a *separate* file and merge, or append
+new rows to the curated `labels.jsonl` (as the worked example below does).
+
+## The real state of the registry (verified, network-free — corrects an earlier premise)
+
+An earlier draft said the catalogue held "only 3 Italian RSS feeds". That was an
+artefact of filtering on `Lingua=IT`; the column is mostly blank and the
+catalogue has **duplicate rows per outlet**. In reality the major Italian
+nationals are **already present** — `ansa.it`, `ilfattoquotidiano.it`,
+`ilgiornale.it` are labelled *and* collected; `corriere.it` and
+`ilsole24ore.com` are labelled (85 / 70) but **not collected**, because the
+duplicate catalogue row that wins the join has an empty `RSS Feed`. So the real
+work is smaller and different than "add ~30":
+
+1. **A few genuinely-missing outlets** — done in this session: `repubblica.it`
+   and `open.online` added (MBFC **High**, read from source; feeds verified 200).
+2. **Catalogue data-quality** — deduplicate the rows so the feed-bearing row
+   wins, or set the RSS on the winning row, so already-labelled outlets
+   (`corriere.it`, `ilsole24ore.com`) actually get collected.
+3. **Low tail** — MBFC has no Low/Very Low; Italian low-reliability sources come
+   from the disinfo registry. Growing the Italian *high* tail is the scarce
+   need, but the pool of Italian high-reliability nationals is itself limited.
 
 ## Data model (what a new source needs)
 
@@ -67,10 +92,14 @@ same two-row procedure, rating `Low`/`Very Low`.
 Run from the repo root after editing the two CSVs:
 
 ```bash
-# 1. Join catalogue + ratings into the label registry.
+# 1. Join catalogue + ratings into the MBFC registry — to a SEPARATE file, then
+#    merge with the disinfo-registry low tail. NEVER --out data/labels.jsonl
+#    directly (it drops the curated low tail — see the SAFETY section above).
 python -m cats.calibration.label_from_ratings \
   --sources data/Fonti_OSINT.csv --ratings data/ratings.csv \
-  --scale mbfc --out data/labels.jsonl
+  --scale mbfc --out data/labels_mbfc.jsonl
+# then merge data/labels_mbfc.jsonl with the disinfo-registry labels into
+# data/labels.jsonl (union by source; keep the existing low tail).
 
 # 2. Collect a dated snapshot of each feed's recent messages (NETWORK).
 mkdir -p data/snapshots
