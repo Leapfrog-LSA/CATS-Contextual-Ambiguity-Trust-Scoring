@@ -48,6 +48,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `repubblica.it` and `open.online`, both MBFC **High** read directly from the
   MBFC pages (feeds verified reachable): rows appended to `data/ratings.csv`,
   `data/ratings_provenance.csv` and `data/labels.jsonl`.
+- **Dead Corriere della Sera feed fixed.** Its registered RSS
+  (`corriere.it/rss/primo_piano.xml`) returns **404**, so Corriere della Sera
+  (label 85, MBFC High — a scarce Italian high-reliability source) had **never
+  been collected** (the only "corriere" in the snapshots is the disinfo clone
+  *Corriere del Corsaro*, label 10). Replaced with the verified working feed
+  (`xml2.corriereobjects.it/rss/homepage.xml`, HTTP 200, valid RSS 2.0) in both
+  `data/labels.jsonl` and `data/Fonti_OSINT.csv` (byte-exact, CRLF preserved).
 
 ### Fixed
 - **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**
