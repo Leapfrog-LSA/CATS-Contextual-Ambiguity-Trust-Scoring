@@ -168,6 +168,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/cloud\_setup.md](docs/cloud_setup.md)  | Running CATS in Claude Code on the web (setup, env, network) |
 | [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
 | [docs/signal\_diagnosis\_2026-07.md](docs/signal_diagnosis_2026-07.md) | Signal ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility+gaming are dead weight |
+| [docs/content\_credibility\_findings\_2026-07.md](docs/content_credibility_findings_2026-07.md) | Content-credibility signal spike: directionally plausible but unvalidatable on current data (language confound) |
 | [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |

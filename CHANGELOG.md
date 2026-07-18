@@ -33,10 +33,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Content-credibility signal spike (`research/content_credibility_spike.py`,
+  findings in `docs/content_credibility_findings_2026-07.md`): a text-style
+  red-flag (caps shouting, clickbait punctuation, bilingual hyperbole lexicon,
+  attribution credit) for the fake-news-on-ordinary-domains class that
+  domain-provenance misses. Honest result — the raw future-holdout correlation
+  (ρ −0.33) is almost entirely a language confound (the registry's low tail is
+  Italian, its high tail mostly English), collapsing to ρ +0.08 within Italian
+  (n=8), and the feature barely fires except on one overt ALL-CAPS outlet.
+  **Not wired**: the committed data cannot validate it — a hard block on the
+  language-balanced dataset work.
+
 ### Planned
-- Content-credibility signal for fake-news on ordinary domains (the low-tail
-  class domain structure cannot catch).
-- Full EU AI Act Annex IX documentation
+- Content-credibility signal — pending a language-balanced labelled set that
+  can disentangle the confound (see the spike findings above).
+- Full EU AI Act **Annex IV** technical documentation (pending the legal
+  high-risk classification).
 - v2.0 (2027): recalibration with the diagnosis inputs, concordance/AUC ≥ 0.78
   on a ≥ 100-source future holdout
 
