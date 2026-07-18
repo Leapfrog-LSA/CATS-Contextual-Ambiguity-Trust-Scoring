@@ -1,0 +1,105 @@
+"""Feed-health audit: which RSS feeds in the label registry are dead?
+
+Motivation. A dead feed silently shrinks (and biases) the collected dataset:
+Il Corriere della Sera (label 85, a scarce Italian high-reliability source) was
+never collected for months because its registered feed 404s — found by chance.
+This script checks every feed in data/labels.jsonl so the rest are found on
+purpose, not by accident.
+
+It classifies each feed:
+  * ok       — HTTP 200 and the body looks like XML/RSS/Atom
+  * dead     — 404/410 or DNS/connection failure (genuinely broken → fix/replace)
+  * blocked  — 403/429 or timeout (host likely blocks this User-Agent or is slow;
+               ambiguous, not necessarily dead — flag, don't auto-remove)
+  * not-xml  — 200 but the body is not a feed (redirect to an HTML page, etc.)
+
+Read-only: it never edits the registry, only reports. The same GET the weekly
+collector (cats.calibration.collect_rss) issues, so it is within normal
+operation. Needs network.
+
+Run from the repo root:  python research/feed_health_audit.py [--workers N]
+"""
+
+from __future__ import annotations
+
+import argparse
+import concurrent.futures
+import json
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+import httpx
+
+ROOT = Path(__file__).resolve().parent.parent
+UA = "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
+_XML_HINTS = (b"<?xml", b"<rss", b"<feed", b"<rdf")
+
+
+def classify(url: str, timeout: float) -> Tuple[str, str]:
+    """Return (status, detail) for one feed URL."""
+    try:
+        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": UA}) as c:
+            r = c.get(url)
+    except httpx.TimeoutException:
+        return "blocked", "timeout"
+    except httpx.HTTPError as exc:
+        return "dead", f"conn:{type(exc).__name__}"
+    if r.status_code in (404, 410):
+        return "dead", f"http:{r.status_code}"
+    if r.status_code in (403, 429):
+        return "blocked", f"http:{r.status_code}"
+    if r.status_code >= 400:
+        return "blocked", f"http:{r.status_code}"
+    head = r.content[:512].lstrip().lower()
+    if any(h in head for h in _XML_HINTS):
+        return "ok", f"http:{r.status_code}"
+    return "not-xml", f"http:{r.status_code}"
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Audit RSS feed health in the label registry.")
+    ap.add_argument("--labels", type=Path, default=ROOT / "data/labels.jsonl")
+    ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--timeout", type=float, default=20.0)
+    args = ap.parse_args()
+
+    rows = [json.loads(line) for line in open(args.labels, encoding="utf-8")]
+    feeds: List[Tuple[str, str, float]] = [
+        (r.get("source_id", ""), r["rss"], float(r.get("label", -1))) for r in rows if r.get("rss")
+    ]
+    print(f"Auditing {len(feeds)} feeds ({sum(1 for r in rows if not r.get('rss'))} registry rows have no feed).\n")
+
+    results: Dict[str, List[Tuple[str, str, float, str]]] = {"dead": [], "blocked": [], "not-xml": [], "ok": []}
+
+    def _check(item: Tuple[str, str, float]) -> Tuple[str, str, float, str, str]:
+        sid, url, label = item
+        status, detail = classify(url, args.timeout)
+        return sid, url, label, status, detail
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as ex:
+        for sid, url, label, status, detail in ex.map(_check, feeds):
+            results[status].append((sid, url, label, detail))
+
+    for status in ("ok", "blocked", "not-xml", "dead"):
+        print(f"  {status:<9} {len(results[status])}")
+
+    for status in ("dead", "not-xml"):
+        if results[status]:
+            print(f"\n{status.upper()} — action needed (source | label | feed | detail):")
+            for sid, url, label, detail in sorted(results[status], key=lambda t: t[2]):
+                print(f"  [{int(label):>2}] {sid[:26]:<26} {url[:52]:<52} {detail}")
+
+    if results["blocked"]:
+        print("\nBLOCKED (403/429/timeout — likely UA/geo blocking, verify manually):")
+        for sid, url, label, detail in sorted(results["blocked"], key=lambda t: t[2]):
+            print(f"  [{int(label):>2}] {sid[:26]:<26} {detail}")
+
+    print(
+        "\nNote: 'dead' feeds silently drop their source from every collection — fix or\n"
+        "replace them (verify a working feed, then update data/labels.jsonl + the\n"
+        "catalogue). 'blocked' may just refuse this User-Agent; re-check before removing."
+    )
+
+
+if __name__ == "__main__":
+    main()

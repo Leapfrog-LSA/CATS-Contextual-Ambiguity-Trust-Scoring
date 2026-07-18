@@ -47,7 +47,7 @@
 {"source_id": "Euromaidan Press", "source_type": "news", "label": 85.0, "url": "https://euromaidanpress.com", "rss": "https://euromaidanpress.com/feed/"}
 {"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://xml2.corriereobjects.it/rss/homepage.xml"}
 {"source_id": "Il Fatto Quotidiano", "source_type": "news", "label": 85.0, "url": "https://www.ilfattoquotidiano.it", "rss": "https://www.ilfattoquotidiano.it/feed/"}
-{"source_id": "Il Giornale", "source_type": "news", "label": 70.0, "url": "https://www.ilgiornale.it", "rss": "https://www.ilgiornale.it/rss"}
+{"source_id": "Il Giornale", "source_type": "news", "label": 70.0, "url": "https://www.ilgiornale.it", "rss": "https://www.ilgiornale.it/feed.xml"}
 {"source_id": "Il Post", "source_type": "news", "label": 85.0, "url": "https://www.ilpost.it", "rss": "https://www.ilpost.it/feed/"}
 {"source_id": "Il Sole 24 Ore", "source_type": "news", "label": 70.0, "url": "https://www.ilsole24ore.com", "rss": "https://www.ilsole24ore.com/rss/italia.xml"}
 {"source_id": "Il Sole 24 Ore Tech", "source_type": "news", "label": 70.0, "url": "https://www.ilsole24ore.com/tecnologia", "rss": null}

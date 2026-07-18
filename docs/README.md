@@ -31,6 +31,7 @@
 |---|---|
 | [piano_sviluppo_roadmap_2026-07.md](piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan and 15-point phased roadmap (July 2026, in Italian) |
 | [content_credibility_findings_2026-07.md](content_credibility_findings_2026-07.md) | Content-credibility spike + the quantified dataset language-confound |
+| [feed_health_2026-07.md](feed_health_2026-07.md) | Feed-health audit: 35/126 registered feeds are dead (404) — data-quality repair target |
 | [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to add Italian sources and break the confound (next network session) |
 
 The technical whitepaper (`CATS_WhitePaper_Tecnico_v1.0.docx`, in Italian) and

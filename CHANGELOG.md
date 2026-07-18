@@ -55,6 +55,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   *Corriere del Corsaro*, label 10). Replaced with the verified working feed
   (`xml2.corriereobjects.it/rss/homepage.xml`, HTTP 200, valid RSS 2.0) in both
   `data/labels.jsonl` and `data/Fonti_OSINT.csv` (byte-exact, CRLF preserved).
+- **Feed-health audit (`research/feed_health_audit.py`, findings in
+  `docs/feed_health_2026-07.md`).** Checking every feed in the registry found
+  the Corriere case is systemic: **35 of 126 feeds are dead (404/410)** and 10
+  more return HTML, not a feed — only ~51% work, and the dead ones cluster at
+  labels 85/50, biasing the effective dataset. Explains why ~59 sources appear
+  in the snapshots despite 126 registered feeds. `Il Giornale`
+  (`ilgiornale.it/rss` 404 → `ilgiornale.it/feed.xml`) fixed alongside
+  Corriere; the ~33 remaining (mostly non-Italian outlets whose feed URLs
+  moved) are flagged for a repair pass.
 
 ### Fixed
 - **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**
