@@ -12,42 +12,46 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result (126 feeds in `data/labels.jsonl`)
 
-| Status | Count | Meaning |
-|---|---:|---|
-| ok | 64 | 200 + body looks like a feed |
-| **dead** | **35** | 404/410 or DNS/connection failure — produces nothing |
-| not-xml | 10 | 200 but an HTML page, not a feed |
-| blocked | 17 | 403/429/timeout — likely User-Agent/geo blocking (ambiguous) |
+| Status | At audit | After repair |
+|---|---:|---:|
+| ok | 64 | **88** |
+| dead | 35 | **13** |
+| not-xml | 10 | 9 |
+| blocked | 17 | 16 |
 
-**Only ~51% of registered feeds actually return a feed.** This is why ~59
-sources appear in the snapshots despite 126 registered feeds, and the loss is
-**not random**: the 35 dead feeds cluster at labels 85 (17) and 50 (10), so the
-effective dataset is biased relative to the registry.
+At audit only **~51%** of registered feeds returned a feed — why ~59 sources
+appear in the snapshots despite 126 registered feeds, and the loss was **not
+random** (the dead feeds clustered at labels 85 and 50, biasing the effective
+dataset). After the repair passes below, **~70%** work.
 
 The dead feeds are overwhelmingly non-Italian international outlets whose feed
 URLs have moved.
 
 ## Repair progress
 
-Common feed-path probing (scratchpad aid) plus per-source verification —
-**every replacement checked for HTTP 200 + valid XML *and* correct
-outlet/language** — repaired **14** feeds so far, dropping the registry from
-35 dead to 22 (ok 64 → 78, ≈62% working):
+**Every replacement checked for HTTP 200 + valid XML *and* correct
+outlet/language** before applying. **24 feeds repaired** across two rounds
+(35 dead → 13; ok 64 → 88):
 
-- Italian: **Corriere della Sera** (`→ xml2.corriereobjects.it/rss/homepage.xml`),
-  **Il Giornale** (`→ ilgiornale.it/feed.xml`).
-- Others: Mail & Guardian, Al Jazeera Arabic, Gulf News, Manila Bulletin,
-  Göteborgs-Posten, Texas Tribune, Digi24, Le Soir, The Register, Index.hr,
-  The Citizen, ZDNet — all `→` a verified working feed of the same outlet.
+- **Round 1 (common-path probing, 14):** Corriere della Sera
+  (`→ xml2.corriereobjects.it/rss/homepage.xml`), Il Giornale
+  (`→ ilgiornale.it/feed.xml`), Mail & Guardian, Al Jazeera Arabic, Gulf News,
+  Manila Bulletin, Göteborgs-Posten, Texas Tribune, Digi24, Le Soir,
+  The Register, Index.hr, The Citizen, ZDNet.
+- **Round 2 (homepage RSS-autodiscovery + verified known URLs, 10):**
+  BioBio Chile, Hindu Business Line, Irish Examiner, **Le Parisien** (the
+  correct French feed `feeds.leparisien.fr/leparisien/rss` — round 1 had only
+  found its English edition, so it was skipped then), Welt, Sky News UK,
+  Jerusalem Post, The Standard, Defense News, Firstpost.
 
-**Deliberately skipped** (a common pattern resolved but to the wrong
-edition/brand — not applied): AFP (pattern gave the French feed; original was
-English), WNYC (its `/feed/` serves sister-site Gothamist), Le Parisien
-(English edition only). These need the correct per-source URL.
+**Deliberately skipped** where a pattern resolved to the wrong edition/brand:
+AFP (French vs original English), WNYC (its `/feed/` serves sister-site
+Gothamist). These need the correct per-source URL.
 
-Still dead (22): mostly outlets whose feed URL no pattern found — Bild, Welt,
-Sky News UK, Haaretz, ITV News, Jerusalem Post, The National UAE, DPA, and
-others — each needs a manual URL lookup.
+Still broken (~22): outlets whose feed URL neither probing nor autodiscovery
+found — Bild, The National UAE, ITV News, Haaretz, DPA, TRT Africa, Mediazona,
+Jakarta Globe, L'Orient Today, The Conversation AU, USA Today, and the
+`not-xml`/`blocked` ones — each needs a manual per-source lookup (WebSearch).
 
 ## Recommendation
 

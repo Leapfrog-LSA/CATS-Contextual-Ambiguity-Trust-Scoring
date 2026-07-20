@@ -71,6 +71,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   The registry is now **22 dead / 78 ok** (was 35 / 64; ≈62% working).
   Replacements that resolved to the wrong edition/brand (AFP→French, WNYC→
   Gothamist, Le Parisien→English) were deliberately skipped, not applied.
+- **Feed-repair pass (round 2): 10 more dead feeds fixed** via homepage
+  RSS-autodiscovery + verified known URLs (each checked for 200 + valid XML +
+  correct outlet/language): BioBio Chile, Hindu Business Line, Irish Examiner,
+  **Le Parisien** (its correct French feed — round 1 had only found the English
+  edition), Welt, Sky News UK, Jerusalem Post, The Standard, Defense News,
+  Firstpost. Registry now **13 dead / 88 ok** (≈70% working; 24 feeds repaired
+  in total). The remaining ~22 need per-source URL lookups.
 
 ### Fixed
 - **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**
