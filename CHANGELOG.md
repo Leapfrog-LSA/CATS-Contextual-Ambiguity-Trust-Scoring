@@ -78,6 +78,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   edition), Welt, Sky News UK, Jerusalem Post, The Standard, Defense News,
   Firstpost. Registry now **13 dead / 88 ok** (≈70% working; 24 feeds repaired
   in total). The remaining ~22 need per-source URL lookups.
+- **Feed-repair pass (round 3): 4 more dead feeds fixed** via per-source
+  WebSearch + verification: Haaretz English
+  (`→ haaretz.com/srv/all-headlines-rss`), Bild (`→ bild.de/feed/alles.xml`),
+  The Conversation AU (`→ …/au/articles.atom`), The National UAE
+  (`→ …/arc/outboundfeeds/rss/category/uae/…`). Registry now **9 dead / 91 ok**
+  (≈72% working; **28 feeds repaired in total**, from an initial 64/35). AFP
+  (every English path still serves French), WNYC (serves Gothamist), Geo TV
+  (Bollywood-only), ITV News/USA Today/Business Day (no valid feed found) were
+  checked and skipped. The remaining ~9 dead are the hard tail — outlets with
+  no discoverable clean feed or that block scraping.
 
 ### Fixed
 - **`docs/dataset_expansion_runbook.md` documented a data-destroying step.**

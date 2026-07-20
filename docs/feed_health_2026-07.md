@@ -14,9 +14,9 @@ high-reliability source) had never been collected because its registered feed
 
 | Status | At audit | After repair |
 |---|---:|---:|
-| ok | 64 | **88** |
-| dead | 35 | **13** |
-| not-xml | 10 | 9 |
+| ok | 64 | **91** |
+| dead | 35 | **9** |
+| not-xml | 10 | 10 |
 | blocked | 17 | 16 |
 
 At audit only **~51%** of registered feeds returned a feed — why ~59 sources
@@ -30,8 +30,8 @@ URLs have moved.
 ## Repair progress
 
 **Every replacement checked for HTTP 200 + valid XML *and* correct
-outlet/language** before applying. **24 feeds repaired** across two rounds
-(35 dead → 13; ok 64 → 88):
+outlet/language** before applying. **28 feeds repaired** across three rounds
+(35 dead → 9; ok 64 → 91, ≈72% working):
 
 - **Round 1 (common-path probing, 14):** Corriere della Sera
   (`→ xml2.corriereobjects.it/rss/homepage.xml`), Il Giornale
@@ -44,14 +44,21 @@ outlet/language** before applying. **24 feeds repaired** across two rounds
   found its English edition, so it was skipped then), Welt, Sky News UK,
   Jerusalem Post, The Standard, Defense News, Firstpost.
 
-**Deliberately skipped** where a pattern resolved to the wrong edition/brand:
-AFP (French vs original English), WNYC (its `/feed/` serves sister-site
-Gothamist). These need the correct per-source URL.
+- **Round 3 (WebSearch per source, 4):** Haaretz English
+  (`→ haaretz.com/srv/all-headlines-rss`), Bild (`→ bild.de/feed/alles.xml`),
+  The Conversation AU (`→ theconversation.com/au/articles.atom`), The National
+  UAE (`→ thenationalnews.com/arc/outboundfeeds/rss/category/uae/…`).
 
-Still broken (~22): outlets whose feed URL neither probing nor autodiscovery
-found — Bild, The National UAE, ITV News, Haaretz, DPA, TRT Africa, Mediazona,
-Jakarta Globe, L'Orient Today, The Conversation AU, USA Today, and the
-`not-xml`/`blocked` ones — each needs a manual per-source lookup (WebSearch).
+**Deliberately skipped** where the only feed found was the wrong
+edition/brand/section: AFP (every English path still serves French), WNYC
+(serves sister-site Gothamist), Geo TV (only a Bollywood section feed),
+Business Day (no working feed found), ITV News / USA Today (no valid feed).
+
+Still broken (~9 dead + not-xml/blocked): outlets with no discoverable clean
+feed or that block scraping — TRT Africa, Jakarta Globe, DPA, Mediazona,
+L'Orient Today, Taiwan News, Iran International, Rudaw, Caixin, Jordan Times,
+B92, SF Gate, and the like. These are the hard tail; some no longer publish a
+usable public feed at all.
 
 ## Recommendation
 

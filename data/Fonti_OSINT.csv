@@ -738,7 +738,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Berliner Zeitung,https://www.berliner-zeitung.de,,DE,,,Berlino — quotidiano
 📰 Media & Testate Giornalistiche,Europa Occidentale,Berner Zeitung,https://www.bernerzeitung.ch,,DE,,,Berna
 📰 Media & Testate Giornalistiche,Europa Occidentale,BFM TV,https://www.bfmtv.com,,FR,,,TV news FR
-📰 Media & Testate Giornalistiche,Europa Occidentale,Bild,https://www.bild.de,https://www.bild.de/rssfeeds.rss,DE,,,Tabloide DE
+📰 Media & Testate Giornalistiche,Europa Occidentale,Bild,https://www.bild.de,https://www.bild.de/feed/alles.xml,DE,,,Tabloide DE
 📰 Media & Testate Giornalistiche,Europa Occidentale,Birmingham Mail,https://www.birminghammail.co.uk,,EN,,,UK — Birmingham
 📰 Media & Testate Giornalistiche,Europa Occidentale,Blick,https://www.blick.ch,,DE,,,Svizzera tabloide
 📰 Media & Testate Giornalistiche,Europa Occidentale,BR24,https://www.br.de,,DE,,,Baviera — emittente pubblica
@@ -1741,7 +1741,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf Daily News,https://www.gdnonline.com,,EN,,,Bahrein — quotidiano anglofono
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf News,https://gulfnews.com,https://gulfnews.com/feed/,EN,,,Dubai
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf Times,https://www.gulf-times.com,,EN,,,Qatar — quotidiano anglofono
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Haaretz English,https://www.haaretz.com,https://www.haaretz.com/rss/feed.xml,EN,,,Israele
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Haaretz English,https://www.haaretz.com,https://www.haaretz.com/srv/all-headlines-rss,EN,,,Israele
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),HRANA Iran,https://www.en-hrana.org,,HR,,,Iran
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Hürriyet,https://www.hurriyet.com.tr,,TR,,,Turchia — quotidiano principale
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),i24NEWS,https://www.i24news.tv,,EN/FR/AR,,,Israele — all-news internazionale
@@ -1787,7 +1787,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),T24,https://t24.com.tr,,TR,,,Turchia — testata digitale indipendente
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),TAP — Tunis Afrique Presse,https://www.tap.info.tn,,FR,,,"Testata — Tunisia · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Gulf Intelligence,https://gulfintell.com,,,Golfo,,Energy — Gulf
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The National UAE,https://www.thenationalnews.com,https://www.thenationalnews.com/rss,EN,,,UAE
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The National UAE,https://www.thenationalnews.com,https://www.thenationalnews.com/arc/outboundfeeds/rss/category/uae/?outputType=xml,EN,,,UAE
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Peninsula,https://thepeninsulaqatar.com,,EN,,,Qatar — quotidiano anglofono
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Syria Report,https://syria-report.com,,EN,,,Siria — economia e ricostruzione
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Tripoli Post,https://www.tripolipost.com,,EN,,,"Testata — Libya · fonte aggregatore, verifica consigliata"
@@ -2050,7 +2050,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Astana Times,https://astanatimes.com,,EN,,,Kazakistan — anglofono
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Australian,https://www.theaustralian.com.au,,EN,,,Australia premium
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Bhutanese,https://thebhutanese.bt,,EN,,,Bhutan — settimanale investigativo
-📰 Media & Testate Giornalistiche,Asia & Pacifico,The Conversation AU,https://theconversation.com/au,https://theconversation.com/au/articles/rss,EN,,,Accademia — Australia Accademia
+📰 Media & Testate Giornalistiche,Asia & Pacifico,The Conversation AU,https://theconversation.com/au,https://theconversation.com/au/articles.atom,EN,,,Accademia — Australia Accademia
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Edge Malaysia,https://theedgemalaysia.com,,EN,,,Malaysia business
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Edition,https://edition.mv,,EN,,,Maldive — edizione anglofona di Mihaaru
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Express Tribune,https://tribune.com.pk,https://tribune.com.pk/feed/latest,EN,,,già in lista

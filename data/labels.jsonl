@@ -56,7 +56,7 @@
 {"source_id": "La Verità", "source_type": "news", "label": 50.0, "url": "https://www.laverita.info", "rss": "https://www.laverita.info/feed/"}
 {"source_id": "Sole 24 Ore Norme & Tributi", "source_type": "news", "label": 70.0, "url": "https://www.ilsole24ore.com/norme-e-tributi", "rss": null}
 {"source_id": "VoxEurop Italia", "source_type": "news", "label": 85.0, "url": "https://voxeurop.eu/it", "rss": "https://voxeurop.eu/it/feed/"}
-{"source_id": "Bild", "source_type": "news", "label": 50.0, "url": "https://www.bild.de", "rss": "https://www.bild.de/rssfeeds.rss"}
+{"source_id": "Bild", "source_type": "news", "label": 50.0, "url": "https://www.bild.de", "rss": "https://www.bild.de/feed/alles.xml"}
 {"source_id": "De Standaard", "source_type": "news", "label": 85.0, "url": "https://www.standaard.be", "rss": "https://www.standaard.be/rss.xml"}
 {"source_id": "DPA International", "source_type": "news", "label": 85.0, "url": "https://www.dpa-international.com", "rss": "https://www.dpa-international.com/feed"}
 {"source_id": "Focus Online", "source_type": "news", "label": 85.0, "url": "https://www.focus.de", "rss": "https://www.focus.de/rss/index.rss"}
@@ -112,10 +112,10 @@
 {"source_id": "Al Jazeera English", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.com", "rss": null}
 {"source_id": "Arab News", "source_type": "news", "label": 50.0, "url": "https://www.arabnews.com", "rss": "https://www.arabnews.com/rss.xml"}
 {"source_id": "Gulf News", "source_type": "news", "label": 50.0, "url": "https://gulfnews.com", "rss": "https://gulfnews.com/feed/"}
-{"source_id": "Haaretz English", "source_type": "news", "label": 85.0, "url": "https://www.haaretz.com", "rss": "https://www.haaretz.com/rss/feed.xml"}
+{"source_id": "Haaretz English", "source_type": "news", "label": 85.0, "url": "https://www.haaretz.com", "rss": "https://www.haaretz.com/srv/all-headlines-rss"}
 {"source_id": "Jerusalem Post", "source_type": "news", "label": 70.0, "url": "https://www.jpost.com", "rss": "https://www.jpost.com/rss/rssfeedsheadlines.aspx"}
 {"source_id": "Middle East Eye", "source_type": "news", "label": 70.0, "url": "https://www.middleeasteye.net", "rss": "https://www.middleeasteye.net/rss"}
-{"source_id": "The National UAE", "source_type": "news", "label": 50.0, "url": "https://www.thenationalnews.com", "rss": "https://www.thenationalnews.com/rss"}
+{"source_id": "The National UAE", "source_type": "news", "label": 50.0, "url": "https://www.thenationalnews.com", "rss": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/uae/?outputType=xml"}
 {"source_id": "Times of Israel", "source_type": "news", "label": 70.0, "url": "https://www.timesofisrael.com", "rss": "https://www.timesofisrael.com/feed/"}
 {"source_id": "Bangkok Post", "source_type": "news", "label": 50.0, "url": "https://www.bangkokpost.com", "rss": "https://www.bangkokpost.com/rss/data/topstories.xml"}
 {"source_id": "Caixin China", "source_type": "news", "label": 50.0, "url": "https://www.caixin.com", "rss": "https://www.caixin.com/rss/"}
@@ -131,7 +131,7 @@
 {"source_id": "RNZ Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international", "rss": "https://www.rnz.co.nz/rss"}
 {"source_id": "Sixth Tone", "source_type": "news", "label": 50.0, "url": "https://www.sixthtone.com", "rss": "https://www.sixthtone.com/rss"}
 {"source_id": "Taiwan News", "source_type": "news", "label": 70.0, "url": "https://www.taiwannews.com.tw", "rss": "https://www.taiwannews.com.tw/en/rss"}
-{"source_id": "The Conversation AU", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/au", "rss": "https://theconversation.com/au/articles/rss"}
+{"source_id": "The Conversation AU", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/au", "rss": "https://theconversation.com/au/articles.atom"}
 {"source_id": "The Express Tribune", "source_type": "news", "label": 70.0, "url": "https://tribune.com.pk", "rss": "https://tribune.com.pk/feed/latest"}
 {"source_id": "Crisis Group Alert", "source_type": "default", "label": 95.0, "url": "https://www.crisisgroup.org", "rss": "https://www.crisisgroup.org/rss.xml"}
 {"source_id": "Human Rights Watch", "source_type": "default", "label": 85.0, "url": "https://www.hrw.org", "rss": null}
