@@ -7,8 +7,8 @@ open/closed PRs directly.
 ## Current state
 
 - **`main` is at v1.6.0** (production; PyPI + GitHub Release). CI green.
-- **PR #42 — OPEN, CI green, mergeable, awaiting decision.**
-  Branch `claude/feed-quality-fixes`. Production data-quality fixes only:
+- **PR #42 — ✅ MERGED into `main`.**
+  Branch `claude/feed-quality-fixes`. Production data-quality fixes now live:
   - **28 dead RSS feeds repaired** (registry **35 dead / 64 ok → 9 dead / 91 ok**,
     ~72% healthy). Every replacement verified HTTP 200 + valid XML + correct
     outlet/language. Most notable: **Il Corriere della Sera** (label 85, a scarce
@@ -45,9 +45,9 @@ open/closed PRs directly.
 
 ## Next steps (pick one)
 
-1. **Merge PR #42** (squash) — the highest-value unblocked action; at the next
-   weekly collection ~28 sources return to the dataset, incl. the scarce
-   Italian high tail.
+1. ✅ **PR #42 merged** — the 28 feed repairs + 2 Italian sources are in `main`;
+   the next weekly collection will pick up ~28 previously-dead sources
+   (incl. the scarce Italian high tail).
 2. **Round 4 feed repair** — the ~9 still-dead feeds via per-source WebSearch:
    TRT Africa, Jakarta Globe, DPA, Mediazona, L'Orient Today, Taiwan News,
    Iran International, Rudaw, Caixin, Jordan Times, B92, SF Gate. Hard tail,
