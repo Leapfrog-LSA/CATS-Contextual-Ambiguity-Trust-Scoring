@@ -33,6 +33,41 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Feed-health audit tool** (`research/feed_health_audit.py`, findings in
+  `docs/feed_health_2026-07.md`): checks every RSS feed in the label registry
+  (read-only, the same GET the weekly collector issues) and classifies each
+  ok / dead / not-xml / blocked. The first audit found only **64 of 126**
+  registered feeds actually returned a feed — 35 dead (404/410), 10 HTML, so a
+  third of the registry was silently producing nothing, biased toward the
+  labels where the dead feeds clustered.
+- **Two verified Italian high-reliability sources** — `repubblica.it` and
+  `open.online`, both MBFC **High** read directly from the MBFC pages (feeds
+  verified reachable): `data/ratings.csv`, `data/ratings_provenance.csv`,
+  `data/labels.jsonl`. This is the scarce cell (Italian high tail).
+- **Dataset-maintenance runbook** (`docs/dataset_expansion_runbook.md`): the
+  verified pipeline sequence to add sources and keep the collection healthy,
+  with a data-safety warning (see Fixed).
+
+### Fixed
+- **28 dead RSS feeds repaired** across three verification passes (registry
+  **35 dead / 64 ok → 9 dead / 91 ok**, ~72% healthy), each replacement checked
+  for HTTP 200 + valid XML *and* correct outlet/language before applying — most
+  notably **Il Corriere della Sera** (label 85, a scarce Italian high-reliability
+  source) whose registered feed 404'd, so it had *never* been collected (the
+  only "corriere" in the snapshots was the disinfo clone *Corriere del Corsaro*,
+  label 10). Also Il Giornale, Bild, Welt, Haaretz, Sky News UK, Jerusalem Post,
+  Le Parisien, Al Jazeera Arabic, and others. Byte-exact edits to
+  `data/labels.jsonl` and `data/Fonti_OSINT.csv` (CRLF preserved); no label
+  record lost.
+- **Documented a data-destroying maintenance step.** `data/labels.jsonl` is a
+  curated **merge** of MBFC ratings and the documented-disinfo registry, *not*
+  reproducible from `ratings.csv` alone: regenerating it with
+  `label_from_ratings --scale mbfc` drops 160→141 records, deleting the entire
+  ground-truth low tail (Corriere del Corsaro label 10, etc.). The runbook now
+  writes MBFC output to a separate file to merge, never overwriting the curated
+  registry.
+
 ### Planned
 - Content-credibility signal for fake-news on ordinary domains (the low-tail
   class domain structure cannot catch).

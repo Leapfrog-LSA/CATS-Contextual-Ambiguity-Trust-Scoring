@@ -41,7 +41,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Data Journalism Awards,https://datajournalismawards.org,,,Globale,,Awards
 📰 Media & Testate Giornalistiche,Globali & Internazionali,DataJournalism.com,https://datajournalism.com,,,Globale,,Risorse data journalism
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Deadline,https://deadline.com,https://deadline.com/feed/,EN,,,Entertainment
-📰 Media & Testate Giornalistiche,Globali & Internazionali,Defense News,https://www.defensenews.com,https://www.defensenews.com/rss/,EN,,,Difesa USA
+📰 Media & Testate Giornalistiche,Globali & Internazionali,Defense News,https://www.defensenews.com,https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml,EN,,,Difesa USA
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Defense One,https://www.defenseone.com,,EN,,,Difesa USA
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Demagog,https://demagog.org,,,PL,,Fact-checking PL — Polonia
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Demagog CZ,https://demagog.cz,,,CZ,,Fact-checking CZ — Rep. Ceca
@@ -333,7 +333,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Lighthouse Reports,https://www.lighthousereports.com,,,Europa,,Investigativo collaborativo
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Linkiesta Inchieste,https://www.linkiesta.it/tag/inchieste,,,,,Approfondimenti — Investigativo
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Mafia Export,https://www.mafiaexport.it,,,,,Inchieste sulla 'ndrangheta — Mafia internazionale — 'Ndrangheta int.
-📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Mail & Guardian,https://mg.co.za,https://mg.co.za/feed/,EN,,,Investigativo sudafricano — Sudafrica Inv.
+📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Mail & Guardian,https://mg.co.za,https://mg.co.za/rss,EN,,,Investigativo sudafricano — Sudafrica Inv.
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Malaysiakini,https://www.malaysiakini.com,,EN/MS,,,Investigativo malese — Malaysia
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Mediapart,https://www.mediapart.fr,,FR,,,Francia investigativo
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Mediapart Afrique,https://www.mediapart.fr/journal/international/afrique,,,Africa,,FR investigativo Africa
@@ -409,7 +409,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Tansa,https://tansajp.org,,JA/EN,,,Giappone — investigativo indipendente
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Telejato,https://www.telejato.it,,,IT-Sicilia,,Sicilia — TV locale/investigativa
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Tempo,https://en.tempo.co,,EN,,,Investigativo indonesiano — Indonesia
-📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Texas Tribune,https://www.texastribune.org,https://www.texastribune.org/rss.xml,EN,,,Investigativo Texas — Texas Inv.
+📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Texas Tribune,https://www.texastribune.org,https://www.texastribune.org/feed/,EN,,,Investigativo Texas — Texas Inv.
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The 19th,https://19thnews.org,,EN,,,Donne e politica — USA
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Africa Report,https://www.theafricareport.com,https://www.theafricareport.com/feed/,EN,,,Business e politica — Pan-Africa
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Bureau of Investigative Journalism,https://www.thebureauinvestigates.com,,UK,,,"Droni, conflitti, corruzione"
@@ -434,7 +434,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Sentry,https://thesentry.org,,EN,,,Crimini di guerra e finanza — Africa
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Sentry Data,https://thesentry.org/tools,,,,Database,Crimini di guerra — Pubblico
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Signals Network,https://thesignalsnetwork.org,,,Globale,,Protezione fonti
-📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Standard,https://www.standardmedia.co.ke,https://www.standardmedia.co.ke/rss/all,EN,,,Investigativo keniota — Kenya
+📰 Media & Testate Giornalistiche,Giornalismo Investigativo,The Standard,https://www.standardmedia.co.ke,https://www.standardmedia.co.ke/rss/headlines.php,EN,,,Investigativo keniota — Kenya
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Toscana Media News,https://www.toscanamedia.it,,,,,Toscana — Locale
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,Transitions,https://tol.org,,,CEE,,Notizie dall'Europa dell'est
 📰 Media & Testate Giornalistiche,Giornalismo Investigativo,TW Reporter,https://www.twreporter.org,,ZH/EN,,,Investigativo taiwanese — Taiwan
@@ -504,7 +504,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Italia,Dagospia,https://www.dagospia.com,,,,Online,Retroscena
 📰 Media & Testate Giornalistiche,Italia,DDay.it,https://www.dday.it,https://www.dday.it/rss,,,Online,Tech
 📰 Media & Testate Giornalistiche,Italia,Demos,https://www.demos.it,,,IT,,Analisi politica/sociologia — Italia
-📰 Media & Testate Giornalistiche,Italia,Digi24 Romania,https://www.digi24.ro,https://www.digi24.ro/rss.xml,RO,,,Romania news
+📰 Media & Testate Giornalistiche,Italia,Digi24 Romania,https://www.digi24.ro,https://www.digi24.ro/rss,RO,,,Romania news
 📰 Media & Testate Giornalistiche,Italia,Dillinger News,https://www.dillingernews.it,,,,Online,Crime e cronaca
 📰 Media & Testate Giornalistiche,Italia,Dinamopress,https://www.dinamopress.it,https://www.dinamopress.it/feed/,,,,Movimenti — Politica
 📰 Media & Testate Giornalistiche,Italia,Dire,https://www.dire.it,https://www.dire.it/feed/,,,,Parlamentare — Agenzia
@@ -561,12 +561,12 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Italia,Il Centro,https://www.ilcentro.it,,IT,,,Abruzzo — quotidiano regionale
 📰 Media & Testate Giornalistiche,Italia,Il Cittadino MB,https://www.ilcittadinomb.it,,,IT-Lombardia,,Monza Brianza — Lombardia
 📰 Media & Testate Giornalistiche,Italia,Il Corriere del Veneto,https://corrieredelveneto.corriere.it,,,IT-Veneto,,Venezia CdS — Veneto
-📰 Media & Testate Giornalistiche,Italia,Il Corriere della Sera,https://www.corriere.it,https://www.corriere.it/rss/primo_piano.xml,IT,,,1° quotidiano — già in cat. 2 — Quotidiano
+📰 Media & Testate Giornalistiche,Italia,Il Corriere della Sera,https://www.corriere.it,https://xml2.corriereobjects.it/rss/homepage.xml,IT,,,1° quotidiano — già in cat. 2 — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,Il Fatto Quotidiano,https://www.ilfattoquotidiano.it,https://www.ilfattoquotidiano.it/feed/,,,,Investigativo — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,Il Foglio,https://www.ilfoglio.it,https://www.ilfoglio.it/rss,,,,Liberale — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,Il Friuli,https://www.ilfriuli.it,,IT,,,Friuli — settimanale e portale
 📰 Media & Testate Giornalistiche,Italia,Il Gazzettino,https://www.ilgazzettino.it,https://www.ilgazzettino.it/rss,,IT-Veneto,,Veneto — Locale
-📰 Media & Testate Giornalistiche,Italia,Il Giornale,https://www.ilgiornale.it,https://www.ilgiornale.it/rss,,,,Centro-destra — Quotidiano
+📰 Media & Testate Giornalistiche,Italia,Il Giornale,https://www.ilgiornale.it,https://www.ilgiornale.it/feed.xml,,,,Centro-destra — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,il Giornale dell'Architettura,https://www.tgarch.it,,,,,Architettura
 📰 Media & Testate Giornalistiche,Italia,Il Giorno,https://www.ilgiorno.it,https://www.ilgiorno.it/rss,,IT-Lombardia,,Lombardia — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,Il Libraio,https://www.illibraio.it,https://www.illibraio.it/feed/,,,,Libri — Cultura
@@ -738,7 +738,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Berliner Zeitung,https://www.berliner-zeitung.de,,DE,,,Berlino — quotidiano
 📰 Media & Testate Giornalistiche,Europa Occidentale,Berner Zeitung,https://www.bernerzeitung.ch,,DE,,,Berna
 📰 Media & Testate Giornalistiche,Europa Occidentale,BFM TV,https://www.bfmtv.com,,FR,,,TV news FR
-📰 Media & Testate Giornalistiche,Europa Occidentale,Bild,https://www.bild.de,https://www.bild.de/rssfeeds.rss,DE,,,Tabloide DE
+📰 Media & Testate Giornalistiche,Europa Occidentale,Bild,https://www.bild.de,https://www.bild.de/feed/alles.xml,DE,,,Tabloide DE
 📰 Media & Testate Giornalistiche,Europa Occidentale,Birmingham Mail,https://www.birminghammail.co.uk,,EN,,,UK — Birmingham
 📰 Media & Testate Giornalistiche,Europa Occidentale,Blick,https://www.blick.ch,,DE,,,Svizzera tabloide
 📰 Media & Testate Giornalistiche,Europa Occidentale,BR24,https://www.br.de,,DE,,,Baviera — emittente pubblica
@@ -827,7 +827,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,IHEDN,https://www.ihedn.fr,,,FR,,Difesa FR — Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,In.gr,https://www.in.gr,,,GR,,Online — Grecia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Información,https://www.informacion.es,,ES,,,Spagna — Alicante
-📰 Media & Testate Giornalistiche,Europa Occidentale,Irish Examiner,https://www.irishexaminer.com,https://www.irishexaminer.com/feed/,EN,,,Irlanda
+📰 Media & Testate Giornalistiche,Europa Occidentale,Irish Examiner,https://www.irishexaminer.com,https://www.irishexaminer.com/feed/35-top_news.xml,EN,,,Irlanda
 📰 Media & Testate Giornalistiche,Europa Occidentale,Irish Independent,https://www.independent.ie,,EN,,,Irlanda
 📰 Media & Testate Giornalistiche,Europa Occidentale,Irish Times,https://www.irishtimes.com,,EN,,,Irlanda
 📰 Media & Testate Giornalistiche,Europa Occidentale,Jersey Evening Post,https://jerseyeveningpost.com,,EN,,,Jersey
@@ -865,11 +865,11 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Figaro,https://www.lefigaro.fr,,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le JDD,https://www.lejdd.fr,,FR,,,Francia — domenicale nazionale
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Monde,https://www.lemonde.fr,,FR,,,Francia
-📰 Media & Testate Giornalistiche,Europa Occidentale,Le Parisien,https://www.leparisien.fr,https://www.leparisien.fr/rss/,FR,,,Parigi
+📰 Media & Testate Giornalistiche,Europa Occidentale,Le Parisien,https://www.leparisien.fr,https://feeds.leparisien.fr/leparisien/rss,FR,,,Parigi
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Point,https://www.lepoint.fr,,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Progrès,https://www.leprogres.fr,,FR,,,Alvernia-Rodano-Alpi — Lione
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Républicain Lorrain,https://www.republicain-lorrain.fr,,FR,,,"Francia — Lorena, Metz"
-📰 Media & Testate Giornalistiche,Europa Occidentale,Le Soir,https://www.lesoir.be,https://www.lesoir.be/arc/outboundfeeds/rss/,FR,,,Belgio
+📰 Media & Testate Giornalistiche,Europa Occidentale,Le Soir,https://www.lesoir.be,https://www.lesoir.be/rss.xml,FR,,,Belgio
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Temps,https://www.letemps.ch,https://www.letemps.ch/feed.rss,FR,,,Svizzera
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Télégramme,https://www.letelegramme.fr,,FR,,,Bretagna — Brest
 📰 Media & Testate Giornalistiche,Europa Occidentale,Les Décodeurs (Le Monde),https://www.lemonde.fr/les-decodeurs,,,FR,,Fact-checking FR — Francia
@@ -933,7 +933,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Salzburger Nachrichten,https://www.sn.at,,DE,,,Salisburgo
 📰 Media & Testate Giornalistiche,Europa Occidentale,Schwäbische Zeitung,https://www.schwaebische.de,,DE,,,Baden-Württemberg — Alta Svevia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Segre,https://www.segre.com,,ES/CA,,,Spagna — Lleida
-📰 Media & Testate Giornalistiche,Europa Occidentale,Sky News (UK),https://news.sky.com,https://news.sky.com/rss,EN,,,TV UK
+📰 Media & Testate Giornalistiche,Europa Occidentale,Sky News (UK),https://news.sky.com,https://feeds.skynews.com/feeds/rss/home.xml,EN,,,TV UK
 📰 Media & Testate Giornalistiche,Europa Occidentale,Slate.fr,https://www.slate.fr,,FR,,,Online FR
 📰 Media & Testate Giornalistiche,Europa Occidentale,Spectator World,https://spectatorworld.com,,EN,,,Conservatore UK/USA
 📰 Media & Testate Giornalistiche,Europa Occidentale,Spiegel International,https://www.spiegel.de/international,,EN/DE,,,Germania
@@ -959,7 +959,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Mirror,https://www.mirror.co.uk,,EN,,,UK tabloid
 📰 Media & Testate Giornalistiche,Europa Occidentale,The National (Scotland),https://www.thenational.scot,,EN,,,Scozia — indipendentista
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Press and Journal,https://www.pressandjournal.co.uk,,EN,,,Scozia — Aberdeen/Highlands
-📰 Media & Testate Giornalistiche,Europa Occidentale,The Register,https://www.theregister.com,https://www.theregister.com/headlines.xml,EN,,,Tech UK
+📰 Media & Testate Giornalistiche,Europa Occidentale,The Register,https://www.theregister.com,https://www.theregister.com/feed/,EN,,,Tech UK
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Rest is History,https://therestishistory.com,,,,,Storia UK — Podcast
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Scotsman,https://www.scotsman.com,,EN,,,Scozia
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Spectator,https://www.spectator.co.uk,,EN,,,UK — settimanale conservatore
@@ -980,7 +980,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,WalesOnline,https://www.walesonline.co.uk,,EN,,,Galles
 📰 Media & Testate Giornalistiche,Europa Occidentale,WAZ,https://www.waz.de,,DE,,,"NRW — Ruhr, Funke"
 📰 Media & Testate Giornalistiche,Europa Occidentale,WDR,https://www1.wdr.de,,DE,,,NRW — emittente pubblica
-📰 Media & Testate Giornalistiche,Europa Occidentale,Welt,https://www.welt.de,https://www.welt.de/services/rss-feeds/welt.xml,DE,,,Conservatore DE
+📰 Media & Testate Giornalistiche,Europa Occidentale,Welt,https://www.welt.de,https://www.welt.de/feeds/latest.rss,DE,,,Conservatore DE
 📰 Media & Testate Giornalistiche,Europa Occidentale,Weser-Kurier,https://www.weser-kurier.de,,DE,,,Brema — quotidiano
 📰 Media & Testate Giornalistiche,Europa Occidentale,WirtschaftsWoche,https://www.wiwo.de,,DE,,,Germania — settimanale economico
 📰 Media & Testate Giornalistiche,Europa Occidentale,Yorkshire Post,https://www.yorkshirepost.co.uk,,EN,,,"UK — Yorkshire, Leeds"
@@ -1066,14 +1066,14 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Gazeta Polska,https://www.gazetapolska.pl,https://www.gazetapolska.pl/feed/,PL,,,Polonia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Gazeta Wyborcza,https://wyborcza.pl,,PL,,,Polonia quality
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Georgian Dream Opposite,https://formula.ge,,KA,,,Georgia TV
-📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Göteborgs-Posten,https://www.gp.se,https://www.gp.se/feed,SV,,,Svezia
+📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Göteborgs-Posten,https://www.gp.se,https://www.gp.se/rss,SV,,,Svezia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Helsingin Sanomat,https://www.hs.fi,,FI,,,Finlandia quality
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Hetq,https://hetq.am,,EN,,,Armenia investigativo
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Hospodářské noviny,https://hn.cz,,CS,,,Economia CZ
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,HVG,https://hvg.hu,,HU,,,Ungheria quality
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Ilta-Sanomat,https://www.is.fi,,FI,,,Finlandia tabloide
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Iltalehti,https://www.iltalehti.fi,,FI,,,Finlandia — tabloid
-📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Index.hr,https://www.index.hr,https://www.index.hr/rss2.xml,HR,,,Croazia
+📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Index.hr,https://www.index.hr,https://www.index.hr/rss,HR,,,Croazia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Index.hu,https://index.hu,,HU,,,Ungheria
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Information,https://www.information.dk,,DA,,,Danimarca — quotidiano indipendente
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Interfax Ukraine,https://en.interfax.com.ua,,EN,,,Ucraina agenzia
@@ -1200,7 +1200,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,AyiboPost,https://ayibopost.com,,FR/HT,,,Haiti — testata indipendente
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,Banca Inter-Americana Sviluppo,https://data.iadb.org,,,,,Sviluppo America Latina e Caraibi — Gratuito — Portale ufficiale
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,Band News,https://www.band.uol.com.br/noticias,,PT,,,Brasile — Brasile TV
-📰 Media & Testate Giornalistiche,America Latina & Caraibi,BioBio Chile,https://www.biobiochile.cl,https://www.biobiochile.cl/rss.xml,ES,,,Cile
+📰 Media & Testate Giornalistiche,America Latina & Caraibi,BioBio Chile,https://www.biobiochile.cl,https://feeds.feedburner.com/radiobiobio/NNeJ,ES,,,Cile
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,Boa Informação,https://www.boainformacao.com.br,,PT,,,Brasile online
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,Bolivia.com,https://www.bolivia.com,,ES,,,Bolivia
 📰 Media & Testate Giornalistiche,America Latina & Caraibi,Breaking Belize News,https://www.breakingbelizenews.com,,EN,,,Belize — testata digitale
@@ -1422,7 +1422,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Africa,AIIJ Uganda,https://aiij.org,,,UG,,Inv. — Uganda
 📰 Media & Testate Giornalistiche,Africa,Al Arabiya (Arabo),https://arabic.alarabiya.net,,AR,,,KSA
 📰 Media & Testate Giornalistiche,Africa,Al Jazeera Africa,https://www.aljazeera.com/africa,https://www.aljazeera.com/xml/rss/all.xml,EN,,,Qatar Africa
-📰 Media & Testate Giornalistiche,Africa,Al Jazeera Arabic,https://www.aljazeera.net,https://www.aljazeera.net/xml/rss/all.xml,AR,,,Qatar
+📰 Media & Testate Giornalistiche,Africa,Al Jazeera Arabic,https://www.aljazeera.net,https://www.aljazeera.net/feed,AR,,,Qatar
 📰 Media & Testate Giornalistiche,Africa,Al-Ahram (Egypt),https://english.ahram.org.eg,,EN,,,Egitto gov
 📰 Media & Testate Giornalistiche,Africa,Al-Jumhuriya (Syria),https://aljumhuriya.net,,AR,,,Siria indip.
 📰 Media & Testate Giornalistiche,Africa,Al-Watwan,https://alwatwan.net,,FR/AR,,,Comore — quotidiano nazionale
@@ -1652,7 +1652,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Africa,Tchadinfos,https://tchadinfos.com,,FR,,,Ciad — portale news principale
 📰 Media & Testate Giornalistiche,Africa,Tel Quel,https://telquel.ma,,FR,,,Marocco quality
 📰 Media & Testate Giornalistiche,Africa,Tell Magazine,https://tell.ng,,EN,,,"Testata/portale — Nigeria · fonte aggregatore, verifica consigliata"
-📰 Media & Testate Giornalistiche,Africa,The Citizen,https://www.thecitizen.co.tz,https://www.thecitizen.co.tz/feed,EN,,,Tanzania
+📰 Media & Testate Giornalistiche,Africa,The Citizen,https://www.thecitizen.co.tz,https://www.thecitizen.co.tz/rss.xml,EN,,,Tanzania
 📰 Media & Testate Giornalistiche,Africa,The Conversation Africa,https://theconversation.com/africa,,EN,,,Africa accademica
 📰 Media & Testate Giornalistiche,Africa,The Egyptian Gazette,https://egyptian-gazette.com,,EN,,,"Testata nazionale — Egypt · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,The Fourth Estate Ghana,https://thefourthestategh.com,,EN,,,Ghana investigativo
@@ -1739,16 +1739,16 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Globes,https://en.globes.co.il,,HE/EN,,,Israele — quotidiano economico
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf Business,https://gulfbusiness.com,,,Golfo,,Business — Gulf
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf Daily News,https://www.gdnonline.com,,EN,,,Bahrein — quotidiano anglofono
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf News,https://gulfnews.com,https://gulfnews.com/rss,EN,,,Dubai
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf News,https://gulfnews.com,https://gulfnews.com/feed/,EN,,,Dubai
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Gulf Times,https://www.gulf-times.com,,EN,,,Qatar — quotidiano anglofono
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Haaretz English,https://www.haaretz.com,https://www.haaretz.com/rss/feed.xml,EN,,,Israele
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Haaretz English,https://www.haaretz.com,https://www.haaretz.com/srv/all-headlines-rss,EN,,,Israele
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),HRANA Iran,https://www.en-hrana.org,,HR,,,Iran
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Hürriyet,https://www.hurriyet.com.tr,,TR,,,Turchia — quotidiano principale
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),i24NEWS,https://www.i24news.tv,,EN/FR/AR,,,Israele — all-news internazionale
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Iran Focus,https://iranfocus.com,,,IR,,Diaspora inv. — Iran
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Iran Wire,https://iranwire.com,https://iranwire.com/feed/,,IR,,Indip. — Iran
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Iraqi News,https://www.iraqinews.com,,,IQ,,English — Iraq
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Jerusalem Post,https://www.jpost.com,https://www.jpost.com/rss/rssfeedsworld.aspx,EN,,,Israele
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Jerusalem Post,https://www.jpost.com,https://www.jpost.com/rss/rssfeedsheadlines.aspx,EN,,,Israele
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Jordan Fact Check,https://jordanfactcheck.com,,,JO,,Fact-check Medio Oriente — Giordania
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Jordan News,https://www.jordannews.jo,,,JO,,English — Giordania
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),Kapitalis,https://kapitalis.com,,FR,,,"Testata — Tunisia · testata nazionale nota, verifica consigliata"
@@ -1787,7 +1787,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),T24,https://t24.com.tr,,TR,,,Turchia — testata digitale indipendente
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),TAP — Tunis Afrique Presse,https://www.tap.info.tn,,FR,,,"Testata — Tunisia · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Gulf Intelligence,https://gulfintell.com,,,Golfo,,Energy — Gulf
-📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The National UAE,https://www.thenationalnews.com,https://www.thenationalnews.com/rss,EN,,,UAE
+📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The National UAE,https://www.thenationalnews.com,https://www.thenationalnews.com/arc/outboundfeeds/rss/category/uae/?outputType=xml,EN,,,UAE
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Peninsula,https://thepeninsulaqatar.com,,EN,,,Qatar — quotidiano anglofono
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Syria Report,https://syria-report.com,,EN,,,Siria — economia e ricostruzione
 📰 Media & Testate Giornalistiche,Medio Oriente & Nord Africa (MENA),The Tripoli Post,https://www.tripolipost.com,,EN,,,"Testata — Libya · fonte aggregatore, verifica consigliata"
@@ -1878,7 +1878,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Fergana News,https://fergana.agency,,,Asia Centrale,,
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Fiji Times,https://www.fijitimes.com.fj,,EN,,,Fiji
 📰 Media & Testate Giornalistiche,Asia & Pacifico,FijiVillage,https://www.fijivillage.com,,EN,,,Figi — news e radio
-📰 Media & Testate Giornalistiche,Asia & Pacifico,Firstpost,https://www.firstpost.com,https://www.firstpost.com/rss,EN,,,News — India News
+📰 Media & Testate Giornalistiche,Asia & Pacifico,Firstpost,https://www.firstpost.com,https://www.firstpost.com/commonfeeds/v1/mfp/rss/world.xml,EN,,,News — India News
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Focusing on Taiwan,https://focustaiwan.tw,,EN,,,Taiwan agenzia
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Fortify Rights,https://www.fortifyrights.org,,,SE Asia,,Diritti
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Free Malaysia Today,https://www.freemalaysiatoday.com,,EN,,,Malaysia
@@ -1894,7 +1894,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Hankyoreh,https://www.hani.co.kr,https://www.hani.co.kr/arti/rss.html,KO,,,Corea Progressista
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Hankyung (KED),https://www.hankyung.com,,KO/EN,,,Corea — economico
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Hasht-e Subh (8am Media),https://8am.media,,FA/EN,,,Afghanistan — testata in esilio
-📰 Media & Testate Giornalistiche,Asia & Pacifico,Hindu Business Line,https://www.thehindubusinessline.com,https://www.thehindubusinessline.com/feed/,EN,,,India Business
+📰 Media & Testate Giornalistiche,Asia & Pacifico,Hindu Business Line,https://www.thehindubusinessline.com,https://www.thehindubusinessline.com/feeder/default.rss,EN,,,India Business
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Hindustan (Live Hindustan),https://www.livehindustan.com,,HI,,,"India — hindi, gruppo HT"
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Hindustan Times,https://www.hindustantimes.com,,EN,,,India
 📰 Media & Testate Giornalistiche,Asia & Pacifico,HK Free Press,https://hongkongfp.com,,EN,,,HK indipendente
@@ -1950,7 +1950,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Mainichi Shimbun,https://mainichi.jp/english,,EN/JA,,,Giappone
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Malay Mail,https://www.malaymail.com,,EN,,,Malaysia
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Malayala Manorama,https://www.manoramaonline.com,,ML,,,Kerala — malayalam più diffuso
-📰 Media & Testate Giornalistiche,Asia & Pacifico,Manila Bulletin,https://mb.com.ph,https://mb.com.ph/feed/,EN,,,Filippine
+📰 Media & Testate Giornalistiche,Asia & Pacifico,Manila Bulletin,https://mb.com.ph,https://mb.com.ph/rss/index.xml,EN,,,Filippine
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Marianas Variety,https://www.mvariety.com,,EN,,,Isole Marianne — quotidiano regionale
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Matangi Tonga,https://matangitonga.to,,EN/TO,,,Tonga — testata online
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Mathrubhumi (Malayalam),https://www.mathrubhumi.com,,ML,,,Kerala — malayalam
@@ -2050,7 +2050,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Astana Times,https://astanatimes.com,,EN,,,Kazakistan — anglofono
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Australian,https://www.theaustralian.com.au,,EN,,,Australia premium
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Bhutanese,https://thebhutanese.bt,,EN,,,Bhutan — settimanale investigativo
-📰 Media & Testate Giornalistiche,Asia & Pacifico,The Conversation AU,https://theconversation.com/au,https://theconversation.com/au/articles/rss,EN,,,Accademia — Australia Accademia
+📰 Media & Testate Giornalistiche,Asia & Pacifico,The Conversation AU,https://theconversation.com/au,https://theconversation.com/au/articles.atom,EN,,,Accademia — Australia Accademia
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Edge Malaysia,https://theedgemalaysia.com,,EN,,,Malaysia business
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Edition,https://edition.mv,,EN,,,Maldive — edizione anglofona di Mihaaru
 📰 Media & Testate Giornalistiche,Asia & Pacifico,The Express Tribune,https://tribune.com.pk,https://tribune.com.pk/feed/latest,EN,,,già in lista
@@ -3787,7 +3787,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 🔐 Cybersecurity & Digital OSINT,Threat Intelligence & Cybersecurity,Vectra AI Blog,https://www.vectra.ai/blog,,,,,AI Security
 🔐 Cybersecurity & Digital OSINT,Threat Intelligence & Cybersecurity,Virus Bulletin,https://www.virusbulletin.com,,,,,Ricerca tecnica — Malware research
 🔐 Cybersecurity & Digital OSINT,Threat Intelligence & Cybersecurity,Wired Security,https://www.wired.com/category/security,,,,,Copertura generale — Security news
-🔐 Cybersecurity & Digital OSINT,Threat Intelligence & Cybersecurity,ZDNet,https://www.zdnet.com,https://www.zdnet.com/rss/,EN,,,Tech Enterprise — Enterprise security — Enterprise
+🔐 Cybersecurity & Digital OSINT,Threat Intelligence & Cybersecurity,ZDNet,https://www.zdnet.com,https://www.zdnet.com/rss.xml,EN,,,Tech Enterprise — Enterprise security — Enterprise
 🔐 Cybersecurity & Digital OSINT,OSINT Tools & Intelligence,Amass,https://github.com/owasp-amass/amass,,,,Open Source,OWASP project — Subdomain Enum
 🔐 Cybersecurity & Digital OSINT,OSINT Tools & Intelligence,AnyRun,https://app.any.run,,,,Freemium,Malware sandbox
 🔐 Cybersecurity & Digital OSINT,OSINT Tools & Intelligence,Archive.ph,https://archive.ph,,,,Pubblico,Page archiving — Archive
