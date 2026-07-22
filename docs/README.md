@@ -24,6 +24,8 @@
 |---|---|
 | [compliance.md](compliance.md) | GDPR + EU AI Act summary mapping |
 | [eu_ai_act/](eu_ai_act/README.md) | Conformity scaffold: classification (pending, legal), Annex IV draft, Art. 9 risk register, Art. 10 data governance |
+| [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (35→9 dead feeds); `research/feed_health_audit.py` |
+| [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
 ## Planning
 
