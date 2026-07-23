@@ -6,31 +6,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [1.0.0] — 2026-03-06
-
-### Added
-- 4-signal scoring pipeline: coherence, volatility, silence, gaming
-- FastAPI REST API with 9-phase evaluation pipeline
-- GDPR Art. 13–22 endpoints: `/explain`, `/contest`, `/review`
-- AES-256-GCM encrypted audit log (PostgreSQL)
-- Redis sliding-window rate limiting (Lua, 30 req/min)
-- JWT RS256 authentication with dual API-key rotation
-- APScheduler nightly audit purge with distributed Redis lock
-- Docker multi-stage build with non-root user
-- GitHub Actions CI: lint, unit tests, integration tests, Docker build
-- spaCy `it_core_news_lg` for Italian NER
-- RFC 7807 Problem Details error responses
-- Deep `/health` endpoint (API + Redis + PostgreSQL + NLP)
-- WP 4.1/4.3 compliance disclaimer on all explanation responses
-- Dynamic weight matrix by source type (social/news)
-
-### Known Limitations
-- NLP accuracy ~55–62% (rule-based; see WP 4.1)
-- Parameters not empirically calibrated
-- Italian-only NLP pipeline
-
----
-
 ## [Unreleased]
 
 ### Added
@@ -48,18 +23,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Dataset-maintenance runbook** (`docs/dataset_expansion_runbook.md`): the
   verified pipeline sequence to add sources and keep the collection healthy,
   with a data-safety warning (see Fixed).
+- **Community health files**: `CODE_OF_CONDUCT.md` (Contributor Covenant
+  2.1), `.github/ISSUE_TEMPLATE/` (bug report, feature request), and
+  `.github/pull_request_template.md` — `CONTRIBUTING.md` already referenced
+  issue templates that didn't exist yet.
 
 ### Fixed
-- **28 dead RSS feeds repaired** across three verification passes (registry
-  **35 dead / 64 ok → 9 dead / 91 ok**, ~72% healthy), each replacement checked
-  for HTTP 200 + valid XML *and* correct outlet/language before applying — most
-  notably **Il Corriere della Sera** (label 85, a scarce Italian high-reliability
-  source) whose registered feed 404'd, so it had *never* been collected (the
-  only "corriere" in the snapshots was the disinfo clone *Corriere del Corsaro*,
-  label 10). Also Il Giornale, Bild, Welt, Haaretz, Sky News UK, Jerusalem Post,
-  Le Parisien, Al Jazeera Arabic, and others. Byte-exact edits to
-  `data/labels.jsonl` and `data/Fonti_OSINT.csv` (CRLF preserved); no label
-  record lost.
+- **34 dead/mislabelled RSS feeds repaired across five verification rounds**
+  (registry **35 dead / 64 ok → 2 dead / 97 ok**, ~84% of the 115 feeds still
+  registered), each replacement checked for HTTP 200 + valid XML *and*
+  correct outlet/language before applying — most notably **Il Corriere della
+  Sera** (label 85, a scarce Italian high-reliability source) whose
+  registered feed 404'd, so it had *never* been collected (the only
+  "corriere" in the snapshots was the disinfo clone *Corriere del Corsaro*,
+  label 10). Also Il Giornale (fixed twice — it regressed between rounds),
+  Bild, Welt, Haaretz, Sky News UK, Jerusalem Post, Le Parisien, Al Jazeera
+  Arabic, Business Day, B92, Iran International, Geo TV, SF Gate, and
+  others. Byte-exact edits to `data/labels.jsonl` and `data/Fonti_OSINT.csv`
+  (CRLF preserved); no label record lost.
+- **11 outlets confirmed to have discontinued public RSS entirely**
+  (TRT Africa, Mediazona, Jakarta Globe, AFP News, WNYC, DPA International,
+  Jordan Times, Rudaw, Caixin China, USA Today, Taiwan News) had their `rss`
+  field set to `null` rather than being deleted — the label record is kept
+  so the weekly collector stops hitting a confirmed-dead URL without losing
+  the ground truth. Two more (ITV News, L'Orient Today) block this
+  environment's network on every path and were deliberately left as-is
+  rather than nulled, since that looks environment-specific, not a genuinely
+  dead feed. See `docs/feed_health_2026-07.md`.
 - **Documented a data-destroying maintenance step.** `data/labels.jsonl` is a
   curated **merge** of MBFC ratings and the documented-disinfo registry, *not*
   reproducible from `ratings.csv` alone: regenerating it with
@@ -67,6 +57,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   ground-truth low tail (Corriere del Corsaro label 10, etc.). The runbook now
   writes MBFC output to a separate file to merge, never overwriting the curated
   registry.
+- **Documented the spaCy-model recalibration blocker precisely.** A
+  *Full*-network session still can't fetch `it_core_news_lg`: the download
+  hits `github.com/explosion/spacy-models`, and that repo isn't in the
+  session's GitHub scope — a per-repo grant, not a network-level setting.
+  `docs/dataset_expansion_runbook.md` now documents the exact failure, the
+  `SessionStart` hook's silent `|| true` swallow of it, and the two mirrors
+  checked and ruled out (Hugging Face needs auth, PyPI doesn't host spaCy
+  pipelines), so recalibration isn't attempted from a degraded NER run by
+  mistake.
+- `CHANGELOG.md`'s `[1.0.0]` entry was out of Keep-a-Changelog order (listed
+  before `[Unreleased]` instead of last); moved to the bottom.
+- `SECURITY.md`'s supported-versions table still said `1.0.x`; updated to
+  the current `1.6.x`.
 
 ### Planned
 - Content-credibility signal for fake-news on ordinary domains (the low-tail
@@ -376,3 +379,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - CI is green again: applied black/isort across the codebase and fixed the
   remaining flake8/mypy errors plus structlog-config and test-isolation bugs
   that had been failing every run.
+
+---
+
+## [1.0.0] — 2026-03-06
+
+### Added
+- 4-signal scoring pipeline: coherence, volatility, silence, gaming
+- FastAPI REST API with 9-phase evaluation pipeline
+- GDPR Art. 13–22 endpoints: `/explain`, `/contest`, `/review`
+- AES-256-GCM encrypted audit log (PostgreSQL)
+- Redis sliding-window rate limiting (Lua, 30 req/min)
+- JWT RS256 authentication with dual API-key rotation
+- APScheduler nightly audit purge with distributed Redis lock
+- Docker multi-stage build with non-root user
+- GitHub Actions CI: lint, unit tests, integration tests, Docker build
+- spaCy `it_core_news_lg` for Italian NER
+- RFC 7807 Problem Details error responses
+- Deep `/health` endpoint (API + Redis + PostgreSQL + NLP)
+- WP 4.1/4.3 compliance disclaimer on all explanation responses
+- Dynamic weight matrix by source type (social/news)
+
+### Known Limitations
+- NLP accuracy ~55–62% (rule-based; see WP 4.1)
+- Parameters not empirically calibrated
+- Italian-only NLP pipeline
