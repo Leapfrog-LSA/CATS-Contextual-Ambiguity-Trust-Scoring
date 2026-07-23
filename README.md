@@ -22,6 +22,10 @@ CATS analyses the _behavioural patterns_ of a source over time — narrative con
 * 🇮🇹 **Italian-optimised NLP**, degrading gracefully (never crashing) when the spaCy model or optional SBERT/BERT backends are unavailable
 * 🛡️ **GDPR + EU AI Act aware from day one** — Art. 13–22 endpoints, ordinal-score disclaimers, and a documented (not fabricated) compliance scaffold
 
+![CATS trust-score evaluation — request and explainable response](.gitbook/assets/cats_demo_output.png)
+
+<sub>The request/response above is the same illustrative example used in [API Example](#api-example) below — a real call returns the same shape, computed from your own messages.</sub>
+
 ***
 
 ## Signals
