@@ -14,6 +14,61 @@ network level does not reach arbitrary feeds/MBFC, so run it under *Full* or a
 is verified against the current CLIs and data model; nothing here fabricates
 feeds or ratings.
 
+## ⚠️ BLOCKED (verified 2026-07-23): spaCy Italian model needs a session-scoped
+## GitHub grant, not just *Full* network
+
+A *Full*-network session is **not sufficient** to run step 6 below at full
+fidelity. `it_core_news_lg` is fetched by `python -m spacy download
+it_core_news_lg`, which pulls a release asset from
+`github.com/explosion/spacy-models`. In a *Full*-network cloud session
+(general egress confirmed working — e.g. a plain `curl` to an arbitrary HTTPS
+host succeeds) the download still fails:
+
+```
+$ python -m spacy download it_core_news_lg
+ERROR: HTTP error 403 while getting
+https://github.com/explosion/spacy-models/releases/download/it_core_news_lg-3.8.0/...
+```
+
+The response body is not a generic network block, it is this session's GitHub
+integration declining an out-of-scope repo:
+`{"message":"GitHub access to this repository is not enabled for this
+session. Use add_repo to request access."}`. **This is a per-repo GitHub
+grant, orthogonal to the network level** — *Full* network gets you to
+github.com's edge, but `explosion/spacy-models` still needs to be in this
+session's GitHub scope (normally via `add_repo`, and only on explicit user
+request — it is not part of the CATS repo and should not be added
+autonomously).
+
+**Gotcha:** the `SessionStart` hook (`.claude/hooks/*.sh`) wraps this download
+in `... || true` — a flaky/blocked fetch must never fail the whole session
+startup — so `cats session-start: environment ready.` prints regardless of
+whether the model actually landed. **"environment ready" is not evidence the
+spaCy model is present.** Verify with `python -c "import it_core_news_lg"`
+before trusting NER-coherence fidelity in a calibration run.
+
+Alternatives checked (2026-07-23) and ruled out from this session:
+- Hugging Face mirror (`huggingface.co/explosion/it_core_news_lg`) — needs
+  authentication in this environment (`401`, `"Invalid username or
+  password."`), no token available here.
+- Direct PyPI (`pypi.org/simple/it-core-news-lg/`) — `404`; spaCy trained
+  pipelines are not published as ordinary PyPI packages.
+- No cached wheel found anywhere on the container filesystem or in `pip
+  cache`.
+
+**To unblock:** either (a) a session where `explosion/spacy-models` has
+already been granted GitHub scope (ask the user before calling `add_repo` —
+it is unusual to add a model repo rather than a code repo, and may not even
+work since it is release *assets*, not the repo's git history), or (b) the
+model supplied another way (manual upload into the container, a private
+mirror with credentials, or a pre-baked image/layer that already has
+`it_core_news_lg` installed). Until then, `build_dataset` (step 6) can still
+run — coherence just degrades to the neutral, zero-confidence NER value per
+CLAUDE.md's graceful-degradation rule — but **do not calibrate production
+weights (`data/calibrated_weights.json`) from a degraded run**; the
+coherence signal would be uninformative and the calibration would not be
+sound to ship.
+
 ## ⚠️ SAFETY: `data/labels.jsonl` is curated — never regenerate it destructively
 
 `data/labels.jsonl` is **not** reproducible from `Fonti_OSINT.csv` + `ratings.csv`
@@ -122,7 +177,9 @@ python -m cats.calibration.split --input data/labelled_sources.jsonl \
   --holdout-fraction 0.2 --train-out data/train_sources.jsonl \
   --holdout-out data/holdout_sources.jsonl
 
-# 6. Build the signal datasets (needs the spaCy model for full-fidelity coherence).
+# 6. Build the signal datasets (needs the spaCy model for full-fidelity
+#    coherence — see the BLOCKED note above if `it_core_news_lg` isn't
+#    installed; verify with `python -c "import it_core_news_lg"` first).
 python -m cats.calibration.build_dataset --input data/train_sources.jsonl   --out data/train.jsonl
 python -m cats.calibration.build_dataset --input data/holdout_sources.jsonl --out data/holdout_future.jsonl
 ```
