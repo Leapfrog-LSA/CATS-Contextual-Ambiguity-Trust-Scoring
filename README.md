@@ -2,7 +2,7 @@
 
 > **Trust intelligence for OSINT sources — not fact-checking, but source reliability over time.**
 
-[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions) [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md) [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md)
+[![CI](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions/workflows/ci.yml/badge.svg)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/actions) [![Coverage](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/branch/main/graph/badge.svg)](https://codecov.io/gh/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring) [![PyPI](https://img.shields.io/pypi/v/cats-scoring?color=blue)](https://pypi.org/project/cats-scoring/) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![GDPR](https://img.shields.io/badge/GDPR-Art.13--22%20documented-blue)](docs/compliance.md) [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-documented-blue)](docs/compliance.md) [![Stars](https://img.shields.io/github/stars/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring?style=social)](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/stargazers)
 
 ***
 
@@ -13,6 +13,14 @@
 | "Is this information true?" | **"How reliable is this source, in this context, right now?"** |
 
 CATS analyses the _behavioural patterns_ of a source over time — narrative consistency, sentiment volatility, temporal gaps, and signs of algorithmic manipulation — and returns a transparent, explainable trust score.
+
+**At a glance:**
+
+* 🧠 **4 behavioural signals**, empirically calibrated and validated on a future holdout (concordance 0.755–0.775) — not hand-picked weights
+* 📖 **Explainable by design** — every score ships with per-signal attribution (`primary_driver`, `score_share_pct`) and a GDPR Art. 22 contest/appeal flow
+* ⚡ **Zero-infrastructure library mode** (`cats.lite`) or a full multi-tenant FastAPI deployment with audit logging — same signals, same guarantees
+* 🇮🇹 **Italian-optimised NLP**, degrading gracefully (never crashing) when the spaCy model or optional SBERT/BERT backends are unavailable
+* 🛡️ **GDPR + EU AI Act aware from day one** — Art. 13–22 endpoints, ordinal-score disclaimers, and a documented (not fabricated) compliance scaffold
 
 ***
 
@@ -171,6 +179,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)     | Community standards                                 |
 | [SECURITY.md](SECURITY.md)                   | Vulnerability reporting                             |
 
 ***
@@ -210,6 +219,19 @@ Full plan: [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadm
 2. **Recalibration with the diagnosis inputs** — volatility spike threshold 0.1–0.3 (~3× its current rank information), silence threshold ≥ 96 h, gaming redesign (its `vocab` sub-score duplicates TTR), band-threshold validation; gated on a grown validation set (target: concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout).
 3. **Full EU AI Act technical documentation** (Annex IV) — pending the human/legal high-risk classification decision (`docs/eu_ai_act/`).
 4. **Multilingual support** — beyond the Italian-optimised NLP stack (the language flag is the first step).
+
+***
+
+## Contributing
+
+Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+dev setup, code standards, and the checklist for adding a new signal. Please
+also read the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+If CATS is useful to you, **consider starring the repo ⭐** — it helps others
+doing OSINT/disinformation work find it.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring&type=Date)](https://star-history.com/#Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring&Date)
 
 ***
 

@@ -2,10 +2,12 @@
 
 ## Supported versions
 
+Only the latest released version receives security fixes.
+
 | Version | Supported |
 |---|---|
-| 1.0.x | ✅ |
-| < 1.0 | ❌ |
+| 1.6.x | ✅ |
+| < 1.6 | ❌ |
 
 ## Reporting a vulnerability
 
