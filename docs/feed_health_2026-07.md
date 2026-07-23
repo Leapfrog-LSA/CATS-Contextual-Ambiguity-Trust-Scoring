@@ -10,21 +10,27 @@ dataset. *Il Corriere della Sera* (label 85, MBFC High — a scarce Italian
 high-reliability source) had never been collected because its registered feed
 404s. That was found by chance; this audit finds the rest on purpose.
 
-## Result (126 feeds in `data/labels.jsonl`)
+## Result
 
-| Status | At audit | After round 1–3 | Before round 4 (2026-07-22) | After round 4 |
-|---|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | **97** |
-| dead | 35 | 9 | 10 | **8** |
-| not-xml | 10 | 10 | 10 | **5** |
-| blocked | 17 | 16 | 16 | 16 |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) |
+|---|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | **97** |
+| dead | 35 | 9 | 10 | 8 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | **0** |
+| blocked | 17 | 16 | 16 | 16 | **16** |
 
-(The "before round 4" counts drifted slightly from the round 1–3 numbers merged in PR #42 — two days of natural feed flakiness, not a regression.)
+(The "before round 4" counts drifted slightly from the round 1–3 numbers merged
+in PR #42 — two days of natural feed flakiness, not a regression. The feed
+count drops from 126 to 115 in round 5 because 11 entries with no recoverable
+feed had their `rss` nulled rather than being fixed — see below; the *label*
+record is kept, only the dead feed pointer is removed.)
 
 At audit only **~51%** of registered feeds returned a feed — why ~59 sources
 appear in the snapshots despite 126 registered feeds, and the loss was **not
 random** (the dead feeds clustered at labels 85 and 50, biasing the effective
-dataset). After the repair passes below (rounds 1–4), **~77%** work.
+dataset). After the repair passes below (rounds 1–5), **97/115 (~84%) of
+still-registered feeds work**, and the only two `dead` left are outlets that
+block this session's network entirely, not a URL problem.
 
 The dead feeds are overwhelmingly non-Italian international outlets whose feed
 URLs have moved.
@@ -32,8 +38,9 @@ URLs have moved.
 ## Repair progress
 
 **Every replacement checked for HTTP 200 + valid XML *and* correct
-outlet/language** before applying. **33 feeds repaired** across four rounds
-(35 dead → 8, not-xml 10 → 5; ok 64 → 97, ≈77% working):
+outlet/language** before applying. **34 feeds repaired** across five rounds
+(35 dead → 2, not-xml 10 → 0; ok 64 → 97, ≈84% of the 115 feeds still
+registered):
 
 - **Round 1 (common-path probing, 14):** Corriere della Sera
   (`→ xml2.corriereobjects.it/rss/homepage.xml`), Il Giornale
@@ -111,27 +118,72 @@ moved it):
   applied: **ITV News**, **L'Orient Today** (Cloudflare "Just a moment…" JS
   challenge on every page including the homepage).
 
+### Round 5 (regression fix + execute the round-4 drop recommendation)
+
+**Regression found and fixed:** re-running the audit at the start of round 5
+turned up a new dead feed not present at the end of round 4 — **Il Giornale**
+(`feed.xml` from round 1 now 404s). The `businessday.co.za` fix in round 4
+was a clue: **Il Giornale runs on the same Arc XP CMS**, so the fix was the
+same standard outbound path — `→ ilgiornale.it/arc/outboundfeeds/rss/`,
+verified HTTP 200 + valid XML + current Italian content. A reminder that
+"fixed" feeds need re-auditing periodically, not just once.
+
+**Retried the two network-blocked outlets** (ITV News, L'Orient Today) from
+this session — both still time out / WAF-challenge on every path, unchanged
+from round 4. **Left as-is** (not nulled): the block looks specific to this
+environment's egress (Cloudflare JS challenge, HTTP/2 `INTERNAL_ERROR`), not
+evidence the feed is actually dead for the production collector. Nulling
+these would risk permanently dropping two legitimate high/mid-reliability
+sources over an artifact of the dev sandbox.
+
+**Re-investigated the 11 "no public feed" outlets** from round 4 (WebSearch
+per source, one more pass) — no new leads on any of them; every search
+independently re-confirmed round 4's finding (e.g. a SitePoint piece
+confirming AFP deliberately turned off RSS; WNYC's only remaining feeds are
+podcast-specific, some already retired). Round 4 → round 5 yield: 5 → 0 new
+fixes, the expected floor for this line of attack.
+
+**Executed the round-4 recommendation:** for the 11 confirmed
+no-longer-published feeds (TRT Africa, Mediazona, Jakarta Globe, AFP News,
+WNYC, DPA International, Jordan Times, Rudaw, Caixin China, USA Today,
+Taiwan News), set `"rss": null` in `data/labels.jsonl` and cleared the `RSS
+Feed` column in `data/Fonti_OSINT.csv` — **the label record itself is kept**
+(source_id, label, url), only the dead feed pointer is removed, following
+the file's existing convention (many sources, e.g. RFI, BBC News, Foreign
+Policy, already carry `rss: null`). This was a deliberate choice over
+deleting the rows outright: it stops the weekly collector from repeatedly
+hitting a confirmed-dead URL while preserving the ground-truth label in case
+one of these outlets relaunches a feed later (re-adding a URL is a one-line
+diff; re-establishing a lost label is not).
+
+Net effect: **dead 8 → 2, not-xml 5 → 0**. The two remaining `dead` entries
+(ITV News, L'Orient Today) are believed environment-specific, not genuinely
+broken — worth one more retry from a session with a different network path,
+otherwise leave them as-is rather than null them.
+
 ## Recommendation
 
-The remaining 13 `dead`/`not-xml` entries (listed above under round 4) are
-the genuine hard tail: outlets that have discontinued public RSS entirely, or
-whose domain blocks this environment's network outright (not just the
-`/rss` path). Further WebSearch/curl probing from a session with this same
-network profile is unlikely to find anything new — the marginal fixes per
-round have gone 14 → 10 → 4 → 5, each round more effort for less yield.
-Two paths forward, not mutually exclusive:
+After round 5 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
+believed environment-specific — see above), and **16 `blocked`** that are
+ambiguous by design (403/429/timeout could be UA/geo refusal, not a dead
+feed) and should not be auto-removed.
 
-- **Drop** the outlets confirmed to have no public feed at all (Mediazona,
-  Jakarta Globe, AFP News, WNYC, DPA International, Jordan Times, Rudaw,
-  Caixin China, USA Today, Taiwan News, TRT Africa) from the registry rather
-  than leaving them permanently dead — a source with a 404 feed contributes
-  nothing to collection either way.
+Remaining work, roughly in order of value:
+
+- **Re-audit periodically, not just once.** Round 5 caught a fresh regression
+  (Il Giornale) that round 4 had left working — feed URLs drift over time
+  even after being "fixed." Re-run `research/feed_health_audit.py` before
+  each calibration pass, not just when chasing dead feeds.
 - **Retry ITV News / L'Orient Today** from a session on a different network
-  path (their block looks environment-specific — Cloudflare/WAF challenge,
-  not a genuinely dead feed) before dropping them.
+  path before concluding they're genuinely dead and nulling them too.
+- **Manually verify the 16 `blocked`** (403/429/timeout) with a browser or a
+  different UA/IP — some may be genuinely dead, most are probably just
+  refusing this collector's User-Agent.
+- The 11 nulled sources (label kept, `rss: null`) are permanently out of
+  weekly collection until someone finds a working feed again — no further
+  action needed unless one of them relaunches RSS.
 
-Do not auto-remove genuine `blocked` (403/429/timeout) feeds: they may just
-refuse this User-Agent, not be dead. This round brought the registry to
-**~77% working** (97/126) — a prerequisite for the ≥100-source future-holdout
-target, alongside the content-credibility signal work, both still blocked on
-a full-network + spaCy-model session (see `docs/dataset_expansion_runbook.md`).
+This round's real prerequisite work — the ≥100-source future-holdout target
+and the content-credibility signal — is still blocked on a full-network +
+spaCy-model session (see `docs/dataset_expansion_runbook.md`), not on feed
+health, which is now in a stable, near-maximal state for this line of effort.
