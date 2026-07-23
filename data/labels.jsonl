@@ -17,7 +17,7 @@
 {"source_id": "Mashable", "source_type": "news", "label": 70.0, "url": "https://mashable.com", "rss": "https://mashable.com/feed/"}
 {"source_id": "RFI", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr", "rss": null}
 {"source_id": "RNZ (Radio NZ)", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz", "rss": null}
-{"source_id": "SF Gate", "source_type": "news", "label": 85.0, "url": "https://www.sfgate.com", "rss": "https://www.sfgate.com/rss/"}
+{"source_id": "SF Gate", "source_type": "news", "label": 85.0, "url": "https://www.sfgate.com", "rss": "https://www.sfgate.com/bayarea/feed/bay-area-news-429.php"}
 {"source_id": "The Conversation (Global)", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/global", "rss": null}
 {"source_id": "The Hill", "source_type": "news", "label": 70.0, "url": "https://thehill.com", "rss": null}
 {"source_id": "The Hill Tech", "source_type": "news", "label": 70.0, "url": "https://thehill.com/policy/technology", "rss": "https://thehill.com/news/technology/feed"}
@@ -75,7 +75,7 @@
 {"source_id": "The Register", "source_type": "news", "label": 85.0, "url": "https://www.theregister.com", "rss": "https://www.theregister.com/feed/"}
 {"source_id": "Welt", "source_type": "news", "label": 85.0, "url": "https://www.welt.de", "rss": "https://www.welt.de/feeds/latest.rss"}
 {"source_id": "444.hu", "source_type": "news", "label": 70.0, "url": "https://444.hu", "rss": "https://444.hu/rss"}
-{"source_id": "B92", "source_type": "news", "label": 50.0, "url": "https://www.b92.net", "rss": "https://www.b92.net/rss/"}
+{"source_id": "B92", "source_type": "news", "label": 50.0, "url": "https://www.b92.net", "rss": "https://www.b92.net/rss/latest"}
 {"source_id": "BBC Science & Environment", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/news/science_and_environment", "rss": null}
 {"source_id": "Berlingske", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk", "rss": null}
 {"source_id": "Berlingske Business", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk/business", "rss": "https://www.berlingske.dk/service/rss"}
@@ -90,12 +90,12 @@
 {"source_id": "Al Jazeera Africa", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.com/africa", "rss": "https://www.aljazeera.com/xml/rss/all.xml"}
 {"source_id": "Al Jazeera Arabic", "source_type": "news", "label": 50.0, "url": "https://www.aljazeera.net", "rss": "https://www.aljazeera.net/feed"}
 {"source_id": "BBC Arabic", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/arabic", "rss": null}
-{"source_id": "Business Day", "source_type": "news", "label": 50.0, "url": "https://www.businesslive.co.za", "rss": "https://www.businesslive.co.za/rss/"}
+{"source_id": "Business Day", "source_type": "news", "label": 50.0, "url": "https://www.businesslive.co.za", "rss": "https://www.businessday.co.za/arc/outboundfeeds/rss/"}
 {"source_id": "City Press SA", "source_type": "news", "label": 85.0, "url": "https://www.news24.com/citypress", "rss": null}
 {"source_id": "Daily Maverick Opinionista", "source_type": "news", "label": 70.0, "url": "https://www.dailymaverick.co.za/opinionista", "rss": null}
 {"source_id": "Daily Trust", "source_type": "news", "label": 70.0, "url": "https://dailytrust.com", "rss": "https://dailytrust.com/feed/"}
 {"source_id": "Foreign Policy Africa", "source_type": "news", "label": 85.0, "url": "https://foreignpolicy.com/region/africa", "rss": "https://foreignpolicy.com/feed/"}
-{"source_id": "Iran International", "source_type": "news", "label": 50.0, "url": "https://www.iranintl.com", "rss": "https://www.iranintl.com/en/rss"}
+{"source_id": "Iran International", "source_type": "news", "label": 50.0, "url": "https://www.iranintl.com", "rss": "https://www.iranintl.com/en/feed"}
 {"source_id": "Jeune Afrique", "source_type": "news", "label": 85.0, "url": "https://www.jeuneafrique.com", "rss": "https://www.jeuneafrique.com/feed"}
 {"source_id": "Jeune Afrique Eco", "source_type": "news", "label": 85.0, "url": "https://www.jeuneafrique.com/economie", "rss": null}
 {"source_id": "Jordan Times", "source_type": "news", "label": 50.0, "url": "https://www.jordantimes.com", "rss": "https://www.jordantimes.com/rss"}
@@ -121,7 +121,7 @@
 {"source_id": "Caixin China", "source_type": "news", "label": 50.0, "url": "https://www.caixin.com", "rss": "https://www.caixin.com/rss/"}
 {"source_id": "Dawn Pakistan", "source_type": "news", "label": 70.0, "url": "https://www.dawn.com", "rss": "https://www.dawn.com/feeds/home"}
 {"source_id": "Firstpost", "source_type": "news", "label": 70.0, "url": "https://www.firstpost.com", "rss": "https://www.firstpost.com/commonfeeds/v1/mfp/rss/world.xml"}
-{"source_id": "Geo TV", "source_type": "news", "label": 50.0, "url": "https://www.geo.tv", "rss": "https://www.geo.tv/rss"}
+{"source_id": "Geo TV", "source_type": "news", "label": 50.0, "url": "https://www.geo.tv", "rss": "https://www.geo.tv/rss/1/1"}
 {"source_id": "Hindu Business Line", "source_type": "news", "label": 50.0, "url": "https://www.thehindubusinessline.com", "rss": "https://www.thehindubusinessline.com/feeder/default.rss"}
 {"source_id": "Jakarta Globe", "source_type": "news", "label": 70.0, "url": "https://jakartaglobe.id", "rss": "https://jakartaglobe.id/feed/"}
 {"source_id": "Manila Bulletin", "source_type": "news", "label": 50.0, "url": "https://mb.com.ph", "rss": "https://mb.com.ph/rss/index.xml"}

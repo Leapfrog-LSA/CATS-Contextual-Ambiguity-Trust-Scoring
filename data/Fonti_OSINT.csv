@@ -171,7 +171,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Sbilanciamoci,https://sbilanciamoci.info,https://sbilanciamoci.info/feed/,,,Online,Economia critica — Economia e sociale
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Seattle Times,https://www.seattletimes.com,,EN,,,Seattle
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Semanario Universidad CR,https://semanariouniversidad.com,,,CR,,Universitario
-📰 Media & Testate Giornalistiche,Globali & Internazionali,SF Gate,https://www.sfgate.com,https://www.sfgate.com/rss/,EN,,,Bay Area
+📰 Media & Testate Giornalistiche,Globali & Internazionali,SF Gate,https://www.sfgate.com,https://www.sfgate.com/bayarea/feed/bay-area-news-429.php,EN,,,Bay Area
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Sigma Awards,https://sigmaawards.org,,,Globale,,Data journalism awards
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Snopes,https://www.snopes.com,,,US,,Fact-checking globale — USA
 📰 Media & Testate Giornalistiche,Globali & Internazionali,SPJ (Society Prof. Journalists),https://www.spj.org,,,US,,Associazione — USA
@@ -1010,7 +1010,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Atlanta Journal-Constitution,https://www.ajc.com,,EN,,,Georgia USA
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Azatliq (Azerbaijan),https://www.azadliq.info,,AZ,,,Azerbaijan RFE/RL
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Azattyq (Kazakhstan),https://www.azattyq.org,,KK/EN,,,Kazakhstan RFE
-📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,B92,https://www.b92.net,https://www.b92.net/rss/,SR,,,Serbia
+📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,B92,https://www.b92.net,https://www.b92.net/rss/latest,SR,,,Serbia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Balkan Insight,https://balkaninsight.com,,EN,,,Balcani in inglese
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,BBC Science & Environment,https://www.bbc.com/news/science_and_environment,,UK,,,News
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Belarus Zerkalo,https://zerkalo.io,,RU,,,Bielorussia indip.
@@ -1446,7 +1446,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Africa,Burkina24,https://burkina24.com,,FR,,,Burkina Faso — testata digitale
 📰 Media & Testate Giornalistiche,Africa,Business & Financial Times,https://thebftonline.com,,EN,,,"Testata nazionale — Ghana · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,Business Daily Africa,https://www.businessdailyafrica.com,,EN,,,Africa Est business
-📰 Media & Testate Giornalistiche,Africa,Business Day,https://www.businesslive.co.za,https://www.businesslive.co.za/rss/,EN,,,Sudafrica business
+📰 Media & Testate Giornalistiche,Africa,Business Day,https://www.businesslive.co.za,https://www.businessday.co.za/arc/outboundfeeds/rss/,EN,,,Sudafrica business
 📰 Media & Testate Giornalistiche,Africa,Business Today Kenya,https://businesstoday.co.ke,,EN,,,"Testata nazionale — Kenya · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,BusinessDay,https://www.businessdayonline.com,,EN,,,"Testata/portale — Nigeria · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,BusinessDay Nigeria,https://businessday.ng,,EN,,,Nigeria — quotidiano economico
@@ -1521,7 +1521,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Africa,Inforpress,https://inforpress.cv,,PT,,,Capo Verde — agenzia di stampa nazionale
 📰 Media & Testate Giornalistiche,Africa,INK Zambia,https://www.inkzambia.org,,EN,,,Zambia investigativo
 📰 Media & Testate Giornalistiche,Africa,IOL,https://www.iol.co.za,,EN,,,"Testata nazionale — South Africa · fonte aggregatore, verifica consigliata"
-📰 Media & Testate Giornalistiche,Africa,Iran International,https://www.iranintl.com,https://www.iranintl.com/en/rss,EN,,,Iran indip.
+📰 Media & Testate Giornalistiche,Africa,Iran International,https://www.iranintl.com,https://www.iranintl.com/en/feed,EN,,,Iran indip.
 📰 Media & Testate Giornalistiche,Africa,Iraq Oil Report,https://www.iraqoilreport.com,,EN,,,Iraq petrolio
 📰 Media & Testate Giornalistiche,Africa,ITNewsAfrica,https://www.itnewsafrica.com,,EN,,,"Testata/portale — Pan-Africa · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,iWatch Africa,https://iwatchafrica.org,,EN,,,Ghana investigativo
@@ -1886,7 +1886,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Frontline,https://frontline.thehindu.com,,EN,,,India — quindicinale (The Hindu)
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Gandhara RFE/RL,https://gandhara.rferl.org,,EN,,,Pakistan/Afghanistan
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Gazeta.uz,https://www.gazeta.uz,,RU/UZ,,,Uzbekistan — portale principale
-📰 Media & Testate Giornalistiche,Asia & Pacifico,Geo TV,https://www.geo.tv,https://www.geo.tv/rss,EN,,,Pakistan TV
+📰 Media & Testate Giornalistiche,Asia & Pacifico,Geo TV,https://www.geo.tv,https://www.geo.tv/rss/1/1,EN,,,Pakistan TV
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Global Times,https://www.globaltimes.cn,,EN,,,Cina gov
 📰 Media & Testate Giornalistiche,Asia & Pacifico,GMA News Online,https://www.gmanetwork.com/news,,EN/TL,,,Filippine — network nazionale
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Greater Kashmir,https://www.greaterkashmir.com,,EN,,,Kashmir
