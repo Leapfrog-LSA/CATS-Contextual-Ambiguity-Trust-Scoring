@@ -53,6 +53,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   issue templates that didn't exist yet.
 
 ### Fixed
+- **Closed the sibling-repo cross-check of the 11 nulled "no longer
+  publishing RSS" sources** (round 8): compared `data/Fonti_OSINT.csv` and
+  `data/disinfo_sources.csv` against `Leapfrog-LSA/osint-sources-disinfo-watchlist`
+  (a public "v0.1" snapshot of the same underlying catalogue). No new sources
+  either way — the disinfo watchlist is byte-identical (114/114), and the
+  sibling's OSINT catalogue is a strict subset of this one. It did carry
+  candidate RSS URLs for the 11 round-5-nulled sources; live-checked all 11
+  and found nothing usable — 9 confirm dead, and the one that returned valid
+  XML (TRT Africa's candidate) turned out to be TRT World's feed, a
+  different outlet under the same broadcaster. No registry changes; this
+  line of investigation is closed. Full findings in
+  `docs/feed_health_2026-07.md` round 8.
 - **Daily Maverick's dead feed fixed** (`https://www.dailymaverick.co.za/feed/`
   → `/rss/`): the round-7 flakiness between `403` and `404` across UA variants
   turned out to be two different signals colliding in one concurrent run, not
