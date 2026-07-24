@@ -14,60 +14,41 @@ network level does not reach arbitrary feeds/MBFC, so run it under *Full* or a
 is verified against the current CLIs and data model; nothing here fabricates
 feeds or ratings.
 
-## ⚠️ BLOCKED (verified 2026-07-23): spaCy Italian model needs a session-scoped
-## GitHub grant, not just *Full* network
+## ✅ RESOLVED (2026-07-24): spaCy Italian model downloads fine under default *Trusted* network — the 2026-07-23 block does not reproduce
 
-A *Full*-network session is **not sufficient** to run step 6 below at full
-fidelity. `it_core_news_lg` is fetched by `python -m spacy download
-it_core_news_lg`, which pulls a release asset from
-`github.com/explosion/spacy-models`. In a *Full*-network cloud session
-(general egress confirmed working — e.g. a plain `curl` to an arbitrary HTTPS
-host succeeds) the download still fails:
+The 2026-07-23 note above (session-scoped GitHub grant needed for
+`explosion/spacy-models`) does **not** reproduce in a fresh 2026-07-24 session
+running under the *default* network level. `docs/cloud_setup.md` §3 already
+documents that the default **Trusted** level includes `github.com` and its
+release-asset hosts; `python -m spacy download it_core_news_lg` completed a
+clean 567.9 MB download and `spacy.load('it_core_news_lg')` loads correctly —
+no `add_repo` call, no GitHub-scope grant, no custom network level needed.
+The most likely explanation is a session/environment-specific GitHub-proxy
+restriction present on 2026-07-23 that isn't universal — treat that block as
+environment-specific, not as a standing constraint of this repo. Always
+re-verify with `python -c "import it_core_news_lg"` before trusting
+NER-coherence fidelity in a calibration run; don't assume either the block or
+the fix carries over session to session.
 
-```
-$ python -m spacy download it_core_news_lg
-ERROR: HTTP error 403 while getting
-https://github.com/explosion/spacy-models/releases/download/it_core_news_lg-3.8.0/...
-```
+## ⚠️ NEW FINDING (2026-07-24): the current 59-source pool doesn't support a validating temporal holdout
 
-The response body is not a generic network block, it is this session's GitHub
-integration declining an out-of-scope repo:
-`{"message":"GitHub access to this repository is not enabled for this
-session. Use add_repo to request access."}`. **This is a per-repo GitHub
-grant, orthogonal to the network level** — *Full* network gets you to
-github.com's edge, but `explosion/spacy-models` still needs to be in this
-session's GitHub scope (normally via `add_repo`, and only on explicit user
-request — it is not part of the CATS repo and should not be added
-autonomously).
-
-**Gotcha:** the `SessionStart` hook (`.claude/hooks/*.sh`) wraps this download
-in `... || true` — a flaky/blocked fetch must never fail the whole session
-startup — so `cats session-start: environment ready.` prints regardless of
-whether the model actually landed. **"environment ready" is not evidence the
-spaCy model is present.** Verify with `python -c "import it_core_news_lg"`
-before trusting NER-coherence fidelity in a calibration run.
-
-Alternatives checked (2026-07-23) and ruled out from this session:
-- Hugging Face mirror (`huggingface.co/explosion/it_core_news_lg`) — needs
-  authentication in this environment (`401`, `"Invalid username or
-  password."`), no token available here.
-- Direct PyPI (`pypi.org/simple/it-core-news-lg/`) — `404`; spaCy trained
-  pipelines are not published as ordinary PyPI packages.
-- No cached wheel found anywhere on the container filesystem or in `pip
-  cache`.
-
-**To unblock:** either (a) a session where `explosion/spacy-models` has
-already been granted GitHub scope (ask the user before calling `add_repo` —
-it is unusual to add a model repo rather than a code repo, and may not even
-work since it is release *assets*, not the repo's git history), or (b) the
-model supplied another way (manual upload into the container, a private
-mirror with credentials, or a pre-baked image/layer that already has
-`it_core_news_lg` installed). Until then, `build_dataset` (step 6) can still
-run — coherence just degrades to the neutral, zero-confidence NER value per
-CLAUDE.md's graceful-degradation rule — but **do not calibrate production
-weights (`data/calibrated_weights.json`) from a degraded run**; the
-coherence signal would be uninformative and the calibration would not be
-sound to ship.
+With the spaCy blocker resolved, the full pipeline (merge all 6 committed
+snapshots → temporal split → `build_dataset` with real NER → GA calibration →
+`evaluate` on the future holdout) now runs end-to-end. It should **not** be
+shipped yet: merging all snapshots through 2026-07-20 yields only 59 sources
+total, and `split.py`'s temporal split (most-recent 20% by latest-message
+time) puts 11 of the 12 holdout sources at label 70 or 85 (mostly outlets
+repaired/added by the recent feed-health rounds, which skew mid/high) with a
+single label-10 outlier and nothing else — no mid-range spread. Rank-agreement
+metrics on that holdout are close to meaningless: the newly calibrated
+candidate scored *worse* than both the static baseline and the still-shipped
+Jul-6 production weights on it (concordance 0.359 vs 0.436 baseline vs 0.487
+current-production; full numbers and the decision not to ship in
+[calibration_findings_2026-07-24.md](calibration_findings_2026-07-24.md)).
+`data/calibrated_weights.json` and the committed `data/train*.jsonl` /
+`data/holdout*.jsonl` are **unchanged** — recalibrating on this pool would be
+a regression, not an improvement. This reinforces the exit criterion below
+(≥100 sources, spread across bands): grow the pool first, then recalibrate.
 
 ## ⚠️ SAFETY: `data/labels.jsonl` is curated — never regenerate it destructively
 

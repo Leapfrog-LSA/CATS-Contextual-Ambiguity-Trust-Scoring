@@ -9,6 +9,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Recalibration re-attempted (2026-07-24): pipeline unblocked, not shipped.**
+  The 2026-07-23 spaCy/`explosion-models` GitHub-scope block did not
+  reproduce this session — `it_core_news_lg` downloads under the default
+  *Trusted* network level with no `add_repo` grant needed. With full-fidelity
+  NER available, the full merge → temporal-split → build → calibrate →
+  validate pipeline ran end-to-end for the first time since 2026-07-06
+  (folding in the two RSS snapshots collected post feed-repair that had never
+  been merged), but the resulting candidate weights scored *worse* than both
+  the static baseline and current production on the future holdout — traced
+  to the 59-source pool's most-recent 20% clustering at label 70/85 with no
+  mid-range spread, not a signal regression. Not shipped;
+  `data/calibrated_weights.json` and the committed train/holdout files are
+  unchanged. Findings and full numbers in
+  `docs/calibration_findings_2026-07-24.md`; `docs/dataset_expansion_runbook.md`
+  updated accordingly.
 - **Feed-health audit tool** (`research/feed_health_audit.py`, findings in
   `docs/feed_health_2026-07.md`): checks every RSS feed in the label registry
   (read-only, the same GET the weekly collector issues) and classifies each

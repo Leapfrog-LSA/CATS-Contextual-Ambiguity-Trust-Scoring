@@ -161,6 +161,24 @@ Net effect: **dead 8 → 2, not-xml 5 → 0**. The two remaining `dead` entries
 broken — worth one more retry from a session with a different network path,
 otherwise leave them as-is rather than null them.
 
+### Round 6 (retry from a fresh session, 2026-07-24)
+
+**Retried both network-blocked outlets again**, from a different, freshly
+provisioned cloud session (not the one that produced rounds 4-5) — same
+result. ITV News: HTTP/2 `INTERNAL_ERROR` on `/news/rss`, and forcing
+HTTP/1.1 just times out after 20s, on the homepage too, not only `/rss`.
+L'Orient Today: now a flat `403` on every path tried (`/`, `/rss.xml`, `/rss`,
+`/feed`) rather than the earlier Cloudflare JS-challenge page — same practical
+effect (no feed content reachable), different surface error, which is itself
+evidence this is upstream WAF/anti-bot behaviour reacting to the sandbox's
+egress IP/UA rather than a stable "this URL is gone" signal. **Left as-is
+again** (not nulled) — three independent sessions now agree the domains are
+unreachable from this collector's environment while the feed status itself
+remains unverified either way. Not worth a fourth retry from *this* class of
+session; the next productive step is verifying from a genuinely different
+network path (a contributor's machine, or a *Full*-network session with a
+different egress) rather than re-running the same probe again.
+
 ## Recommendation
 
 After round 5 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
@@ -174,8 +192,12 @@ Remaining work, roughly in order of value:
   (Il Giornale) that round 4 had left working — feed URLs drift over time
   even after being "fixed." Re-run `research/feed_health_audit.py` before
   each calibration pass, not just when chasing dead feeds.
-- **Retry ITV News / L'Orient Today** from a session on a different network
-  path before concluding they're genuinely dead and nulling them too.
+- **ITV News / L'Orient Today**: retried three times now (rounds 4, 5, 6),
+  always from this class of sandboxed cloud session, always blocked. Further
+  retries from the same kind of session aren't informative — next step is a
+  genuinely different network path (contributor's own machine, or otherwise
+  outside this sandboxing) before concluding they're genuinely dead and
+  nulling them too.
 - **Manually verify the 16 `blocked`** (403/429/timeout) with a browser or a
   different UA/IP — some may be genuinely dead, most are probably just
   refusing this collector's User-Agent.
