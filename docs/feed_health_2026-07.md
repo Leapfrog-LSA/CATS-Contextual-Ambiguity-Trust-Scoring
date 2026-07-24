@@ -179,12 +179,62 @@ session; the next productive step is verifying from a genuinely different
 network path (a contributor's machine, or a *Full*-network session with a
 different egress) rather than re-running the same probe again.
 
+### Round 7 (manual verification of the 16 `blocked`, 2026-07-24)
+
+**Re-checked all 17 feeds then flagged `blocked`** (one more than the
+"16" below — the registry had grown by one row since round 5), each with
+four request variants: the collector's own UA (`CATS-calibration/1.0`), a
+current Chrome desktop UA, a legitimate feed-reader/bot UA
+(`Feedfetcher-Google`), and no `User-Agent` header at all (`httpx`'s
+default). If the block were UA-string filtering, at least one variant should
+have gotten through.
+
+**Result: 15 of 17 return the identical `403` across all four variants**,
+including the plain default UA and the Google-feedfetcher UA that no
+legitimate anti-scraping rule should reasonably reject — Axios, Al-Monitor,
+Nation Africa, The Guardian NG (Nigeria), Il Post, VoxEurop Italia, De
+Standaard, Ukrainska Pravda (both the general and English-edition registry
+rows — **also flags a registry duplicate**: same `rss` URL,
+`pravda.com.ua/rss/`, under two `source_id`s), News24, Sudan Tribune, The
+Monitor (Uganda), Times of Israel, RNZ Pacific, Human Rights Watch. A block
+that survives switching to a well-known, legitimately-behaved crawler UA and
+to no UA at all is evidence of an **IP/ASN-level block on this sandbox's
+egress**, the same conclusion already reached for ITV News / L'Orient
+Today (round 6) — not a UA-string filter this collector could route around
+by changing its own header. **Left as-is** (no registry changes) — nothing
+here distinguishes a genuinely dead feed from this environment's outbound IP
+being on a WAF's blocklist, so nulling any of these would risk losing
+working sources the same way ITV/L'Orient are believed to be false
+positives.
+
+**Daily Maverick was flaky within the same run** — `403` on three variants,
+`404` (`dead`-looking) on the fourth (`Feedfetcher-Google`) — too
+inconsistent to classify either way from here; worth a clean re-check next
+round rather than acting on either result now.
+
+**Strafatti Quotidiani was a false positive, now fixed at the tool level.**
+Two of the four variants returned a clean `200` + valid feed body in the same
+run that flagged it `blocked`; the registered feed is fine, the `429` in the
+main audit was WordPress.com rate-limiting a burst of near-simultaneous
+requests (this diagnostic script fires 17 feeds × 4 UAs concurrently — far
+burstier than the weekly collector's normal single request), not a standing
+block. Fixed at the source: `research/feed_health_audit.py`'s `classify()`
+now retries a `429` up to twice with a short backoff before giving up,
+instead of classifying on the first response — re-running the full audit
+after the fix moved Strafatti Quotidiani from `blocked` to `ok` and dropped
+the `blocked` count from 17 back to the expected 16, with no other feed
+affected by the retry logic (429 was already rare in this registry outside
+this one bursty host).
+
 ## Recommendation
 
-After round 5 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
-believed environment-specific — see above), and **16 `blocked`** that are
-ambiguous by design (403/429/timeout could be UA/geo refusal, not a dead
-feed) and should not be auto-removed.
+After round 7 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
+believed environment-specific — see above), and **16 `blocked`**, of which
+15 are now positively evidenced as an IP-level sandbox block (round 7, not
+UA-based) rather than a dead-feed signal, one (Daily Maverick) is
+inconclusive/flaky, and the registry also has one duplicate-URL row
+(Ukrainska Pravda / Ukrainska Pravda English) worth resolving separately of
+feed health.
 
 Remaining work, roughly in order of value:
 
@@ -192,15 +242,24 @@ Remaining work, roughly in order of value:
   (Il Giornale) that round 4 had left working — feed URLs drift over time
   even after being "fixed." Re-run `research/feed_health_audit.py` before
   each calibration pass, not just when chasing dead feeds.
-- **ITV News / L'Orient Today**: retried three times now (rounds 4, 5, 6),
-  always from this class of sandboxed cloud session, always blocked. Further
-  retries from the same kind of session aren't informative — next step is a
-  genuinely different network path (contributor's own machine, or otherwise
-  outside this sandboxing) before concluding they're genuinely dead and
-  nulling them too.
-- **Manually verify the 16 `blocked`** (403/429/timeout) with a browser or a
-  different UA/IP — some may be genuinely dead, most are probably just
-  refusing this collector's User-Agent.
+- **ITV News / L'Orient Today, and now 15 of the 16 `blocked` feeds**:
+  rounds 4-7 agree this class of sandboxed session sits behind an
+  IP-level block for a wide swath of news-site WAFs — UA changes don't help
+  (round 7 tried four, including a legitimate crawler UA and no UA at all).
+  Further retries from this kind of session aren't informative for any of
+  these 17 feeds; the next productive step for all of them together is
+  verifying from a genuinely different network path (a contributor's own
+  machine, or otherwise outside this sandboxing), not more probing from
+  here.
+- **Daily Maverick**: flaky between `403` and `404` within one round-7 run —
+  re-check cleanly (single request, no concurrent burst) before drawing a
+  conclusion either way.
+- **Resolve the Ukrainska Pravda / Ukrainska Pravda English duplicate**
+  (same `rss` URL under two `source_id`s, found in round 7) — likely one
+  should carry a distinct English-edition feed URL and the other should not
+  exist as a separate registry row, or one row should be dropped; needs a
+  human/editorial call on which edition the label actually describes, not
+  guessed.
 - The 11 nulled sources (label kept, `rss: null`) are permanently out of
   weekly collection until someone finds a working feed again — no further
   action needed unless one of them relaunches RSS.
