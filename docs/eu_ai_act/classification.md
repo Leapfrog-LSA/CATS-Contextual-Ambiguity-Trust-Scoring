@@ -58,6 +58,12 @@ human-in-the-loop, "not sole basis" design may support a 6(3) argument.
 
 ## Outcome
 
+> A non-binding draft reasoning + proposed determination, prepared to save
+> the assessor's ricognizione work, is in
+> [`draft_recommendation_2026-07-24.md`](draft_recommendation_2026-07-24.md).
+> It is **not** a substitute for the fields below — review, correct, and
+> either adopt or replace it, then fill in this table and sign it.
+
 | Field | Value |
 |---|---|
 | Determination | TODO: high-risk / not high-risk |
