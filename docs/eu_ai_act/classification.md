@@ -24,6 +24,12 @@ decisions".
 > deployers. Classification turns on this. Example axes: who uses it (analysts,
 > journalists, law enforcement, public authorities), and what decisions it
 > feeds.
+>
+> See [`deployment_context_summary.md`](deployment_context_summary.md) for a
+> factual (non-determinative) rundown of what the codebase itself shows about
+> deployment surfaces, access control, and use-case signals — gathered to
+> save re-deriving this from scratch, not a substitute for answering the
+> TODOs above.
 
 ## Annex III screening
 
