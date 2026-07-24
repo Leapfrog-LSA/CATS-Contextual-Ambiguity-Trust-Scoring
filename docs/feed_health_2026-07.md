@@ -207,10 +207,23 @@ being on a WAF's blocklist, so nulling any of these would risk losing
 working sources the same way ITV/L'Orient are believed to be false
 positives.
 
-**Daily Maverick was flaky within the same run** — `403` on three variants,
-`404` (`dead`-looking) on the fourth (`Feedfetcher-Google`) — too
-inconsistent to classify either way from here; worth a clean re-check next
-round rather than acting on either result now.
+**Daily Maverick was a genuinely dead feed, now fixed** — not IP-blocked like
+the 15 above. The round-7 flakiness (`403` on three UA variants, `404` on the
+fourth) turned out to be two different real signals colliding in one
+concurrent burst, not one ambiguous host: a clean, single-request-at-a-time
+recheck showed the **homepage** returns `200` for any request that carries a
+`User-Agent` header at all (only a bare no-UA request gets `403` there) —
+i.e. this domain is reachable from this sandbox, unlike the 15 IP-blocked
+ones — while the registered feed path itself (`/feed/`) is a real `404`
+(confirmed with a large, genuine "not found" page body, not a small WAF
+challenge page) for every UA. The feed moved, it didn't start blocking:
+probing common alternate paths found `/rss/` (redirects to `/dmrss/`) returns
+`200` with a valid, current feed (`pubDate` same-day, live article content),
+confirmed working with all four UA variants including the collector's own.
+Fixed: `data/labels.jsonl` and `data/Fonti_OSINT.csv` updated from
+`dailymaverick.co.za/feed/` to `dailymaverick.co.za/rss/`; re-running the
+audit after the fix moved Daily Maverick from `blocked` to `ok` and dropped
+the `blocked` count from 16 to 15.
 
 **Strafatti Quotidiani was a false positive, now fixed at the tool level.**
 Two of the four variants returned a clean `200` + valid feed body in the same
@@ -229,12 +242,13 @@ this one bursty host).
 ## Recommendation
 
 After round 7 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
-believed environment-specific — see above), and **16 `blocked`**, of which
-15 are now positively evidenced as an IP-level sandbox block (round 7, not
-UA-based) rather than a dead-feed signal, one (Daily Maverick) is
-inconclusive/flaky, and the registry also has one duplicate-URL row
-(Ukrainska Pravda / Ukrainska Pravda English) worth resolving separately of
-feed health.
+believed environment-specific — see above), and **15 `blocked`**, all now
+positively evidenced as an IP-level sandbox block (round 7, not UA-based)
+rather than a dead-feed signal. One feed initially flagged `blocked`
+(Daily Maverick) turned out to be a genuinely dead/moved feed rather than a
+sandbox block and was fixed in round 7 (see above). The registry also has one
+duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda English) worth
+resolving separately of feed health.
 
 Remaining work, roughly in order of value:
 
@@ -242,7 +256,7 @@ Remaining work, roughly in order of value:
   (Il Giornale) that round 4 had left working — feed URLs drift over time
   even after being "fixed." Re-run `research/feed_health_audit.py` before
   each calibration pass, not just when chasing dead feeds.
-- **ITV News / L'Orient Today, and now 15 of the 16 `blocked` feeds**:
+- **ITV News / L'Orient Today, and the remaining 15 `blocked` feeds**:
   rounds 4-7 agree this class of sandboxed session sits behind an
   IP-level block for a wide swath of news-site WAFs — UA changes don't help
   (round 7 tried four, including a legitimate crawler UA and no UA at all).
@@ -251,9 +265,6 @@ Remaining work, roughly in order of value:
   verifying from a genuinely different network path (a contributor's own
   machine, or otherwise outside this sandboxing), not more probing from
   here.
-- **Daily Maverick**: flaky between `403` and `404` within one round-7 run —
-  re-check cleanly (single request, no concurrent burst) before drawing a
-  conclusion either way.
 - **Resolve the Ukrainska Pravda / Ukrainska Pravda English duplicate**
   (same `rss` URL under two `source_id`s, found in round 7) — likely one
   should carry a distinct English-edition feed URL and the other should not

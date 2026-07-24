@@ -28,7 +28,7 @@
 {"source_id": "+972 Magazine", "source_type": "news", "label": 85.0, "url": "https://www.972mag.com", "rss": "https://www.972mag.com/feed/"}
 {"source_id": "Al-Monitor", "source_type": "news", "label": 85.0, "url": "https://www.al-monitor.com", "rss": "https://www.al-monitor.com/rss"}
 {"source_id": "BBC Afrique", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/afrique", "rss": "https://feeds.bbci.co.uk/afrique/rss.xml"}
-{"source_id": "Daily Maverick", "source_type": "news", "label": 70.0, "url": "https://www.dailymaverick.co.za", "rss": "https://www.dailymaverick.co.za/feed/"}
+{"source_id": "Daily Maverick", "source_type": "news", "label": 70.0, "url": "https://www.dailymaverick.co.za", "rss": "https://www.dailymaverick.co.za/rss/"}
 {"source_id": "Dawn Investigations", "source_type": "news", "label": 70.0, "url": "https://www.dawn.com/investigations", "rss": null}
 {"source_id": "El Diaro.es", "source_type": "news", "label": 85.0, "url": "https://www.eldiario.es", "rss": "https://www.eldiario.es/rss/"}
 {"source_id": "Mail & Guardian", "source_type": "news", "label": 50.0, "url": "https://mg.co.za", "rss": "https://mg.co.za/rss"}

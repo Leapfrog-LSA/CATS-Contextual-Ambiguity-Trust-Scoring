@@ -53,6 +53,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   issue templates that didn't exist yet.
 
 ### Fixed
+- **Daily Maverick's dead feed fixed** (`https://www.dailymaverick.co.za/feed/`
+  → `/rss/`): the round-7 flakiness between `403` and `404` across UA variants
+  turned out to be two different signals colliding in one concurrent run, not
+  one ambiguous host — a clean single-request recheck showed the homepage is
+  reachable (unlike the 15 IP-blocked feeds) while the *registered* feed path
+  is a genuine `404` (moved/renamed, confirmed by a real "not found" page, not
+  a WAF challenge). Found the working replacement (`/rss/`, redirects to
+  `/dmrss/`, verified with a same-day `pubDate` and live content across all
+  four UA variants) and updated `data/labels.jsonl` + `data/Fonti_OSINT.csv`.
+  Registry now **15 `blocked`** (all IP-level, none dead), **2 `dead`**
+  (ITV News, L'Orient Today, environment-specific), **98 `ok`**.
 - **Manually verified the 16 `blocked` feeds (round 7)**, each with four
   User-Agent variants (collector's own UA, Chrome desktop, a legitimate
   feed-reader/bot UA, no UA at all): 15 of 16 return an identical `403`
