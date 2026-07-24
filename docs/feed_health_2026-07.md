@@ -239,6 +239,36 @@ the `blocked` count from 17 back to the expected 16, with no other feed
 affected by the retry logic (429 was already rare in this registry outside
 this one bursty host).
 
+### Round 8 (cross-check the 11 nulled sources against a sibling repo, 2026-07-24)
+
+A companion repo, `Leapfrog-LSA/osint-sources-disinfo-watchlist` (a "v0.1"
+public-release snapshot that appears to predate, and be fully contained
+within, this catalogue), was compared against `data/Fonti_OSINT.csv` and
+`data/disinfo_sources.csv`. The disinfo watchlist is byte-identical (114/114
+domains, all fields match). The OSINT catalogue offered no new sources (its
+4,795 hosts are a strict subset of this repo's 5,053), but it does carry an
+RSS URL for 749 hosts where this catalogue's row is blank — 11 of those
+intersect the actively-calibrated label registry, and all 11 are exactly the
+sources round 5 already nulled as "no longer publishing."
+
+**Live-checked all 11 candidate URLs anyway, in case the sibling snapshot had
+independently found something round 5 missed — it hadn't.** 9 confirm dead
+outright: AFP News (`404`), DPA International (`404`), Mediazona (`404`),
+Jakarta Globe (`404`, 0 bytes), WNYC (`404`), Caixin China (`200` but
+redirects to `other.caixin.com/404/index.html` — a disguised 404), Jordan
+Times / Rudaw / Taiwan News (`200` but a large non-XML HTML body — the same
+client-side app shell round 5 already found, not a feed) — USA Today
+(`200` but redirects straight to the homepage, same as round 5). **TRT
+Africa's candidate (`trtworld.com/feed/rss.xml`) is the one surprise**: it
+returns valid, current XML — but the feed's own `<title>` is "TRT World",
+and its content is Turkish/global geopolitics, not Africa-focused. TRT World
+and TRT Africa are distinct brand channels under the same broadcaster; this
+is the *wrong outlet's* feed, not a working replacement — using it would
+mislabel TRT World content as TRT Africa. **No registry changes**; all 11
+stay `rss: null`. This line of investigation (sibling-repo cross-check) is
+now closed — a future session doesn't need to re-open it without a genuinely
+new source of candidate URLs.
+
 ## Recommendation
 
 After round 7 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
@@ -273,7 +303,10 @@ Remaining work, roughly in order of value:
   guessed.
 - The 11 nulled sources (label kept, `rss: null`) are permanently out of
   weekly collection until someone finds a working feed again — no further
-  action needed unless one of them relaunches RSS.
+  action needed unless one of them relaunches RSS. Round 8 cross-checked
+  them against a sibling repo's independently-sourced catalogue and found
+  nothing usable (one candidate, TRT Africa, turned out to be the wrong
+  outlet's feed) — this specific line of investigation is closed.
 
 This round's real prerequisite work — the ≥100-source future-holdout target
 and the content-credibility signal — is still blocked on a full-network +
