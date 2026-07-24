@@ -53,6 +53,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   issue templates that didn't exist yet.
 
 ### Fixed
+- **Manually verified the 16 `blocked` feeds (round 7)**, each with four
+  User-Agent variants (collector's own UA, Chrome desktop, a legitimate
+  feed-reader/bot UA, no UA at all): 15 of 16 return an identical `403`
+  regardless of UA, which is evidence of an IP/ASN-level block on this
+  sandboxed session class (same conclusion already reached for ITV
+  News/L'Orient Today), not a UA-string filter — left as-is, no registry
+  changes, since nothing here distinguishes a genuinely dead feed from an
+  IP block. Also fixed a **false positive found in the process**: Strafatti
+  Quotidiani was flagged `blocked` on a transient WordPress.com `429` caused
+  by the diagnostic script's own concurrent burst, not a real block —
+  `research/feed_health_audit.py` now retries a `429` (with backoff) before
+  classifying, which moved it back to `ok`. Also surfaced (not fixed — needs
+  an editorial call, and the source is itself in the blocked set so can't be
+  re-verified from here) a **registry duplicate**: Ukrainska Pravda and
+  Ukrainska Pravda English share the identical `rss` URL, so the "English"
+  row is not actually collecting English content. Full findings in
+  `docs/feed_health_2026-07.md` round 7.
 - **34 dead/mislabelled RSS feeds repaired across five verification rounds**
   (registry **35 dead / 64 ok → 2 dead / 97 ok**, ~84% of the 115 feeds still
   registered), each replacement checked for HTTP 200 + valid XML *and*

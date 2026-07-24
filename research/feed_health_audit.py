@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
+import time
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -33,17 +34,26 @@ import httpx
 ROOT = Path(__file__).resolve().parent.parent
 UA = "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
 _XML_HINTS = (b"<?xml", b"<rss", b"<feed", b"<rdf")
+_RETRY_BACKOFF_S = (2.0, 5.0)  # 429 is "try later", not "blocked" — a couple of
+# spaced retries tells the two apart (2026-07-24: Strafatti Quotidiani flagged
+# 'blocked' on a single 429 that a same-session retry immediately cleared).
 
 
 def classify(url: str, timeout: float) -> Tuple[str, str]:
     """Return (status, detail) for one feed URL."""
-    try:
-        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": UA}) as c:
-            r = c.get(url)
-    except httpx.TimeoutException:
-        return "blocked", "timeout"
-    except httpx.HTTPError as exc:
-        return "dead", f"conn:{type(exc).__name__}"
+    for attempt, backoff in enumerate((0.0,) + _RETRY_BACKOFF_S):
+        if backoff:
+            time.sleep(backoff)
+        try:
+            with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": UA}) as c:
+                r = c.get(url)
+        except httpx.TimeoutException:
+            return "blocked", "timeout"
+        except httpx.HTTPError as exc:
+            return "dead", f"conn:{type(exc).__name__}"
+        if r.status_code == 429 and attempt < len(_RETRY_BACKOFF_S):
+            continue  # rate-limited, not necessarily blocked — retry before giving up
+        break
     if r.status_code in (404, 410):
         return "dead", f"http:{r.status_code}"
     if r.status_code in (403, 429):
