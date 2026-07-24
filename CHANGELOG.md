@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Draft (non-binding) EU AI Act classification recommendation**
+  (`docs/eu_ai_act/draft_recommendation_2026-07-24.md`): reasoned Annex III
+  screening and a proposed conditional determination — not high-risk as
+  currently distributed, with explicit re-assessment triggers for
+  law-enforcement/migration/judicial deployers (Annex III points 6-8) and for
+  any deployer treating a CATS score as determinative of a natural person's
+  access to credit or essential services (point 5). Per CLAUDE.md this does
+  **not** fill in `classification.md`'s Outcome table — that stays a TODO for
+  a human/legal sign-off; the draft is linked from it as a starting point.
 - **Recalibration re-attempted (2026-07-24): pipeline unblocked, not shipped.**
   The 2026-07-23 spaCy/`explosion-models` GitHub-scope block did not
   reproduce this session — `it_core_news_lg` downloads under the default
