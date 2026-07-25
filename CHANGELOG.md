@@ -8,6 +8,25 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **The temporal calibration split now cuts message histories, not sources**
+  (`cats/calibration/split.py`, new default `--axis message`). The previous
+  axis ranked *sources* by their most recent message and held out the newest
+  slice — degenerate on RSS data, because every live feed's newest message is
+  hours old at collection time, so the ranking is really by publishing
+  frequency, which is close to a proxy for the label:
+  Spearman(recency, label) = **+0.539** on the 2026-07-20 snapshot. On the
+  merged 59-source pool it produced a 12-source holdout of which 11 were
+  labels 70/85, with the disinfo tail exiled to train because such sources
+  publish irregularly — a holdout that cannot rank anything, and the reason
+  the 2026-07-24 recalibration could not validate. The same pool on the
+  message axis gives a 45-source holdout spanning five labels including four
+  at label 10. The old behaviour is kept as `--axis source` (the right
+  question once the pool's newest slice is label-diverse on its own), and both
+  axes now print each side's label distribution and warn when a holdout has
+  fewer than three distinct labels. **No weights were recalibrated here** —
+  that is a separate change, gated on its own re-validation per `CLAUDE.md`.
+
 ### Fixed
 - **Corrected the test-environment instructions in `CLAUDE.md` and
   `docs/cloud_setup.md`**, which told every session that `pytest` fails at

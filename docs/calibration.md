@@ -154,14 +154,39 @@ the model is unavailable). A sample input lives at
 ### Temporal train/holdout split
 
 Split labelled sources **by time** before building the dataset — calibrate on the
-past, validate on the future. `cats.calibration.split` orders sources by their
-most recent message and puts the newest slice in the holdout:
+past, validate on the future. `cats.calibration.split` offers two axes:
 
 ```bash
+# default: cut every source's message history at a shared boundary
 python -m cats.calibration.split --input sources.jsonl --holdout-fraction 0.2
-# or a fixed boundary (records at/after the cutoff form the holdout):
+# or a fixed boundary (messages at/after the cutoff form the holdout):
 python -m cats.calibration.split --input sources.jsonl --cutoff 2026-01-01T00:00:00Z
+# legacy: hold out whole unseen sources, ranked by their most recent message
+python -m cats.calibration.split --input sources.jsonl --axis source
 ```
+
+**Use the default `message` axis unless you know why you want the other one.**
+On RSS data the `source` axis is degenerate: every live feed's newest message is
+hours old at collection time, so ranking sources by it ranks them by *publishing
+frequency*, which is close to a proxy for the label. Measured on the 2026-07-20
+snapshot, Spearman(recency, label) = **+0.539**; on the merged 59-source pool the
+`source` axis yields a 12-source holdout of which 11 are labels 70/85, while the
+`message` axis yields 45 sources spanning five labels including the disinfo tail.
+That degenerate holdout is what stopped the 2026-07-24 recalibration
+(`docs/calibration_findings_2026-07-24.md`).
+
+The `message` axis puts a source on **both** sides — earlier behaviour trains,
+later behaviour validates — so it measures drift rather than generalisation to
+unseen sources. With four weights there is no capacity to memorise a source, so
+the overlap is not leakage; if you specifically want the unseen-source question,
+`--axis source` still asks it, and becomes trustworthy once the pool is large
+enough for its newest slice to be label-diverse on its own.
+
+A side is dropped when it holds fewer than `--min-messages` (default 3, the same
+floor `collect_rss` applies) — below that the behavioural signals are not
+estimable. Both axes print the label distribution of each side and warn when a
+holdout carries fewer than three distinct labels, since such a holdout cannot
+rank anything.
 
 It writes `train.jsonl` / `holdout.jsonl` (labelled-sources shape), which you
 then run through `build_dataset` separately. Run `split` **before** `build_dataset`
