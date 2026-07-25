@@ -19,13 +19,19 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   `isort --check-only`, `flake8 … --max-line-length=120 --extend-ignore=E203,W503`,
   `mypy cats/ --ignore-missing-imports --no-strict-optional`. `make format` fixes
   black+isort.
-- **Tests need config env vars.** `cats.core.config.Settings` has no defaults for
-  `CATS_API_KEY`, `DATABASE_URL`, `REDIS_URL`, `AUDIT_ENCRYPTION_KEY` — without
-  them `pytest` fails at **collection**. Use the CI `test`-job values (see
-  `.github/workflows/ci.yml` / `docs/cloud_setup.md`).
-- `pytest tests/unit/` runs with just those env vars. `tests/integration/` also
-  needs live Postgres + Redis (`make docker-up`; in a cloud session start them
-  with `service postgresql start` / `service redis-server start` + `alembic upgrade head`).
+- **Test env vars: the trap is setting them *wrong*, not leaving them unset.**
+  `cats.core.config.Settings` has no defaults for `CATS_API_KEY`, `DATABASE_URL`,
+  `REDIS_URL`, `AUDIT_ENCRYPTION_KEY`, but every test module that imports it
+  supplies its own via `os.environ.setdefault` — so with **no env vars at all**
+  `pytest` collects the full suite (225) and `tests/unit/` passes 208/208.
+  Because it is `setdefault`, an exported variable *wins over* the test's value:
+  a `DATABASE_URL` missing the `+asyncpg` driver (plain `postgresql://…`)
+  overrides the test's own and fails at collection demanding `psycopg2`, which
+  this project does not use. So either export nothing, or copy the CI `test`-job
+  values verbatim — `.github/workflows/ci.yml` / `docs/cloud_setup.md`.
+- `tests/integration/` needs live Postgres + Redis (`make docker-up`; in a cloud
+  session start them with `service postgresql start` / `service redis-server start`
+  + `alembic upgrade head`).
 - Fresh/cloud session setup: **`docs/cloud_setup.md`**.
 
 ## Signal & scoring invariants (easy to break)

@@ -9,6 +9,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Fixed
+- **Corrected the test-environment instructions in `CLAUDE.md` and
+  `docs/cloud_setup.md`**, which told every session that `pytest` fails at
+  collection without `CATS_API_KEY` / `DATABASE_URL` / `REDIS_URL` /
+  `AUDIT_ENCRYPTION_KEY`. It does not: the test modules that import `Settings`
+  supply their own via `os.environ.setdefault`, so with no env vars at all the
+  full suite collects (225) and `tests/unit/` passes 208/208. The real hazard is
+  the opposite one, and the docs said nothing about it — `setdefault` means an
+  exported variable overrides the test's, so a `DATABASE_URL` without the
+  `+asyncpg` driver makes SQLAlchemy demand `psycopg2` (not a dependency of this
+  project) and collection fails with a `ModuleNotFoundError` that reads as a
+  missing package rather than a malformed URL.
 - **A source was counted twice in every calibration pass.**
   `Ukrainska Pravda` and `Ukrainska Pravda English` carried the same `rss`
   URL, so both collected the same Ukrainian feed: in the `2026-07-13` and
