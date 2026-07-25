@@ -8,7 +8,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **A source was counted twice in every calibration pass.**
+  `Ukrainska Pravda` and `Ukrainska Pravda English` carried the same `rss`
+  URL, so both collected the same Ukrainian feed: in the `2026-07-13` and
+  `2026-07-20` snapshots the two rows hold byte-identical message payloads
+  under two `source_id`s at the same label (70). `merge_snapshots`
+  deduplicates messages *within* a `source_id`, which is the wrong axis to
+  catch this, so nothing downstream noticed. The English row's `rss` is now
+  blanked in `data/labels.jsonl` and `data/Fonti_OSINT.csv` — the source stays
+  catalogued and labelled (feedless rows are kept by `label_from_ratings.py`
+  and skipped by `collect_rss`), it simply stops collecting a duplicate.
+  The real English-edition feed URL could not be verified — Cloudflare 403s
+  every `pravda.com.ua` path from this network — so none was guessed.
+  Registry: 115 → 114 feeds, no source or label removed.
+  See `docs/feed_health_2026-07.md` → *Round 9*.
+
 ### Added
+- **Shared-feed detection in the feed-health audit**
+  (`research/feed_health_audit.py`): reports registry rows pointing at the
+  same feed URL, offline and before any network call, normalising scheme /
+  `www.` / trailing slash so the same feed written two ways still collapses.
+  This is a dataset defect rather than a health one — the feed answers fine,
+  it is the double-counting that hurts — and the previous audits had no way
+  to surface it. Only one case existed (see *Fixed*).
 - **Draft (non-binding) EU AI Act classification recommendation**
   (`docs/eu_ai_act/draft_recommendation_2026-07-24.md`): reasoned Annex III
   screening and a proposed conditional determination — not high-risk as

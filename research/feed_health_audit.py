@@ -13,6 +13,13 @@ It classifies each feed:
                ambiguous, not necessarily dead — flag, don't auto-remove)
   * not-xml  — 200 but the body is not a feed (redirect to an HTML page, etc.)
 
+It also reports *shared* feeds — two registry rows pointing at the same URL.
+Those are not a health problem (the feed answers fine) but a dataset one: each
+row collects a byte-identical message set, so one source is counted twice in
+calibration. merge_snapshots only deduplicates messages *within* a source_id,
+so nothing downstream catches it (2026-07-25: Ukrainska Pravda / Ukrainska
+Pravda English, found only because a UA sweep listed the same URL twice).
+
 Read-only: it never edits the registry, only reports. The same GET the weekly
 collector (cats.calibration.collect_rss) issues, so it is within normal
 operation. Needs network.
@@ -66,6 +73,24 @@ def classify(url: str, timeout: float) -> Tuple[str, str]:
     return "not-xml", f"http:{r.status_code}"
 
 
+def normalise_feed(url: str) -> str:
+    """Key for spotting the same feed written two ways (scheme/www/trailing slash)."""
+    key = url.strip().lower().rstrip("/")
+    for prefix in ("https://", "http://"):
+        if key.startswith(prefix):
+            key = key[len(prefix) :]
+            break
+    return key[4:] if key.startswith("www.") else key
+
+
+def shared_feeds(feeds: List[Tuple[str, str, float]]) -> Dict[str, List[str]]:
+    """Map normalised feed URL → the source_ids sharing it (2+ only)."""
+    by_feed: Dict[str, List[str]] = {}
+    for sid, url, _label in feeds:
+        by_feed.setdefault(normalise_feed(url), []).append(sid)
+    return {url: sids for url, sids in by_feed.items() if len(sids) > 1}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Audit RSS feed health in the label registry.")
     ap.add_argument("--labels", type=Path, default=ROOT / "data/labels.jsonl")
@@ -78,6 +103,13 @@ def main() -> None:
         (r.get("source_id", ""), r["rss"], float(r.get("label", -1))) for r in rows if r.get("rss")
     ]
     print(f"Auditing {len(feeds)} feeds ({sum(1 for r in rows if not r.get('rss'))} registry rows have no feed).\n")
+
+    shared = shared_feeds(feeds)
+    if shared:
+        print("SHARED FEEDS — one source counted twice in calibration (offline check):")
+        for url, sids in sorted(shared.items()):
+            print(f"  {url}\n    {', '.join(sorted(sids))}")
+        print("  Fix: blank the wrong row's 'rss' (keeps the source catalogued, stops collection).\n")
 
     results: Dict[str, List[Tuple[str, str, float, str]]] = {"dead": [], "blocked": [], "not-xml": [], "ok": []}
 

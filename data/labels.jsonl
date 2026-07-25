@@ -83,7 +83,7 @@
 {"source_id": "Index.hr", "source_type": "news", "label": 85.0, "url": "https://www.index.hr", "rss": "https://www.index.hr/rss"}
 {"source_id": "Mediazona", "source_type": "news", "label": 70.0, "url": "https://en.zona.media", "rss": null}
 {"source_id": "Ukrainska Pravda", "source_type": "news", "label": 70.0, "url": "https://www.pravda.com.ua", "rss": "https://www.pravda.com.ua/rss/"}
-{"source_id": "Ukrainska Pravda English", "source_type": "news", "label": 70.0, "url": "https://www.pravda.com.ua/eng", "rss": "https://www.pravda.com.ua/rss/"}
+{"source_id": "Ukrainska Pravda English", "source_type": "news", "label": 70.0, "url": "https://www.pravda.com.ua/eng", "rss": null}
 {"source_id": "BioBio Chile", "source_type": "news", "label": 70.0, "url": "https://www.biobiochile.cl", "rss": "https://feeds.feedburner.com/radiobiobio/NNeJ"}
 {"source_id": "El Financiero", "source_type": "news", "label": 70.0, "url": "https://www.elfinanciero.com.mx", "rss": "https://www.elfinanciero.com.mx/rss"}
 {"source_id": "+972 Arabic (Local Call)", "source_type": "news", "label": 85.0, "url": "https://www.972mag.com/arabic", "rss": null}
