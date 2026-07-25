@@ -71,6 +71,15 @@ existing ≥100-source, cross-band target: grow the labelled pool (especially
 low/mixed-band Italian and non-Italian sources with active feeds) before the
 next recalibration attempt.
 
+> **Superseded in part — read `docs/calibration_findings_2026-07-25.md` first.**
+> Two things about this report changed the day after it was written. The root
+> cause diagnosed here (a holdout with no label spread) was a defect in the
+> *split axis*, fixed in PR #56, so the "wait for a larger pool" conclusion was
+> premature. And every number here was produced under the default
+> `COHERENCE_BACKEND=ner`, which leaves the coherence signal close to inert —
+> the qualitative finding stands (that holdout carried two labels under any
+> backend), but the magnitudes must not be compared with SBERT-backed runs.
+
 ## 4. Disposition
 
 `data/calibrated_weights.json`, `data/train.jsonl`, `data/holdout_future.jsonl`,

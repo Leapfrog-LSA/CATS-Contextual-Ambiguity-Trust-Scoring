@@ -122,6 +122,19 @@ Tasks that fetch from arbitrary news domains fail silently under **Trusted**.
 For dataset/RSS collection, either switch to **Full** for those runs or list the
 specific hosts under **Custom**; then return to **Trusted** for everything else.
 
+> **Measured 2026-07-25 — this table is stricter than observed behaviour.**
+> From a default cloud environment with no custom allowlist, both the SBERT
+> model (`huggingface.co`) and arbitrary news domains were reachable: 98 of the
+> 115 registered RSS feeds answered normally. Before assuming a network level
+> is the blocker, test the specific host — the same over-strict assumption about
+> `github.com` cost a session on 2026-07-23 (see
+> `docs/dataset_expansion_runbook.md`).
+>
+> The 15 feeds that do **not** answer are blocked by the destinations' own WAFs
+> on datacenter IP reputation, not by our egress policy, so no network level
+> here changes them — that needs a different egress IP
+> (`docs/feed_health_2026-07.md`, round 7).
+
 ## Notes
 
 - One task = one session = one branch/PR. Push local commits before
