@@ -269,6 +269,55 @@ stay `rss: null`. This line of investigation (sibling-repo cross-check) is
 now closed — a future session doesn't need to re-open it without a genuinely
 new source of candidate URLs.
 
+## Round 9 (2026-07-25) — the Ukrainska Pravda duplicate, resolved
+
+Round 7 noticed two registry rows carrying the same `rss`
+(`https://www.pravda.com.ua/rss/`) and parked it as an editorial call. It
+isn't one: the snapshots settle it.
+
+**The two rows collected byte-identical data.** `Ukrainska Pravda` and
+`Ukrainska Pravda English` both appear in the `2026-07-13` and `2026-07-20`
+snapshots, each with 20 messages, and the message payloads hash identically
+(`b0bcde04…` on 07-13, `b1efff3d…` on 07-20). The content is Ukrainian on
+both. So the "English" row was never an English edition in the data — it was
+the Ukrainian feed collected a second time under a second `source_id`, at the
+same label (70), counted twice by every calibration pass that consumed those
+snapshots.
+
+**Nothing downstream would have caught it.** `merge_snapshots` deduplicates
+messages *within* a `source_id` (`cats/calibration/merge_snapshots.py`), which
+is the wrong axis for this bug: two `source_id`s are two sources by
+construction. The catalogue row shows how it happened — `Fonti_OSINT.csv`
+line 1168 has `Lingua=EN` and `URL=…/eng`, i.e. a genuinely distinct outlet
+was intended, but the `RSS Feed` cell was copied from the Ukrainian row above
+it.
+
+**The English feed could not be verified from here.** `…/eng/rss/` and
+`…/eng/rss/view_news/` both return a 5 486-byte Cloudflare interstitial —
+the same body, byte for byte, as the Ukrainian feed's response, so the 403
+says nothing about whether those paths exist. Pravda is one of the 15
+IP-blocked hosts (round 7). Writing an unverified URL into the registry would
+repeat exactly the mistake being fixed, so no replacement URL was guessed.
+
+**Fix applied: blank the wrong feed, keep the source.** `data/labels.jsonl`
+now has `"rss": null` on the English row and `data/Fonti_OSINT.csv` line 1168
+has an empty `RSS Feed` cell. This is deliberately *not* a row deletion:
+`label_from_ratings.py` emits `rss: None` for catalogue rows without a feed
+and keeps them, and both `collect_rss` (line 189) and this audit script skip
+feedless rows — so the outlet stays catalogued and labelled while stopping the
+duplicate collection, and the edit is exactly what regenerating the registry
+from the corrected CSV would produce. Registry goes 115 → 114 feeds, 47 → 48
+feedless rows; no source and no label was removed. If someone verifies a real
+English-edition feed from an unblocked network, re-adding it is a one-cell
+edit.
+
+**Guarded at the tool level, as with the round-7 429 fix.** The audit script
+now reports *shared feeds* offline, before any network call, normalising
+scheme / `www.` / trailing slash so the same feed written two ways still
+collapses. Checked against the whole registry: this was the **only** case —
+114 distinct feeds across 115 feed-carrying rows before the fix, 114/114
+after.
+
 ## Recommendation
 
 After round 7 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
@@ -276,9 +325,10 @@ believed environment-specific — see above), and **15 `blocked`**, all now
 positively evidenced as an IP-level sandbox block (round 7, not UA-based)
 rather than a dead-feed signal. One feed initially flagged `blocked`
 (Daily Maverick) turned out to be a genuinely dead/moved feed rather than a
-sandbox block and was fixed in round 7 (see above). The registry also has one
-duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda English) worth
-resolving separately of feed health.
+sandbox block and was fixed in round 7 (see above). The one duplicate-URL row
+(Ukrainska Pravda / Ukrainska Pravda English) was resolved in round 9 and the
+registry now has no shared feeds at all — 114 distinct URLs across 114
+feed-carrying rows.
 
 Remaining work, roughly in order of value:
 
@@ -295,12 +345,12 @@ Remaining work, roughly in order of value:
   verifying from a genuinely different network path (a contributor's own
   machine, or otherwise outside this sandboxing), not more probing from
   here.
-- **Resolve the Ukrainska Pravda / Ukrainska Pravda English duplicate**
-  (same `rss` URL under two `source_id`s, found in round 7) — likely one
-  should carry a distinct English-edition feed URL and the other should not
-  exist as a separate registry row, or one row should be dropped; needs a
-  human/editorial call on which edition the label actually describes, not
-  guessed.
+- **Ukrainska Pravda English's real feed URL** — the duplicate itself is
+  fixed (round 9; the row is now feedless, so it no longer double-counts),
+  but whether `pravda.com.ua/eng` publishes its own feed is still unknown:
+  Cloudflare 403s every path from this network. Worth one check from an
+  unblocked machine — if a real English feed exists, re-adding it is a
+  one-cell edit and gains a genuinely distinct labelled source.
 - The 11 nulled sources (label kept, `rss: null`) are permanently out of
   weekly collection until someone finds a working feed again — no further
   action needed unless one of them relaunches RSS. Round 8 cross-checked
