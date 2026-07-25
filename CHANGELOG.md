@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Recalibration on the corrected split (2026-07-25): not shipped, but the
+  production weights are now validated** (`docs/calibration_findings_2026-07-25.md`).
+  With the message-axis holdout the 2026-07-24 blocker is gone, and the shipped
+  weights beat the static WP 4.1 baseline on a holdout with real label spread at
+  both split fractions tried (Spearman +0.127/+0.141 vs +0.043/+0.053;
+  concordance 0.563/0.565 vs 0.515/0.527) — the evidence that was missing last
+  time. The *candidate* weights were not shipped: they beat production at
+  fraction 0.2 and tie at 0.5, with band agreement reversing between the two, so
+  the sign of the difference depends on a split parameter and is noise at n≈46.
+  `data/calibrated_weights.json` and the committed datasets are unchanged.
+- **`build_dataset` now reports the active coherence backend** and warns when it
+  is not `sbert`. The shipped weights assume SBERT; under the default `ner` the
+  coherence signal is close to inert (mean 1.7 / sd 5.3 against 23.3 / 11.6 on
+  the same sources) and its distribution collapses in the holdout, which
+  silently inverts the conclusion of a weight comparison — every set scored at
+  or below chance under `ner` and above it under `sbert`. `sentence-transformers`
+  is an optional extra, so this degradation is the default state of a fresh
+  environment and nothing previously surfaced it at runtime.
+
 ### Changed
 - **The temporal calibration split now cuts message histories, not sources**
   (`cats/calibration/split.py`, new default `--axis message`). The previous

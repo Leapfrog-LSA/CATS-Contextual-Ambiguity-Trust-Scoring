@@ -48,6 +48,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
+from cats.core.config import settings
 from cats.pipeline.normalizer import normalize_messages
 from cats.signals.coherence import compute_coherence
 from cats.signals.gaming import compute_gaming
@@ -206,6 +207,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     _write_jsonl(records, args.out)
 
     print(f"Wrote {stats.written} sample(s) to {args.out} ({stats.skipped} skipped).")
+    print(f"Coherence backend: {settings.coherence_backend}")
+    if settings.coherence_backend != "sbert":
+        print(
+            "  WARNING: the shipped weights are calibrated for COHERENCE_BACKEND=sbert.\n"
+            "  Under 'ner' the coherence signal is close to inert (measured 2026-07-25 on the\n"
+            "  same sources: mean 1.7 / sd 5.3 against sbert's 23.3 / 11.6), so a dataset built\n"
+            "  here is not comparable with data/calibrated_weights.json and must not be used to\n"
+            "  judge candidate weights against them. Install requirements-sbert.txt and re-run."
+        )
     print("Per source_type:")
     for st, n in sorted((stats.per_source_type or {}).items()):
         print(f"  {st:12s} {n}")
