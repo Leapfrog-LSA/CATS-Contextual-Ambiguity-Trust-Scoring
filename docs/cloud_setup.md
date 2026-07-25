@@ -67,11 +67,20 @@ python -m textblob.download_corpora || true
 ## 2. Environment variables
 
 Paste into the environment's **Environment variables** field (`.env` format,
-one `KEY=value` per line, no quotes). `cats.core.config.Settings` has no
-defaults for these, so without them `pytest` fails at import-time collection.
-These mirror the `test` job in `.github/workflows/ci.yml` — throwaway test
-values, **not secrets** (the env field is visible to anyone who can edit the
-environment, so never put real secrets here).
+one `KEY=value` per line, no quotes). These mirror the `test` job in
+`.github/workflows/ci.yml` — throwaway test values, **not secrets** (the env
+field is visible to anyone who can edit the environment, so never put real
+secrets here).
+
+Copy them **verbatim**. `cats.core.config.Settings` has no defaults for these,
+but the test modules that import it fall back to their own via
+`os.environ.setdefault`, so leaving them unset is harmless — the full suite
+still collects and `tests/unit/` still passes. `setdefault` also means an
+exported variable *overrides* the test's, which is where the damage comes from:
+a `DATABASE_URL` without the `+asyncpg` driver (plain `postgresql://…`) sends
+SQLAlchemy looking for the synchronous `psycopg2`, which this project does not
+depend on, and collection dies on a `ModuleNotFoundError` that looks like a
+missing dependency rather than a bad URL.
 
 ```
 ENVIRONMENT=test
