@@ -6,14 +6,42 @@ split operates on **labelled sources** (the ``build_dataset`` input: records wit
 timestamped messages + a ``label``), because that is where the time information
 lives; the post-build ``{source_type, signals, label}`` records carry none.
 
-Each record's time is its **most recent message** (latest activity). Records are
-ordered by that time and the holdout is the most-recent slice — either a fraction
-(``--holdout-fraction``) or everything at/after an explicit ``--cutoff``.
+There are two ways to cut "past" from "future", and they behave very
+differently on RSS data:
+
+``message`` axis (**default**)
+    Cut every source's *message history* at a shared cutoff: earlier messages
+    train, later messages validate. A source appears on both sides with
+    different behaviour, so the holdout keeps the label spread of the pool by
+    construction. This answers "do weights fitted on past behaviour still
+    predict labels from future behaviour" — drift over time.
+
+``source`` axis (legacy)
+    Order *sources* by their most recent message and hold out the newest slice,
+    so holdout sources are unseen during calibration. This answers "do the
+    weights generalise to sources never calibrated on".
+
+The default is ``message`` because the ``source`` axis is **degenerate on this
+dataset**, not as a matter of taste. Every live RSS feed's newest message is a
+few hours old at collection time, so ordering sources by that timestamp ranks
+them by *how often they publish* — which is close to a proxy for the label.
+Measured on the 2026-07-20 snapshot: Spearman(recency, label) = **+0.539**, and
+the resulting 11-source holdout was entirely labels 70/85, with every label-10
+disinfo source exiled to train because such sources publish irregularly. A
+holdout with no label spread cannot validate anything, which is what stopped the
+2026-07-24 recalibration (``docs/calibration_findings_2026-07-24.md``).
+
+The ``source`` axis is kept, not deleted: it is the right question to ask once
+the pool is large enough that its newest slice is label-diverse on its own.
+
+Both axes report the label distribution of each side, so a degenerate split is
+visible at the point it is produced rather than three pipeline stages later.
 
 Usage::
 
     python -m cats.calibration.split --input sources.jsonl --holdout-fraction 0.2
     python -m cats.calibration.split --input sources.jsonl --cutoff 2026-01-01T00:00:00Z
+    python -m cats.calibration.split --input sources.jsonl --axis source
 """
 
 from __future__ import annotations
@@ -22,7 +50,9 @@ import argparse
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+
+from cats.calibration.collect_rss import DEFAULT_MIN_MESSAGES
 
 
 def _parse_ts(value: str) -> datetime:
@@ -46,6 +76,94 @@ def record_time(record: dict) -> datetime:
     if not times:
         raise ValueError(f"record {record.get('source_id', '?')!r} has no parseable message timestamp")
     return max(times)
+
+
+def message_times(record: dict) -> List[datetime]:
+    """Every parseable message timestamp in a record, ascending.
+
+    Unlike :func:`record_time` this tolerates a record with none — the caller
+    decides whether an untimed source is fatal or simply unsplittable.
+    """
+    times: List[datetime] = []
+    for m in record.get("messages") or []:
+        ts = m.get("timestamp") if isinstance(m, dict) else None
+        if ts:
+            try:
+                times.append(_parse_ts(str(ts)))
+            except ValueError:
+                continue
+    return sorted(times)
+
+
+def message_quantile_cutoff(records: List[dict], holdout_fraction: float) -> datetime:
+    """Timestamp with ``holdout_fraction`` of all messages at or after it.
+
+    Pooled across sources, so the cutoff is a single moment in wall-clock time
+    rather than a per-source one — the point is that both sides describe the
+    same period for every source.
+    """
+    if not 0.0 < holdout_fraction < 1.0:
+        raise ValueError("holdout_fraction must be between 0 and 1 (exclusive)")
+    pooled: List[datetime] = []
+    for r in records:
+        pooled.extend(message_times(r))
+    if not pooled:
+        raise ValueError("no parseable message timestamps in any record")
+    pooled.sort()
+    idx = int(len(pooled) * (1.0 - holdout_fraction))
+    idx = min(max(idx, 0), len(pooled) - 1)
+    return pooled[idx]
+
+
+def message_split(
+    records: List[dict],
+    holdout_fraction: float = 0.2,
+    cutoff: Optional[datetime] = None,
+    min_messages: int = DEFAULT_MIN_MESSAGES,
+) -> Tuple[List[dict], List[dict]]:
+    """Split each source's *messages* at a shared cutoff into (train, holdout).
+
+    A source contributes to a side only if it has at least ``min_messages``
+    there — below that the behavioural signals are not meaningfully estimable
+    (the same floor ``collect_rss`` applies), so a thin side is dropped rather
+    than passed on as noise. Messages whose timestamp will not parse cannot be
+    placed in time and are dropped from both sides.
+    """
+    if not records:
+        raise ValueError("no records to split")
+    if cutoff is None:
+        cutoff = message_quantile_cutoff(records, holdout_fraction)
+
+    train: List[dict] = []
+    holdout: List[dict] = []
+    for r in records:
+        before: List[dict] = []
+        after: List[dict] = []
+        for m in r.get("messages") or []:
+            ts = m.get("timestamp") if isinstance(m, dict) else None
+            if not ts:
+                continue
+            try:
+                when = _parse_ts(str(ts))
+            except ValueError:
+                continue
+            (after if when >= cutoff else before).append(m)
+        if len(before) >= min_messages:
+            train.append({**r, "messages": before})
+        if len(after) >= min_messages:
+            holdout.append({**r, "messages": after})
+    return train, holdout
+
+
+def label_spread(records: List[dict]) -> Dict[float, int]:
+    """Label → count, for reporting whether a split side can validate at all."""
+    counts: Dict[float, int] = {}
+    for r in records:
+        label = r.get("label")
+        if label is None:
+            continue
+        counts[float(label)] = counts.get(float(label), 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def temporal_split(
@@ -108,6 +226,18 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument(
         "--holdout-out", type=Path, default=Path("holdout.jsonl"), help="holdout output (default holdout.jsonl)"
     )
+    parser.add_argument(
+        "--axis",
+        choices=("message", "source"),
+        default="message",
+        help="split each source's messages at a shared cutoff (default), or hold out whole unseen sources",
+    )
+    parser.add_argument(
+        "--min-messages",
+        type=int,
+        default=DEFAULT_MIN_MESSAGES,
+        help=f"message axis: drop a side with fewer messages than this (def {DEFAULT_MIN_MESSAGES})",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--holdout-fraction", type=float, default=0.2, help="most-recent fraction for holdout (def 0.2)")
     group.add_argument(
@@ -126,18 +256,36 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     records = _read_records(args.input)
     try:
-        train, holdout = temporal_split(records, holdout_fraction=args.holdout_fraction, cutoff=cutoff)
+        if args.axis == "message":
+            train, holdout = message_split(
+                records,
+                holdout_fraction=args.holdout_fraction,
+                cutoff=cutoff,
+                min_messages=args.min_messages,
+            )
+        else:
+            train, holdout = temporal_split(records, holdout_fraction=args.holdout_fraction, cutoff=cutoff)
     except ValueError as exc:
         parser.error(str(exc))
 
     _write_jsonl(train, args.train_out)
     _write_jsonl(holdout, args.holdout_out)
     print(
-        f"Split {len(records)} record(s): {len(train)} train -> {args.train_out}, "
+        f"Split {len(records)} record(s) on the {args.axis} axis: {len(train)} train -> {args.train_out}, "
         f"{len(holdout)} holdout -> {args.holdout_out}"
     )
+
+    train_spread, holdout_spread = label_spread(train), label_spread(holdout)
+    print(f"  train labels:   {train_spread}")
+    print(f"  holdout labels: {holdout_spread}")
     if not holdout or not train:
         print("WARNING: one side is empty; adjust --cutoff/--holdout-fraction for a usable split.")
+    elif len(holdout_spread) < 3:
+        print(
+            f"WARNING: the holdout carries only {len(holdout_spread)} distinct label(s) — it cannot rank "
+            "sources it never varies over, so validation on it is not meaningful. Widen the pool, or "
+            "check whether the axis is selecting on something correlated with the label."
+        )
     return 0
 
 
