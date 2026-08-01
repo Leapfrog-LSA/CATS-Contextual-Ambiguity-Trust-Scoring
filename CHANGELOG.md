@@ -48,6 +48,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that is a separate change, gated on its own re-validation per `CLAUDE.md`.
 
 ### Fixed
+- **The `SessionStart` hook reported success while installing nothing.**
+  `.claude/hooks/session-start.sh` ran `pip install -e . -r requirements-dev.txt
+  || true` and then printed `environment ready` unconditionally. On the current
+  cloud base image that install aborts — the image ships a Debian-packaged
+  `PyJWT` with no `RECORD` file, which pip cannot uninstall to satisfy the
+  resolved version (`Cannot uninstall PyJWT 2.7.0, RECORD file not found`) — and
+  `|| true` swallowed it, so sessions started with no `pytest`, no `httpx` and
+  no `pydantic` while being told the environment was ready. The install now
+  passes `--ignore-installed PyJWT`, prints the pip error when it still fails,
+  and the closing line reports the *verified* state rather than the attempted
+  one. The Setup script in `docs/cloud_setup.md` carried the same defect and
+  gets the same flag plus an explicit post-install check.
 - **Corrected the test-environment instructions in `CLAUDE.md` and
   `docs/cloud_setup.md`**, which told every session that `pytest` fails at
   collection without `CATS_API_KEY` / `DATABASE_URL` / `REDIS_URL` /

@@ -36,7 +36,15 @@ set -uo pipefail
 # requirements-dev.txt pulls in requirements.txt (FastAPI/SQLAlchemy/... for the
 # integration tests) plus the linters and pytest. If the base image's pip is
 # "externally managed" and errors, add --break-system-packages here.
-pip install -e . -r requirements-dev.txt
+#
+# --ignore-installed PyJWT: the base image ships a Debian-packaged PyJWT with no
+# RECORD file. pip cannot uninstall it to satisfy the resolved version and
+# aborts the whole install ("Cannot uninstall PyJWT 2.7.0, RECORD file not
+# found"), so without the flag nothing gets installed at all.
+pip install --ignore-installed PyJWT -e . -r requirements-dev.txt
+
+# Fail loudly: a setup script that "succeeded" with no pytest wastes a session.
+python -c "import pytest, cats" || echo "SETUP FAILED: dev/test stack missing — read the pip output above."
 
 # spaCy Italian model — served from github.com (in the default "Trusted"
 # allowlist). Powers the default NER coherence backend. Non-fatal: without it
