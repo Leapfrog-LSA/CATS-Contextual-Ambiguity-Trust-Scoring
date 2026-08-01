@@ -8,8 +8,11 @@ from cats.calibration.split import (
     main,
     message_quantile_cutoff,
     message_split,
+    record_span_hours,
     record_time,
+    silence_blind_sources,
     temporal_split,
+    window_bounds,
 )
 
 
@@ -176,6 +179,122 @@ def test_main_message_axis_is_the_default(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "on the message axis" in out
     assert "holdout labels:" in out
+
+
+# ── silence window ─────────────────────────────────────────────────────────
+def test_record_span_hours_measures_first_to_last():
+    rec = _rec("a", "2026-01-01T00:00:00Z", "2026-01-04T12:00:00Z", "2026-01-02T00:00:00Z")
+    assert record_span_hours(rec) == 84.0
+
+
+def test_record_span_hours_is_none_below_two_messages():
+    assert record_span_hours(_rec("a", "2026-01-01T00:00:00Z")) is None
+
+
+def test_window_bounds_spans_every_source():
+    recs = [_rec("a", "2026-01-05T00:00:00Z", "2026-01-06T00:00:00Z"), _rec("b", "2026-01-01T00:00:00Z")]
+    first, last = window_bounds(recs)
+    assert first == _parse_ts("2026-01-01T00:00:00Z")
+    assert last == _parse_ts("2026-01-06T00:00:00Z")
+
+
+def test_window_bounds_is_none_without_timestamps():
+    assert window_bounds([{"source_id": "a", "messages": [{"text": "no ts"}]}]) is None
+
+
+def test_silence_blind_counts_windows_at_or_under_the_threshold():
+    """72 h is the threshold: a 72 h window cannot hold a gap *longer* than 72 h."""
+    exactly_72h = _rec("edge", "2026-01-01T00:00:00Z", "2026-01-04T00:00:00Z")
+    over_72h = _rec("wide", "2026-01-01T00:00:00Z", "2026-01-05T00:00:00Z")
+    single = _rec("thin", "2026-01-01T00:00:00Z")
+    assert silence_blind_sources([exactly_72h, over_72h, single]) == (2, 3)
+
+
+def test_silence_blind_respects_the_source_type_threshold():
+    rec = {**_rec("a", "2026-01-01T00:00:00Z", "2026-01-05T00:00:00Z"), "source_type": "news"}
+    assert silence_blind_sources([rec]) == (0, 1)  # 96 h > the 72 h news threshold
+
+
+def test_main_warns_when_no_holdout_source_can_register_a_gap(tmp_path, capsys):
+    """The three-week-collection trap: a short holdout pins silence at 0."""
+    src = tmp_path / "sources.jsonl"
+    # Four hours apart over two days, so each half stays well under 72 h while
+    # keeping enough messages per side to clear min_messages.
+    stamps = [f"2026-01-0{d}T{h:02d}:00:00Z" for d in (1, 2) for h in range(0, 24, 4)]
+    src.write_text(
+        "\n".join(json.dumps(_rec(f"s{i}", *stamps, label=10 * i)) for i in range(1, 5)),
+        encoding="utf-8",
+    )
+    rc = main(
+        [
+            "--input",
+            str(src),
+            "--train-out",
+            str(tmp_path / "train.jsonl"),
+            "--holdout-out",
+            str(tmp_path / "holdout.jsonl"),
+            "--holdout-fraction",
+            "0.5",
+        ]
+    )
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "holdout silence-blind: 4/4" in out
+    assert "silence is identically 0 on this side" in out
+
+
+def test_main_warns_when_a_quarter_of_the_holdout_is_silence_blind(tmp_path, capsys):
+    src = tmp_path / "sources.jsonl"
+    # Three sources publish across five weeks, one only inside a single day.
+    wide = [f"2026-01-{d:02d}T00:00:00Z" for d in range(1, 32, 3)]
+    narrow = [f"2026-01-31T{h:02d}:00:00Z" for h in range(0, 24, 4)]
+    src.write_text(
+        "\n".join(
+            [json.dumps(_rec(f"w{i}", *wide, label=10 * i)) for i in range(1, 4)] + [json.dumps(_rec("n", *narrow))]
+        ),
+        encoding="utf-8",
+    )
+    rc = main(
+        [
+            "--input",
+            str(src),
+            "--train-out",
+            str(tmp_path / "train.jsonl"),
+            "--holdout-out",
+            str(tmp_path / "holdout.jsonl"),
+            "--axis",
+            "source",
+            "--holdout-fraction",
+            "0.5",
+        ]
+    )
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "span <= the 72 h silence threshold" in out
+    assert "by construction rather than by" in out
+
+
+def test_main_stays_quiet_when_the_window_is_long_enough(tmp_path, capsys):
+    src = tmp_path / "sources.jsonl"
+    stamps = [f"2026-0{m}-{d:02d}T00:00:00Z" for m in (1, 2) for d in range(1, 28, 2)]
+    src.write_text(
+        "\n".join(json.dumps(_rec(f"s{i}", *stamps, label=10 * i)) for i in range(1, 5)),
+        encoding="utf-8",
+    )
+    rc = main(
+        [
+            "--input",
+            str(src),
+            "--train-out",
+            str(tmp_path / "train.jsonl"),
+            "--holdout-out",
+            str(tmp_path / "holdout.jsonl"),
+        ]
+    )
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "holdout silence-blind: 0/4" in out
+    assert "silence threshold" not in out  # reported, not warned about
 
 
 def test_main_warns_when_the_holdout_cannot_validate(tmp_path, capsys):

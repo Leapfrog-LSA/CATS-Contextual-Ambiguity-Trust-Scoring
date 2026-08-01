@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **The split now reports each side's observed window against the `silence`
+  threshold**, so a holdout too short for that signal to vary is visible where
+  it is produced instead of being diagnosed by hand afterwards. `silence` scores
+  the share of inter-message gaps longer than 72 h, so a source whose whole
+  history spans no more than 72 h scores a flat 0 because of the window it was
+  given, not because of how it published. Each side now prints its window and a
+  `silence-blind: K/N` count, warns when *no* source can register a gap (the
+  signal is constant and any weight on it is unvalidated), and warns when at
+  least a quarter of a side is blind (the distribution is compressed toward 0).
+  On the seven merged snapshots to date both tiers fire: at the default
+  fraction 0.2 the holdout window is 47 h and **64/64** sources are blind; at
+  0.5 it is 360 h and 21/78 (27%) are. This is the calendar-time constraint
+  from `docs/calibration_findings_2026-07-25.md` showing up as an inert signal.
 - **Recalibration on the corrected split (2026-07-25): not shipped, but the
   production weights are now validated** (`docs/calibration_findings_2026-07-25.md`).
   With the message-axis holdout the 2026-07-24 blocker is gone, and the shipped
