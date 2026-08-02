@@ -158,6 +158,43 @@ def test_attach_messages_since_and_max_messages():
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────
+def _mock_feeds(monkeypatch):
+    """Point the collector at in-memory feeds: host 'a' serves RSS2, others Atom."""
+    import httpx
+
+    import cats.calibration.collect_rss as mod
+
+    def handler(request):
+        return httpx.Response(200, text=RSS2 if "a" in request.url.host else ATOM)
+
+    real_client = httpx.Client
+
+    def patched_client(**kwargs):
+        kwargs.pop("timeout", None)
+        return real_client(transport=httpx.MockTransport(handler), **kwargs)
+
+    monkeypatch.setattr(mod.httpx, "Client", patched_client)
+
+
+def _labels_file(tmp_path):
+    labels = tmp_path / "labels.jsonl"
+    labels.write_text(
+        "\n".join(
+            json.dumps(r)
+            for r in [
+                {"source_id": "a", "source_type": "news", "label": 85.0, "rss": "https://a.example/feed"},
+                {"source_id": "b", "source_type": "news", "label": 50.0, "rss": "https://b.example/feed"},
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return labels
+
+
+def _records(path):
+    return {json.loads(line)["source_id"]: json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()}
+
+
 def test_main_end_to_end_with_mocked_transport(tmp_path, monkeypatch, capsys):
     import httpx
 
@@ -208,3 +245,78 @@ def test_main_bad_since_errors(tmp_path):
     labels.write_text(json.dumps({"source_id": "a", "rss": "https://a/f"}), encoding="utf-8")
     with pytest.raises(SystemExit):
         main(["--labels", str(labels), "--out", str(tmp_path / "o.jsonl"), "--since", "garbage"])
+
+
+# ── writing to an existing snapshot ────────────────────────────────────────
+def _existing_snapshot(path):
+    """A snapshot from an earlier run: source 'c' is unreachable this time."""
+    path.write_text(
+        "\n".join(
+            json.dumps(r)
+            for r in [
+                {
+                    "source_id": "a",
+                    "source_type": "news",
+                    "label": 85.0,
+                    "messages": [
+                        {"timestamp": "2026-05-30T07:00:00Z", "text": "Notizia solo del run precedente"},
+                        {"timestamp": "2026-06-01T08:00:00Z", "text": "Prima notizia Dettagli della prima notizia."},
+                    ],
+                },
+                {
+                    "source_id": "c",
+                    "source_type": "news",
+                    "label": 10.0,
+                    "messages": [{"timestamp": "2026-05-31T07:00:00Z", "text": "Feed morto stamattina"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_main_merges_into_an_existing_snapshot(tmp_path, monkeypatch, capsys):
+    """Regression pin for 2026-08-01: a same-day re-run used to drop a source."""
+    _mock_feeds(monkeypatch)
+    out = tmp_path / "labelled_sources.jsonl"
+    _existing_snapshot(out)
+
+    assert main(["--labels", str(_labels_file(tmp_path)), "--out", str(out), "--min-messages", "2"]) == 0
+
+    records = _records(out)
+    assert set(records) == {"a", "b", "c"}  # 'c' survives although this run never saw it
+    texts = [m["text"] for m in records["a"]["messages"]]
+    assert "Notizia solo del run precedente" in texts  # older message kept
+    assert "Seconda notizia" in texts  # newly fetched one added
+    assert texts.count("Prima notizia Dettagli della prima notizia.") == 1  # overlap deduplicated
+    assert records["a"]["messages"] == sorted(records["a"]["messages"], key=lambda m: m["timestamp"])
+
+    out_text = capsys.readouterr().out
+    assert "merged into the snapshot already at that path: 3 source(s)" in out_text
+    assert "kept 1 source(s) the earlier snapshot reached and this run did not: c" in out_text
+
+
+def test_main_overwrite_flag_still_truncates(tmp_path, monkeypatch, capsys):
+    _mock_feeds(monkeypatch)
+    out = tmp_path / "labelled_sources.jsonl"
+    _existing_snapshot(out)
+
+    rc = main(["--labels", str(_labels_file(tmp_path)), "--out", str(out), "--min-messages", "2", "--overwrite"])
+
+    assert rc == 0
+    assert set(_records(out)) == {"a", "b"}  # 'c' deliberately discarded
+    assert "merged into" not in capsys.readouterr().out
+
+
+def test_main_refuses_to_destroy_an_unreadable_snapshot(tmp_path, monkeypatch, capsys):
+    _mock_feeds(monkeypatch)
+    out = tmp_path / "labelled_sources.jsonl"
+    out.write_text("{not json at all\n", encoding="utf-8")
+
+    rc = main(["--labels", str(_labels_file(tmp_path)), "--out", str(out), "--min-messages", "2"])
+
+    assert rc == 1
+    assert out.read_text(encoding="utf-8") == "{not json at all\n"  # left exactly as found
+    salvage = tmp_path / "labelled_sources.jsonl.partial"
+    assert set(_records(salvage)) == {"a", "b"}  # this run's window is not thrown away
+    assert "could not be read" in capsys.readouterr().out
