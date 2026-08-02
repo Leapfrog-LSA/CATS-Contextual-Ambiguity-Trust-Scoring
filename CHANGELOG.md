@@ -61,6 +61,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that is a separate change, gated on its own re-validation per `CLAUDE.md`.
 
 ### Fixed
+- **`collect_rss` silently destroyed an existing snapshot at `--out`.** Snapshots
+  are written to a dated filename, so two runs on the same day collided and the
+  second truncated the first. That loses every source the earlier run reached
+  and the later one could not, and the loss is irrecoverable: a feed exposes
+  only its recent window. It cost a real source on 2026-08-01 — a manual
+  collection at 08:49 UTC (90 sources / 3 341 messages) was replaced by a
+  routine run at 09:11 (89 / 3 330) when **David Icke**'s feed happened to
+  serve malformed XML on the second pass. Writing to an existing `--out` now
+  **merges** into it through `merge_snapshots.merge_records`: messages unioned
+  and deduplicated on `(timestamp, text)`, fresh metadata winning, and sources
+  present in only one side retained. Replayed on that collision the merge keeps
+  David Icke and yields 90 sources / 3 428 messages — 98 more than what landed.
+  `--overwrite` restores the truncating behaviour deliberately, and an existing
+  file that cannot be parsed is left untouched while the new run is written
+  alongside as `.partial` rather than either one being lost.
 - **The `SessionStart` hook reported success while installing nothing.**
   `.claude/hooks/session-start.sh` ran `pip install -e . -r requirements-dev.txt
   || true` and then printed `environment ready` unconditionally. On the current

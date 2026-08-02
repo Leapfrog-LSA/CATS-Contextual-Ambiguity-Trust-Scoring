@@ -21,6 +21,21 @@ Sources whose feed fails (missing ``rss``, HTTP error, unparseable XML, fewer
 than ``--min-messages`` usable entries) are skipped with a diagnostic — the
 output only contains sources that ``build_dataset`` can actually use.
 
+Writing to an existing ``--out``
+--------------------------------
+A second run against a path that already holds a snapshot **merges** into it
+(via :func:`cats.calibration.merge_snapshots.merge_records`) rather than
+truncating it. Snapshots are usually written to a dated filename, so two runs
+on the same day used to collide, and the second silently replaced the first —
+losing every source the first run reached but the second could not. That is
+irrecoverable: a feed exposes only its recent window, so what the earlier run
+saw cannot be fetched again. It happened on 2026-08-01, costing one source.
+
+Merging keeps both: messages are unioned and deduplicated on
+``(timestamp, text)``, the fresh run supplies metadata, and sources present in
+only one of the two are retained. Pass ``--overwrite`` to get the old
+truncating behaviour deliberately.
+
 Usage::
 
     python -m cats.calibration.collect_rss \\
@@ -47,6 +62,8 @@ from xml.etree import ElementTree
 
 import httpx
 import structlog
+
+from cats.calibration.merge_snapshots import merge_records
 
 logger = structlog.get_logger()
 
@@ -263,6 +280,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS, help="concurrent feed fetches")
     parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES, help="reject feeds larger than this")
     parser.add_argument("--user-agent", default=DEFAULT_USER_AGENT, help="User-Agent header for feed requests")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="replace an existing --out instead of merging into it (discards what this run could not re-fetch)",
+    )
     args = parser.parse_args(argv)
 
     if not args.labels.exists():
@@ -300,8 +322,39 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"  registry: {stats.total_sources}, no feed: {stats.no_feed}, feed errors: {stats.feed_error}")
         return 1
 
-    _write_jsonl(records, args.out)
+    written = records
+    merged: Optional[Tuple[int, int, List[str]]] = None
+    if args.out.exists() and not args.overwrite:
+        try:
+            previous = _read_jsonl(args.out)
+        except (OSError, json.JSONDecodeError) as exc:
+            # Refuse to destroy a snapshot we cannot read, but do not throw away
+            # this run either — its feed window is equally unrecoverable.
+            salvage = args.out.with_suffix(args.out.suffix + ".partial")
+            _write_jsonl(records, salvage)
+            print(f"Existing {args.out} could not be read ({exc}); it was left untouched.")
+            print(f"  This run was written to {salvage} instead — merge or discard it by hand.")
+            print("  Re-run with --overwrite to replace the unreadable file deliberately.")
+            return 1
+        if previous:
+            fetched_ids = {str(r.get("source_id") or "") for r in records}
+            carried = sorted(
+                sid for sid in (str(r.get("source_id") or "") for r in previous) if sid and sid not in fetched_ids
+            )
+            written, total_messages, duplicates = merge_records([previous, records])
+            merged = (total_messages, duplicates, carried)
+
+    _write_jsonl(written, args.out)
     print(f"Wrote {stats.collected} labelled source(s) with messages to {args.out}")
+    if merged is not None:
+        total_messages, duplicates, carried = merged
+        print(
+            f"  merged into the snapshot already at that path: {len(written)} source(s), "
+            f"{total_messages} message(s) now on disk ({duplicates} duplicate(s) skipped)"
+        )
+        if carried:
+            shown = ", ".join(carried[:5]) + (" …" if len(carried) > 5 else "")
+            print(f"  kept {len(carried)} source(s) the earlier snapshot reached and this run did not: {shown}")
     print(
         f"  registry {stats.total_sources}: no feed {stats.no_feed}, feed errors {stats.feed_error}, "
         f"too few messages {stats.too_few_messages}"
