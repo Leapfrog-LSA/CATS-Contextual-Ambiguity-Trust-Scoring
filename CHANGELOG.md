@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **The split now reports each side's observed window against the `silence`
+  threshold**, so a holdout too short for that signal to vary is visible where
+  it is produced instead of being diagnosed by hand afterwards. `silence` scores
+  the share of inter-message gaps longer than 72 h, so a source whose whole
+  history spans no more than 72 h scores a flat 0 because of the window it was
+  given, not because of how it published. Each side now prints its window and a
+  `silence-blind: K/N` count, warns when *no* source can register a gap (the
+  signal is constant and any weight on it is unvalidated), and warns when at
+  least a quarter of a side is blind (the distribution is compressed toward 0).
+  On the seven merged snapshots to date both tiers fire: at the default
+  fraction 0.2 the holdout window is 47 h and **64/64** sources are blind; at
+  0.5 it is 360 h and 21/78 (27%) are. This is the calendar-time constraint
+  from `docs/calibration_findings_2026-07-25.md` showing up as an inert signal.
 - **Recalibration on the corrected split (2026-07-25): not shipped, but the
   production weights are now validated** (`docs/calibration_findings_2026-07-25.md`).
   With the message-axis holdout the 2026-07-24 blocker is gone, and the shipped
@@ -48,6 +61,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that is a separate change, gated on its own re-validation per `CLAUDE.md`.
 
 ### Fixed
+- **The `SessionStart` hook reported success while installing nothing.**
+  `.claude/hooks/session-start.sh` ran `pip install -e . -r requirements-dev.txt
+  || true` and then printed `environment ready` unconditionally. On the current
+  cloud base image that install aborts — the image ships a Debian-packaged
+  `PyJWT` with no `RECORD` file, which pip cannot uninstall to satisfy the
+  resolved version (`Cannot uninstall PyJWT 2.7.0, RECORD file not found`) — and
+  `|| true` swallowed it, so sessions started with no `pytest`, no `httpx` and
+  no `pydantic` while being told the environment was ready. The install now
+  passes `--ignore-installed PyJWT`, prints the pip error when it still fails,
+  and the closing line reports the *verified* state rather than the attempted
+  one. The Setup script in `docs/cloud_setup.md` carried the same defect and
+  gets the same flag plus an explicit post-install check.
 - **Corrected the test-environment instructions in `CLAUDE.md` and
   `docs/cloud_setup.md`**, which told every session that `pytest` fails at
   collection without `CATS_API_KEY` / `DATABASE_URL` / `REDIS_URL` /

@@ -36,6 +36,13 @@ the pool is large enough that its newest slice is label-diverse on its own.
 
 Both axes report the label distribution of each side, so a degenerate split is
 visible at the point it is produced rather than three pipeline stages later.
+For the same reason each side also reports its **observed window** against the
+``silence`` threshold: a source whose history spans no more than 72 h cannot
+contain a gap longer than 72 h, so its silence is 0 because the window was cut
+short, not because the source published steadily. Cutting a three-week
+collection in two can put a large share of a side below that line, which is
+invisible in the label spread and only surfaces as an inert signal during
+calibration.
 
 Usage::
 
@@ -53,6 +60,14 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from cats.calibration.collect_rss import DEFAULT_MIN_MESSAGES
+from cats.signals.silence import threshold_for
+
+# Share of a side's sources that may be silence-blind before it is called out.
+# A judgement call, not a derived constant: below it the signal still varies
+# across enough sources to rank them, above it most of the distribution is
+# structural zeros. The all-blind case is reported separately and is not a
+# matter of degree — there the signal is constant.
+SILENCE_BLIND_WARN_FRACTION = 0.25
 
 
 def _parse_ts(value: str) -> datetime:
@@ -155,6 +170,43 @@ def message_split(
     return train, holdout
 
 
+def record_span_hours(record: dict) -> Optional[float]:
+    """Hours between a record's first and last parseable message, if it has two."""
+    times = message_times(record)
+    if len(times) < 2:
+        return None
+    return (times[-1] - times[0]).total_seconds() / 3600.0
+
+
+def window_bounds(records: List[dict]) -> Optional[Tuple[datetime, datetime]]:
+    """(earliest, latest) message timestamp across a side, or None if untimed."""
+    pooled: List[datetime] = []
+    for r in records:
+        pooled.extend(message_times(r))
+    if not pooled:
+        return None
+    return min(pooled), max(pooled)
+
+
+def silence_blind_sources(records: List[dict]) -> Tuple[int, int]:
+    """(blind, total) — sources whose window is too short for ``silence`` to fire.
+
+    ``compute_silence`` scores the share of inter-message gaps longer than the
+    source-type threshold (72 h for every type today). A source whose whole
+    observed history spans no more than that threshold cannot contain such a
+    gap, and one with fewer than two messages has no gaps at all: both score a
+    flat 0. That zero is a property of the window the split handed them, not of
+    how the source behaved, so counting them says how much of a side carries
+    real silence information.
+    """
+    blind = 0
+    for r in records:
+        span = record_span_hours(r)
+        if span is None or span <= threshold_for(str(r.get("source_type") or "default")):
+            blind += 1
+    return blind, len(records)
+
+
 def label_spread(records: List[dict]) -> Dict[float, int]:
     """Label → count, for reporting whether a split side can validate at all."""
     counts: Dict[float, int] = {}
@@ -212,6 +264,34 @@ def _write_jsonl(records: List[dict], out: Path) -> None:
     with out.open("w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+
+def _report_silence_window(side_name: str, records: List[dict]) -> None:
+    """Print a side's observed window and how much of it ``silence`` can see."""
+    if not records:
+        return
+    threshold = threshold_for("default")
+    bounds = window_bounds(records)
+    if bounds is not None:
+        span_h = (bounds[1] - bounds[0]).total_seconds() / 3600.0
+        print(f"  {side_name} window: {bounds[0].isoformat()} -> {bounds[1].isoformat()} ({span_h:.0f} h)")
+
+    blind, total = silence_blind_sources(records)
+    print(f"  {side_name} silence-blind: {blind}/{total} source(s) span <= the {threshold:.0f} h threshold")
+    if not total:
+        return
+    if blind == total:
+        print(
+            f"WARNING: no {side_name} source spans more than the {threshold:.0f} h silence threshold, so "
+            "silence is identically 0 on this side. It is constant, cannot rank anything, and any weight "
+            "on it is unvalidated — the fix is a longer collection window, not a different split fraction."
+        )
+    elif blind / total >= SILENCE_BLIND_WARN_FRACTION:
+        print(
+            f"WARNING: {blind}/{total} {side_name} sources ({blind / total:.0%}) span <= the "
+            f"{threshold:.0f} h silence threshold, so their silence is 0 by construction rather than by "
+            "behaviour. The signal is compressed toward 0 here and comparisons that lean on it are weak."
+        )
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -286,6 +366,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             "sources it never varies over, so validation on it is not meaningful. Widen the pool, or "
             "check whether the axis is selecting on something correlated with the label."
         )
+
+    _report_silence_window("train", train)
+    _report_silence_window("holdout", holdout)
     return 0
 
 
