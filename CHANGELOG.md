@@ -61,6 +61,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that is a separate change, gated on its own re-validation per `CLAUDE.md`.
 
 ### Fixed
+- **The Citizen's registered RSS feed went dead** (`thecitizen.co.tz/rss.xml`,
+  404). Found by a fresh feed-health re-audit (round 10,
+  `docs/feed_health_2026-07.md`) run specifically to check whether the 15
+  hosts flagged `blocked` in round 7 had quietly gone dead — they hadn't
+  (still a clean HTTP 403, no ambiguity), but this previously-unflagged feed
+  had. The site's own RSS autodiscovery link and the common `/feed/`, `/rss/`
+  paths all dead-end or soft-404; the working endpoint takes the section as a
+  query parameter instead of a path segment
+  (`rss.xml?section=tanzania`). Verified live before updating
+  `data/labels.jsonl` and `data/Fonti_OSINT.csv` (byte-exact, CRLF preserved
+  on the CSV). Registry unchanged at 114 feeds — a URL correction, not a row
+  added or removed.
 - **`collect_rss` silently destroyed an existing snapshot at `--out`.** Snapshots
   are written to a dated filename, so two runs on the same day collided and the
   second truncated the first. That loses every source the earlier run reached
