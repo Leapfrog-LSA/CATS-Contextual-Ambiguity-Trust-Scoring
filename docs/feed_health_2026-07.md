@@ -12,12 +12,12 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) |
-|---|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | **97** |
-| dead | 35 | 9 | 10 | 8 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | **0** |
-| blocked | 17 | 16 | 16 | 16 | **16** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) |
+|---|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | **98** |
+| dead | 35 | 9 | 10 | 8 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | **0** |
+| blocked | 17 | 16 | 16 | 16 | 16 | **14** |
 
 (The "before round 4" counts drifted slightly from the round 1–3 numbers merged
 in PR #42 — two days of natural feed flakiness, not a regression. The feed
@@ -318,17 +318,50 @@ collapses. Checked against the whole registry: this was the **only** case —
 114 distinct feeds across 115 feed-carrying rows before the fix, 114/114
 after.
 
+## Round 10 (2026-08-05) — fresh re-audit, The Citizen fixed
+
+Re-ran the audit two weeks after round 9, specifically to settle whether the
+15 `blocked` hosts are still ambiguous or have quietly gone dead. **114 feeds:
+97 ok, 14 blocked, 3 dead, 0 not-xml.**
+
+`ITV News` and `L'Orient Today` are unchanged — still 404, still believed
+environment-specific (round 7). All 14 `blocked` hosts came back a clean
+HTTP 403 with no 429/timeout surviving the retry logic, the same pattern as
+round 7: still positively an IP-level block, not an ambiguous rate limit, and
+one fewer than round 7's 15 (Daily Maverick was fixed there and dropped out
+of the class).
+
+The one genuine change is **The Citizen** (label 85, Tanzania), not
+previously flagged in any round, now 404 on its registered
+`thecitizen.co.tz/rss.xml`.
+
+**Root cause and fix.** The homepage still advertises an RSS autodiscovery
+link (`<link rel="alternate" type="application/rss+xml"
+href=".../tanzania/rss.xml">`), but that path 404s too — a stale link, not
+the live endpoint. Several other common paths (`/feed/`, `/rss/`,
+`/tanzania/rss`) soft-404: HTTP 200, but `text/html`, serving the site's app
+shell instead of a feed. The working endpoint takes the section as a query
+parameter rather than a path segment:
+`https://www.thecitizen.co.tz/rss.xml?section=tanzania` —
+`application/xml`, valid RSS 2.0, 40 items, all linking to
+`thecitizen.co.tz/tanzania/...`, timestamps within the hour of the check
+(Tanzanian content: property investment, National Housing redevelopment,
+Simba/Yanga football). `data/labels.jsonl` and `data/Fonti_OSINT.csv`
+updated (byte-exact, CRLF preserved on the CSV). Registry stays at 114 feeds
+— a URL correction, not a row added or removed.
+
 ## Recommendation
 
-After round 7 the registry is close to clean: **0 `not-xml`, 2 `dead`** (both
-believed environment-specific — see above), and **15 `blocked`**, all now
-positively evidenced as an IP-level sandbox block (round 7, not UA-based)
-rather than a dead-feed signal. One feed initially flagged `blocked`
-(Daily Maverick) turned out to be a genuinely dead/moved feed rather than a
-sandbox block and was fixed in round 7 (see above). The one duplicate-URL row
-(Ukrainska Pravda / Ukrainska Pravda English) was resolved in round 9 and the
-registry now has no shared feeds at all — 114 distinct URLs across 114
-feed-carrying rows.
+After round 10 the registry is close to clean: **0 `not-xml`, 2 `dead`**
+(ITV News, L'Orient Today — both believed environment-specific, unchanged
+across three rounds), and **14 `blocked`**, all still positively evidenced as
+an IP-level sandbox block (rounds 7 and 10 agree, not UA-based) rather than a
+dead-feed signal. One feed initially flagged `blocked` (Daily Maverick)
+turned out to be a genuinely dead/moved feed rather than a sandbox block and
+was fixed in round 7 (see above). The one duplicate-URL row (Ukrainska Pravda
+/ Ukrainska Pravda English) was resolved in round 9, and the one drifted URL
+found two weeks later (The Citizen) was resolved in round 10 — the registry
+has no shared feeds and, as of round 10, no known-dead feed left uninspected.
 
 Remaining work, roughly in order of value:
 

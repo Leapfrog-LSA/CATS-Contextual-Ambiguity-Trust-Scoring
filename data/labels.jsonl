@@ -105,7 +105,7 @@
 {"source_id": "RFI Mali", "source_type": "news", "label": 70.0, "url": "https://www.rfi.fr/fr/afrique/mali", "rss": null}
 {"source_id": "Rudaw", "source_type": "news", "label": 50.0, "url": "https://www.rudaw.net/english", "rss": null}
 {"source_id": "Sudan Tribune", "source_type": "news", "label": 70.0, "url": "https://sudantribune.com", "rss": "https://sudantribune.com/rss"}
-{"source_id": "The Citizen", "source_type": "news", "label": 85.0, "url": "https://www.thecitizen.co.tz", "rss": "https://www.thecitizen.co.tz/rss.xml"}
+{"source_id": "The Citizen", "source_type": "news", "label": 85.0, "url": "https://www.thecitizen.co.tz", "rss": "https://www.thecitizen.co.tz/rss.xml?section=tanzania"}
 {"source_id": "The Conversation Africa", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/africa", "rss": null}
 {"source_id": "The Monitor", "source_type": "news", "label": 70.0, "url": "https://www.monitor.co.ug", "rss": "https://www.monitor.co.ug/rss"}
 {"source_id": "TRT Africa", "source_type": "news", "label": 50.0, "url": "https://www.trtworld.com/africa", "rss": null}
