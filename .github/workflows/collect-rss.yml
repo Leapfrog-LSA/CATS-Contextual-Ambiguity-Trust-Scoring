@@ -26,20 +26,47 @@ jobs:
       - run: pip install httpx structlog
       - name: Collect snapshot
         run: |
-          mkdir -p data/snapshots
           python -m cats.calibration.collect_rss \
             --labels data/labels.jsonl \
-            --out "data/snapshots/labelled_sources_$(date -u +%F).jsonl" \
+            --out "/tmp/collected-$(date -u +%F).jsonl" \
             --workers 8 --timeout 20 \
             --user-agent "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
+      # Collects to a scratch path, not the repo, because this step can run long
+      # after its 06:00 UTC cron target if the runner queue is backed up — by
+      # commit time another same-day snapshot (a manual/PR collection) may
+      # already be on main. A plain `git push` here would either silently
+      # replace that file with this run's alone, or (if this checkout predates
+      # it) get rejected and lose this run's collection entirely with no
+      # signal beyond a red Actions run nobody watches. Re-syncing to main and
+      # unioning through merge_snapshots right before each push attempt makes
+      # both same-day collections land, whichever way the race falls.
       - name: Commit snapshot
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/snapshots/
-          if git diff --cached --quiet; then
-            echo "No snapshot changes to commit."
-          else
+          SNAPSHOT="data/snapshots/labelled_sources_$(date -u +%F).jsonl"
+          COLLECTED="/tmp/collected-$(date -u +%F).jsonl"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p data/snapshots
+            if [ -f "$SNAPSHOT" ]; then
+              echo "Same-day snapshot already on main — merging instead of overwriting."
+              python -m cats.calibration.merge_snapshots --inputs "$SNAPSHOT" "$COLLECTED" --out "$SNAPSHOT"
+            else
+              cp "$COLLECTED" "$SNAPSHOT"
+            fi
+            git add "$SNAPSHOT"
+            if git diff --cached --quiet; then
+              echo "No snapshot changes to commit."
+              exit 0
+            fi
             git commit -m "data: RSS snapshot $(date -u +%F)"
-            git push
-          fi
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected on attempt $attempt (main moved again) — retrying."
+          done
+          echo "Failed to push after 3 attempts." >&2
+          exit 1
