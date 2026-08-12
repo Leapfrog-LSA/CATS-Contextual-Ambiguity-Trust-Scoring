@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **The weekly RSS collection workflow could silently clobber or lose a
+  same-day snapshot** (`.github/workflows/collect-rss.yml`). It checks out
+  `main` once at job start but can run well past its 06:00 UTC cron target
+  if the runner queue is backed up; by commit time, another same-day
+  snapshot (a manual or PR collection) may already be on `main`. The old
+  script (`git add` + `git commit` + plain `git push`) had no way to notice:
+  if its stale checkout still had the file, the eventual push either got
+  rejected outright (losing that run's whole collection with nothing but a
+  red Actions run to show for it) or, if it landed, replaced the file with
+  this run's collection alone rather than the union both runs together
+  should have produced — happened for real on 2026-08-10 (harmless only
+  because that day's manual collection turned out to be a strict subset of
+  the workflow's, verified after the fact with `merge_snapshots`, not by
+  design). The commit step now re-syncs to `origin/main` immediately before
+  each push attempt and, if a same-day file is already there, unions it with
+  this run's collection through `cats.calibration.merge_snapshots` instead
+  of overwriting it; a bounded retry (3 attempts) re-syncs and re-merges
+  again if the push is rejected because `main` moved in the meantime.
+
 ### Added
 - **The split now reports each side's observed window against the `silence`
   threshold**, so a holdout too short for that signal to vary is visible where
