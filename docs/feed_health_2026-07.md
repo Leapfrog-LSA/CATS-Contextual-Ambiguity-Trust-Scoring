@@ -12,12 +12,20 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | 97 | 98 | **95** |
-| dead | 35 | 9 | 10 | 8 | 2 | 2 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | **2** |
-| blocked | 17 | 16 | 16 | 16 | 16 | 14 | **15** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 (2026-08-21, 113 feeds) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | **84** |
+| stale | — | — | — | — | — | — | — | **11** |
+| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | **1** |
+| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | **15** |
+
+Round 12's `ok` count is not a regression from round 11's 95 — it is the same
+95 feeds split honestly for the first time. `stale` is a new classification
+(see below); every one of its 11 feeds would have scored `ok` under every
+prior round's classifier, silently. The two `ok`+`stale` counts still sum to
+95, matching round 11 exactly; the registry feed count also dropped by one
+(114→113, `World Daily News Report` nulled — see below).
 
 (The "before round 4" counts drifted slightly from the round 1–3 numbers merged
 in PR #42 — two days of natural feed flakiness, not a regression. The feed
@@ -383,48 +391,146 @@ more to the `blocked` bucket (ordinary week-to-week churn among sandboxed
 hosts, not investigated further given the class is already known-blocked
 from this network).
 
+## Round 12 (2026-08-21) — a `stale` classification, and 4 fixes
+
+Prompted by a recalibration checkpoint (`docs/calibration_findings_2026-08-21.md`)
+run the same day: it found **15 of the 95 merged calibration sources had
+produced no new message in 30+ days**, several not in years — invisible to
+every prior round because `ok`/`dead`/`blocked`/`not-xml` only ever checked
+whether a feed *answers*, never whether its content is *current*. A feed can
+return HTTP 200 + valid XML forever while silently serving the same cached
+body — that is exactly what happened to `Il Corriere della Sera`'s registered
+feed, the same source that motivated writing this script in the first place:
+its 404 (round 1) was fixed at some point after round 1–5, but the feed then
+froze at its 2024-05-13 content and every round since has correctly, and
+uselessly, called it `ok`.
+
+**Added `stale`**: `classify()` now parses each `ok` candidate's own newest
+`<pubDate>`/`<updated>` and compares it to today; more than 14 days old
+(generous — every case found here was stuck for 30+ days, most for months to
+years) reclassifies it `stale` instead of `ok`. Re-running the full registry
+(113 feeds, after the one blank below) found **11 stale feeds**:
+
+| Source | Label | Feed's own newest item | Age |
+|---|---:|---|---:|
+| Strafatti Quotidiani | 10 | 2016-12-27 | 3524 d |
+| Corriere del Corsaro | 10 | 2022-11-24 | 1365 d |
+| Daily Buzz Live | 10 | 2023-11-20 | 1004 d |
+| Empire Sports News | 10 | 2024-04-14 | 858 d |
+| Il Corrispondente | 10 | 2024-06-15 | 797 d |
+| Veterans Today | 10 | 2024-07-21 | 760 d |
+| Empire News | 10 | 2024-07-24 | 758 d |
+| Arab News | 50 | 2026-06-18 | 64 d |
+| Crisis Group Alert | **95** | 2026-07-30 | 21 d |
+| Diretta News.it | 10 | 2026-07-22 | 30 d |
+| iNews24.it | 10 | 2026-08-07 | 14 d |
+
+**Four fixed, verified live (fresh content, not just a 200) before updating
+`data/labels.jsonl` + `data/Fonti_OSINT.csv`**, the same standard as round
+10's The Citizen fix:
+
+- **Il Corriere della Sera** — the registered `xml2.corriereobjects.it/rss/homepage.xml`
+  is a legacy endpoint the site's own CDN keeps serving (200, valid XML,
+  byte-identical) without ever refreshing it; `www.corriere.it/rss/homepage.xml`
+  aliases to the exact same frozen body. The live site runs an entirely
+  different feed system, `dynamic-feed/rss/section/<name>.xml` — the
+  `homepage` section under it is also empty (0 items), but `cronache`
+  (general current-affairs, the traditional main section of an Italian daily)
+  has 100 items, newest published today. Registered feed now
+  `https://www.corriere.it/dynamic-feed/rss/section/cronache.xml`.
+- **The National UAE** — the registered `.../category/uae/?outputType=xml`
+  is live (`lastBuildDate` updates hourly) but the `uae` category itself has
+  been emptied to 0 items; `.../category/news/uae/?outputType=xml` (same UAE
+  scope, one path segment different) has 14 items, newest today. Registered
+  feed now includes the `news/` segment.
+- **Jerusalem Post** — the registered `rssfeedsheadlines.aspx` is frozen at
+  2025-06-16; `rssfeedsfrontpage.aspx` on the same host is live, newest item
+  today. Registered feed now `rssfeedsfrontpage.aspx`.
+- **World Daily News Report** — not actually stale so much as gone: its feed
+  URL now redirects to `aidesociale.ca`, an unrelated French-Canadian social-
+  aid site (a lapsed/repurposed domain, not a frozen cache — confirmed by
+  content, not just the redirect). Continuing to collect it would score an
+  unrelated third-party site under this source's label, worse than doing
+  nothing. `rss` nulled (round-9 precedent: label kept, catalogued, collection
+  stopped) rather than guessing a replacement for a domain that no longer
+  belongs to the outlet.
+
+**The other 7 label-10 feeds were investigated, not fixed** — no autodiscovery
+or section-guessing found live content, and unlike the four above these are
+low-value hoax/junk sites, not sources worth the same replacement-hunting
+effort: a defunct-but-still-resolving hoax blog is arguably consistent with
+its own label. Two are specifically worth flagging rather than silently
+leaving as "just another stale junk feed": **Veterans Today**'s domain now
+redirects to `vtforeignpolicy.com` (a real-world rebrand) and 403s this
+session; a future audit from an unblocked network could check whether its new
+domain's feed is alive. **Corriere del Corsaro**'s homepage genuinely still
+resolves and looks maintained (unlike the others, which look abandoned) —
+its `/feed/` endpoint may simply have moved; not chased further this round.
+
+**Two borderline cases flagged, not fixed** — genuinely ambiguous, so treated
+like `blocked`, not `dead`: **Crisis Group Alert** (label 95, one of only two
+sources at that label — the scarcest tier) is 21 days stale, but "Alert" is a
+crisis-escalation feed by design, and a three-week gap between qualifying
+events is plausible for that category rather than evidence of brokenness; its
+site blocks this session (403) so live content couldn't be cross-checked.
+**Diretta News.it** and **iNews24.it** are only 14–30 days stale, newly
+crossed the threshold this round — worth re-checking next round before
+concluding anything, not acting on a single borderline reading.
+
 ## Recommendation
 
-After round 11 the registry is close to clean but the sandboxed-host class
-has grown slightly: **2 `dead`** (ITV News, L'Orient Today — now confirmed
-404 across every round since 4/7, weakening the earlier "environment-specific"
-hedge), **2 `not-xml`** (David Icke, News Examiner — Cloudflare anti-bot
-interstitials returning 200/202 rather than 403/429, functionally the same
-block class as the next item, just missed by the script's status-code-based
-classifier), and **15 `blocked`**, all still positively evidenced as an
-IP-level sandbox block (rounds 7 and 10 agree, not UA-based) rather than a
-dead-feed signal — **17 feeds total** sit behind that same wall. One feed
-initially flagged `blocked` (Daily Maverick) turned out to be a genuinely
-dead/moved feed rather than a sandbox block and was fixed in round 7 (see
-above). The one duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda
-English) was resolved in round 9, and the one drifted URL found two weeks
-later (The Citizen) was resolved in round 10 — the registry has no shared
-feeds and, as of round 11, no *recoverable* dead feed left unfixed; round 11
-found no repeat of round 10's kind of fix (see above).
+After round 12 the registry has, for the first time, an honest accounting of
+both reachability and freshness: **2 `dead`** (ITV News, L'Orient Today —
+confirmed 404 across every round since 4/7), **1 `not-xml`** (News Examiner —
+Cloudflare anti-bot interstitial; David Icke, round 11's other `not-xml`,
+happened to clear on this round's request — ordinary flakiness of that block
+class, not a fix), **15 `blocked`** (same IP-level sandbox wall rounds 7 and
+10 positively evidenced, not UA-based — 16 feeds total sit behind it counting
+News Examiner), and **11 `stale`**, the new class this round adds: 4 fixed
+(Il Corriere della Sera, The National UAE, Jerusalem Post, World Daily News
+Report — see round 12 above), 7 low-value junk feeds investigated and left as
+is, 2 borderline cases flagged for re-check next round. One feed initially
+flagged `blocked` (Daily Maverick) turned out to be a genuinely dead/moved
+feed rather than a sandbox block and was fixed in round 7. The one
+duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda English) was resolved
+in round 9, and drifted URLs found later (The Citizen in round 10; Il
+Corriere della Sera, The National UAE, Jerusalem Post in round 12) are fixed
+as found — the registry has no shared feeds and no *recoverable* dead or
+stale feed left unfixed among the sources worth chasing.
 
 Remaining work, roughly in order of value:
 
-- **The 95-source calibration ceiling is a feed-health problem, not a
-  collection bug.** Round 11 was prompted by exactly this: `data/snapshots/`
-  merged via `cats.calibration.merge_snapshots` has been stuck at 95 unique
-  sources for weeks of near-daily collection, and this round's `ok` count is
-  also 95 — the two numbers are the same thing. Breaking the ceiling needs
-  either (a) recovering feeds from the sandboxed-block class below via a
+- **The 95-source calibration ceiling is a feed-*reachability* problem; round
+  12 adds that some of the 95 were feed-*freshness* zombies too.** Round 11
+  established that `data/snapshots/` merged via `cats.calibration.merge_snapshots`
+  has been stuck at 95 unique sources because the registry's `ok` count is
+  also 95. Round 12 refines that: 11 of those 95 were `stale` (contributing
+  nothing new to any snapshot regardless of how often collection runs), and 4
+  are now fixed — 3 legitimate sources (Corriere della Sera, The National
+  UAE, Jerusalem Post) should start contributing fresh messages again from
+  the next collection, and 1 garbage source (World Daily News Report) will
+  stop contributing an unrelated third-party site's content under its label.
+  The reachable-feed *count* stays near 95 either way; breaking that ceiling
+  still needs (a) recovering feeds from the sandboxed-block class below via a
   different network path, or (b) registering genuinely new sources (the
-  48 no-feed registry rows, or entirely new catalogue entries) — not more
-  collection runs against the current registry.
-- **Re-audit periodically, not just once.** Round 5 caught a fresh regression
-  (Il Giornale) that round 4 had left working — feed URLs drift over time
-  even after being "fixed." Re-run `research/feed_health_audit.py` before
-  each calibration pass, not just when chasing dead feeds.
-- **ITV News / L'Orient Today, the 15 `blocked` feeds, and David Icke /
-  News Examiner** (round 11's two new `not-xml` entries, same anti-bot wall,
-  just a different status code — see above): rounds 4-7 agree this class of
-  sandboxed session sits behind an
-  IP-level block for a wide swath of news-site WAFs — UA changes don't help
-  (round 7 tried four, including a legitimate crawler UA and no UA at all).
-  Further retries from this kind of session aren't informative for any of
-  these 17 feeds; the next productive step for all of them together is
+  49 no-feed registry rows, or entirely new catalogue entries) — but the
+  *content* behind the existing 95 is measurably less stale after this round.
+- **Re-audit periodically, not just once — and now that means `stale` too.**
+  Round 5 caught a fresh regression (Il Giornale) that round 4 had left
+  working — feed URLs drift even after being "fixed." Round 12 adds a
+  second reason: a feed can pass every reachability check forever while
+  silently serving the same cached response (Corriere della Sera did, for
+  400+ days, before anyone compared its content against the calendar). Only
+  a periodic re-run catches either regression before it accumulates months
+  of silent data loss — re-run `research/feed_health_audit.py` before each
+  calibration pass, not just when chasing dead feeds.
+- **ITV News / L'Orient Today, the 15 `blocked` feeds, and News Examiner**
+  (still `not-xml`, same anti-bot wall as `blocked`, just a different status
+  code — see round 11): rounds 4-7 agree this class of sandboxed session sits
+  behind an IP-level block for a wide swath of news-site WAFs — UA changes
+  don't help (round 7 tried four, including a legitimate crawler UA and no UA
+  at all). Further retries from this kind of session aren't informative for
+  any of these 16 feeds; the next productive step for all of them together is
   verifying from a genuinely different network path (a contributor's own
   machine, or otherwise outside this sandboxing), not more probing from
   here.

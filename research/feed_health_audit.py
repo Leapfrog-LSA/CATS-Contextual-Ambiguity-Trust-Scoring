@@ -7,11 +7,25 @@ This script checks every feed in data/labels.jsonl so the rest are found on
 purpose, not by accident.
 
 It classifies each feed:
-  * ok       — HTTP 200 and the body looks like XML/RSS/Atom
+  * ok       — HTTP 200, looks like XML/RSS/Atom, and its newest item is recent
+  * stale    — HTTP 200, valid XML/RSS/Atom, but its own newest item is more than
+               STALE_AFTER_DAYS old (a feed that answers correctly but has
+               stopped publishing — see *The stale case*, below)
   * dead     — 404/410 or DNS/connection failure (genuinely broken → fix/replace)
   * blocked  — 403/429 or timeout (host likely blocks this User-Agent or is slow;
                ambiguous, not necessarily dead — flag, don't auto-remove)
   * not-xml  — 200 but the body is not a feed (redirect to an HTML page, etc.)
+
+The stale case (2026-08-21). `ok`/`dead`/`blocked`/`not-xml` only ever checked
+*reachability* — HTTP status and body shape — never whether the feed's own
+content is current. That misses a real failure mode: Il Corriere della Sera's
+registered feed (the same one that motivated this script) came back to HTTP
+200 + valid XML after its 404 was fixed, but had silently frozen at its
+2024-05-13 content — every request served the identical cached body, for over
+a year, and nothing here would have called it anything but `ok`. A recalibration
+checkpoint (`docs/calibration_findings_2026-08-21.md`) found 15 of 95 merged
+sources in the same state. `stale` compares each feed's own newest
+`<pubDate>`/`<updated>` against today to catch this.
 
 It also reports *shared* feeds — two registry rows pointing at the same URL.
 Those are not a health problem (the feed answers fine) but a dataset one: each
@@ -32,9 +46,12 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
+import re
 import time
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 
@@ -44,6 +61,39 @@ _XML_HINTS = (b"<?xml", b"<rss", b"<feed", b"<rdf")
 _RETRY_BACKOFF_S = (2.0, 5.0)  # 429 is "try later", not "blocked" — a couple of
 # spaced retries tells the two apart (2026-07-24: Strafatti Quotidiani flagged
 # 'blocked' on a single 429 that a same-session retry immediately cleared).
+
+# How long a feed's own newest item can go unrefreshed before it counts as
+# 'stale' rather than 'ok'. Generous on purpose: every frozen feed found on
+# 2026-08-21 had been stuck for 30+ days (most for months to years), so this
+# is well clear of an ordinary quiet week and still catches all of them.
+STALE_AFTER_DAYS = 14
+
+_DATE_TAG_RE = re.compile(rb"<(?:pubDate|updated|published)>([^<]+)</(?:pubDate|updated|published)>", re.I)
+
+
+def newest_item_date(body: bytes) -> Optional[datetime]:
+    """The most recent parseable item timestamp in a feed body, or None.
+
+    RSS/Atom list items newest-first by convention, so the first parseable
+    date tag is taken as the feed's newest — not the max of all of them, so
+    one corrupt future-dated item can't hide genuine staleness (the same
+    failure mode found in the calibration dataset, see the module docstring).
+    Tries RFC 822 (RSS ``pubDate``) first, then ISO 8601 (Atom
+    ``updated``/``published``); a tag neither parses as is skipped, not fatal.
+    """
+    for raw in _DATE_TAG_RE.findall(body):
+        text = raw.decode("utf-8", errors="replace").strip()
+        try:
+            dt = parsedate_to_datetime(text)
+        except (TypeError, ValueError):
+            try:
+                dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    return None
 
 
 def classify(url: str, timeout: float) -> Tuple[str, str]:
@@ -68,9 +118,14 @@ def classify(url: str, timeout: float) -> Tuple[str, str]:
     if r.status_code >= 400:
         return "blocked", f"http:{r.status_code}"
     head = r.content[:512].lstrip().lower()
-    if any(h in head for h in _XML_HINTS):
-        return "ok", f"http:{r.status_code}"
-    return "not-xml", f"http:{r.status_code}"
+    if not any(h in head for h in _XML_HINTS):
+        return "not-xml", f"http:{r.status_code}"
+    newest = newest_item_date(r.content)
+    if newest is not None:
+        age = datetime.now(timezone.utc) - newest
+        if age > timedelta(days=STALE_AFTER_DAYS):
+            return "stale", f"newest:{newest.date().isoformat()} ({age.days}d ago)"
+    return "ok", f"http:{r.status_code}"
 
 
 def normalise_feed(url: str) -> str:
@@ -111,7 +166,13 @@ def main() -> None:
             print(f"  {url}\n    {', '.join(sorted(sids))}")
         print("  Fix: blank the wrong row's 'rss' (keeps the source catalogued, stops collection).\n")
 
-    results: Dict[str, List[Tuple[str, str, float, str]]] = {"dead": [], "blocked": [], "not-xml": [], "ok": []}
+    results: Dict[str, List[Tuple[str, str, float, str]]] = {
+        "dead": [],
+        "blocked": [],
+        "not-xml": [],
+        "stale": [],
+        "ok": [],
+    }
 
     def _check(item: Tuple[str, str, float]) -> Tuple[str, str, float, str, str]:
         sid, url, label = item
@@ -122,10 +183,10 @@ def main() -> None:
         for sid, url, label, status, detail in ex.map(_check, feeds):
             results[status].append((sid, url, label, detail))
 
-    for status in ("ok", "blocked", "not-xml", "dead"):
+    for status in ("ok", "stale", "blocked", "not-xml", "dead"):
         print(f"  {status:<9} {len(results[status])}")
 
-    for status in ("dead", "not-xml"):
+    for status in ("dead", "not-xml", "stale"):
         if results[status]:
             print(f"\n{status.upper()} — action needed (source | label | feed | detail):")
             for sid, url, label, detail in sorted(results[status], key=lambda t: t[2]):
@@ -139,7 +200,9 @@ def main() -> None:
     print(
         "\nNote: 'dead' feeds silently drop their source from every collection — fix or\n"
         "replace them (verify a working feed, then update data/labels.jsonl + the\n"
-        "catalogue). 'blocked' may just refuse this User-Agent; re-check before removing."
+        "catalogue). 'stale' feeds answer correctly but have stopped publishing —\n"
+        f"same fix, just harder to notice (no error, just silence past {STALE_AFTER_DAYS}d).\n"
+        "'blocked' may just refuse this User-Agent; re-check before removing."
     )
 
 

@@ -45,7 +45,7 @@
 {"source_id": "Corriere Immigrazione", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it/immigrazione", "rss": null}
 {"source_id": "Digi24 Romania", "source_type": "news", "label": 85.0, "url": "https://www.digi24.ro", "rss": "https://www.digi24.ro/rss"}
 {"source_id": "Euromaidan Press", "source_type": "news", "label": 85.0, "url": "https://euromaidanpress.com", "rss": "https://euromaidanpress.com/feed/"}
-{"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://xml2.corriereobjects.it/rss/homepage.xml"}
+{"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://www.corriere.it/dynamic-feed/rss/section/cronache.xml"}
 {"source_id": "Il Fatto Quotidiano", "source_type": "news", "label": 85.0, "url": "https://www.ilfattoquotidiano.it", "rss": "https://www.ilfattoquotidiano.it/feed/"}
 {"source_id": "Il Giornale", "source_type": "news", "label": 70.0, "url": "https://www.ilgiornale.it", "rss": "https://www.ilgiornale.it/arc/outboundfeeds/rss/"}
 {"source_id": "Il Post", "source_type": "news", "label": 85.0, "url": "https://www.ilpost.it", "rss": "https://www.ilpost.it/feed/"}
@@ -113,9 +113,9 @@
 {"source_id": "Arab News", "source_type": "news", "label": 50.0, "url": "https://www.arabnews.com", "rss": "https://www.arabnews.com/rss.xml"}
 {"source_id": "Gulf News", "source_type": "news", "label": 50.0, "url": "https://gulfnews.com", "rss": "https://gulfnews.com/feed/"}
 {"source_id": "Haaretz English", "source_type": "news", "label": 85.0, "url": "https://www.haaretz.com", "rss": "https://www.haaretz.com/srv/all-headlines-rss"}
-{"source_id": "Jerusalem Post", "source_type": "news", "label": 70.0, "url": "https://www.jpost.com", "rss": "https://www.jpost.com/rss/rssfeedsheadlines.aspx"}
+{"source_id": "Jerusalem Post", "source_type": "news", "label": 70.0, "url": "https://www.jpost.com", "rss": "https://www.jpost.com/rss/rssfeedsfrontpage.aspx"}
 {"source_id": "Middle East Eye", "source_type": "news", "label": 70.0, "url": "https://www.middleeasteye.net", "rss": "https://www.middleeasteye.net/rss"}
-{"source_id": "The National UAE", "source_type": "news", "label": 50.0, "url": "https://www.thenationalnews.com", "rss": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/uae/?outputType=xml"}
+{"source_id": "The National UAE", "source_type": "news", "label": 50.0, "url": "https://www.thenationalnews.com", "rss": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/news/uae/?outputType=xml"}
 {"source_id": "Times of Israel", "source_type": "news", "label": 70.0, "url": "https://www.timesofisrael.com", "rss": "https://www.timesofisrael.com/feed/"}
 {"source_id": "Bangkok Post", "source_type": "news", "label": 50.0, "url": "https://www.bangkokpost.com", "rss": "https://www.bangkokpost.com/rss/data/topstories.xml"}
 {"source_id": "Caixin China", "source_type": "news", "label": 50.0, "url": "https://www.caixin.com", "rss": null}
@@ -149,7 +149,7 @@
 {"source_id": "Empire News", "source_type": "news", "label": 10.0, "url": "https://empirenews.net", "rss": "https://empirenews.net/feed/"}
 {"source_id": "Empire Sports News", "source_type": "news", "label": 10.0, "url": "https://empiresports.co", "rss": "https://empiresports.co/feed/"}
 {"source_id": "News Examiner", "source_type": "news", "label": 10.0, "url": "https://newsexaminer.net", "rss": "https://newsexaminer.net/feed/"}
-{"source_id": "World Daily News Report", "source_type": "news", "label": 10.0, "url": "https://worldnewsdailyreport.com", "rss": "https://worldnewsdailyreport.com/feed/"}
+{"source_id": "World Daily News Report", "source_type": "news", "label": 10.0, "url": "https://worldnewsdailyreport.com", "rss": null}
 {"source_id": "Natural News", "source_type": "news", "label": 10.0, "url": "https://naturalnews.com", "rss": "https://naturalnews.com/rss.xml"}
 {"source_id": "Global Research", "source_type": "news", "label": 30.0, "url": "https://globalresearch.ca", "rss": "https://globalresearch.ca/feed/"}
 {"source_id": "Before It's News", "source_type": "news", "label": 30.0, "url": "https://beforeitsnews.com", "rss": "https://beforeitsnews.com/rss"}

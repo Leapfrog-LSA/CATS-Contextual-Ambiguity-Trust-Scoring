@@ -9,6 +9,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Feed-health audit gains a `stale` classification, and 4 stale feeds are
+  fixed (round 12)** (`research/feed_health_audit.py`,
+  `docs/feed_health_2026-07.md`). Follow-up to the same-day recalibration
+  checkpoint's finding that 15 of 95 merged sources hadn't produced a new
+  message in 30+ days despite being reachable and `ok`: `classify()` now
+  compares each feed's own newest `<pubDate>`/`<updated>` against today
+  (>14 days = `stale`, distinct from `ok`), since a feed can return HTTP 200 +
+  valid XML forever while silently serving the same cached body — exactly
+  what happened to `Il Corriere della Sera`'s registered feed, the source
+  that motivated writing this script. Full-registry re-run found 11 `stale`
+  feeds; **4 fixed, each verified live before updating the registry**: `Il
+  Corriere della Sera` (its feed system moved to
+  `dynamic-feed/rss/section/cronache.xml`, frozen since 2024-05-13 under the
+  old URL), `The National UAE` (`.../category/uae/` emptied to 0 items,
+  `.../category/news/uae/` still live), `Jerusalem Post`
+  (`rssfeedsheadlines.aspx` frozen since 2025-06-16, `rssfeedsfrontpage.aspx`
+  live), and `World Daily News Report` (feed URL now redirects to an
+  unrelated site, `aidesociale.ca` — `rss` nulled rather than guessing a
+  replacement, per the round-9 precedent). 7 low-value stale feeds and 2
+  borderline cases (including `Crisis Group Alert`, label 95) investigated
+  and flagged, not chased further — see `docs/feed_health_2026-07.md` →
+  *Round 12*.
 - **Recalibration checkpoint (2026-08-21): same-sign edge, smaller magnitude,
   plus two new data-quality findings** (`docs/calibration_findings_2026-08-21.md`).
   Re-ran the exact 07-25 message-axis pipeline on the pool grown from 59 to 95
