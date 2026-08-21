@@ -8,6 +8,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Feed-health audit round 11** (`docs/feed_health_2026-07.md`), prompted
+  by the daily/weekly RSS collection sitting at 95 unique sources for weeks
+  despite near-daily runs. Confirms the two are the same number: the
+  registry's `ok` feed count *is* the calibration source ceiling, not a
+  collection bug. No new recoverable feed found (unlike round 10's
+  query-parameter fix) — two feeds newly reclassified `not-xml`
+  (David Icke, News Examiner) are Cloudflare anti-bot interstitials
+  returning 200/202, the same block class as the 15 already-`blocked`
+  feeds and ITV News/L'Orient Today's persistent 404s, not a URL-drift case.
+  Breaking the 95-source ceiling needs either a different network path for
+  the 17 sandboxed feeds or registering genuinely new sources — not more
+  collection runs against the current registry.
+
 ### Fixed
 - **The weekly RSS collection workflow could silently clobber or lose a
   same-day snapshot** (`.github/workflows/collect-rss.yml`). It checks out
