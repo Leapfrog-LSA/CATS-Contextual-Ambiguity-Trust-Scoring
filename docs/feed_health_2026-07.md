@@ -12,12 +12,12 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) |
-|---|---:|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | 97 | **98** |
-| dead | 35 | 9 | 10 | 8 | 2 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | 0 | **0** |
-| blocked | 17 | 16 | 16 | 16 | 16 | **14** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | 98 | **95** |
+| dead | 35 | 9 | 10 | 8 | 2 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | **2** |
+| blocked | 17 | 16 | 16 | 16 | 16 | 14 | **15** |
 
 (The "before round 4" counts drifted slightly from the round 1–3 numbers merged
 in PR #42 — two days of natural feed flakiness, not a regression. The feed
@@ -350,27 +350,77 @@ Simba/Yanga football). `data/labels.jsonl` and `data/Fonti_OSINT.csv`
 updated (byte-exact, CRLF preserved on the CSV). Registry stays at 114 feeds
 — a URL correction, not a row added or removed.
 
+## Round 11 (2026-08-21) — no new fix; confirms the 95-source ceiling
+
+Re-ran two and a half weeks after round 10, prompted by the daily/weekly
+collection's source count sitting at 95 unique sources for that entire
+stretch despite near-daily runs (`data/snapshots/`, merged via
+`cats.calibration.merge_snapshots`) — this audit's **95 `ok`** is the same
+number, confirming the collector isn't losing sources on its own: the feed
+registry itself is the ceiling.
+
+**ITV News and L'Orient Today are still 404** — the same two feeds every
+round has flagged since round 4/7, now including this one. That consistency
+across this many independent sessions weakens the "environment-specific"
+hedge from earlier rounds; nothing here can confirm or rule that out
+further without literally trying from a different network, but treating
+them as genuinely dead is now the better prior.
+
+**Two new `not-xml` entries, not a URL-drift case like The Citizen**:
+`David Icke` (`http:202`, Cloudflare `sg-captcha: challenge` header,
+redirects to `/.well-known/sgcaptcha/`) and `News Examiner` (`http:200`
+serving a Cloudflare JS interstitial, "One moment, please..."). Checked the
+raw response for both — same class of anti-bot wall as the 15 `blocked`
+feeds, just returning a status code (200/202) the script's classifier
+doesn't bucket as `blocked`. No fix available from this network; grouping
+them with the `blocked` list for the purposes of the recommendation below
+(17 total sandboxed feeds now, not 15).
+
+**No net-new recoverable feed this round** — round 10's kind of find (a
+URL that only needed a query-parameter fix) didn't repeat. `ok` dropped from
+98 (round 10, post-fix) to 95 (-3): 2 to the new not-xml entries above, 1
+more to the `blocked` bucket (ordinary week-to-week churn among sandboxed
+hosts, not investigated further given the class is already known-blocked
+from this network).
+
 ## Recommendation
 
-After round 10 the registry is close to clean: **0 `not-xml`, 2 `dead`**
-(ITV News, L'Orient Today — both believed environment-specific, unchanged
-across three rounds), and **14 `blocked`**, all still positively evidenced as
-an IP-level sandbox block (rounds 7 and 10 agree, not UA-based) rather than a
-dead-feed signal. One feed initially flagged `blocked` (Daily Maverick)
-turned out to be a genuinely dead/moved feed rather than a sandbox block and
-was fixed in round 7 (see above). The one duplicate-URL row (Ukrainska Pravda
-/ Ukrainska Pravda English) was resolved in round 9, and the one drifted URL
-found two weeks later (The Citizen) was resolved in round 10 — the registry
-has no shared feeds and, as of round 10, no known-dead feed left uninspected.
+After round 11 the registry is close to clean but the sandboxed-host class
+has grown slightly: **2 `dead`** (ITV News, L'Orient Today — now confirmed
+404 across every round since 4/7, weakening the earlier "environment-specific"
+hedge), **2 `not-xml`** (David Icke, News Examiner — Cloudflare anti-bot
+interstitials returning 200/202 rather than 403/429, functionally the same
+block class as the next item, just missed by the script's status-code-based
+classifier), and **15 `blocked`**, all still positively evidenced as an
+IP-level sandbox block (rounds 7 and 10 agree, not UA-based) rather than a
+dead-feed signal — **17 feeds total** sit behind that same wall. One feed
+initially flagged `blocked` (Daily Maverick) turned out to be a genuinely
+dead/moved feed rather than a sandbox block and was fixed in round 7 (see
+above). The one duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda
+English) was resolved in round 9, and the one drifted URL found two weeks
+later (The Citizen) was resolved in round 10 — the registry has no shared
+feeds and, as of round 11, no *recoverable* dead feed left unfixed; round 11
+found no repeat of round 10's kind of fix (see above).
 
 Remaining work, roughly in order of value:
 
+- **The 95-source calibration ceiling is a feed-health problem, not a
+  collection bug.** Round 11 was prompted by exactly this: `data/snapshots/`
+  merged via `cats.calibration.merge_snapshots` has been stuck at 95 unique
+  sources for weeks of near-daily collection, and this round's `ok` count is
+  also 95 — the two numbers are the same thing. Breaking the ceiling needs
+  either (a) recovering feeds from the sandboxed-block class below via a
+  different network path, or (b) registering genuinely new sources (the
+  48 no-feed registry rows, or entirely new catalogue entries) — not more
+  collection runs against the current registry.
 - **Re-audit periodically, not just once.** Round 5 caught a fresh regression
   (Il Giornale) that round 4 had left working — feed URLs drift over time
   even after being "fixed." Re-run `research/feed_health_audit.py` before
   each calibration pass, not just when chasing dead feeds.
-- **ITV News / L'Orient Today, and the remaining 15 `blocked` feeds**:
-  rounds 4-7 agree this class of sandboxed session sits behind an
+- **ITV News / L'Orient Today, the 15 `blocked` feeds, and David Icke /
+  News Examiner** (round 11's two new `not-xml` entries, same anti-bot wall,
+  just a different status code — see above): rounds 4-7 agree this class of
+  sandboxed session sits behind an
   IP-level block for a wide swath of news-site WAFs — UA changes don't help
   (round 7 tried four, including a legitimate crawler UA and no UA at all).
   Further retries from this kind of session aren't informative for any of
