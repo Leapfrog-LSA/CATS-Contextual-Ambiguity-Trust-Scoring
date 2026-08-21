@@ -9,6 +9,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Recalibration checkpoint (2026-08-21): same-sign edge, smaller magnitude,
+  plus two new data-quality findings** (`docs/calibration_findings_2026-08-21.md`).
+  Re-ran the exact 07-25 message-axis pipeline on the pool grown from 59 to 95
+  sources (~3 to ~7 weeks). The shipped weights still beat the static WP 4.1
+  baseline (Spearman +0.078 vs +0.033, concordance 0.537 vs 0.515) — the 07-25
+  finding replicates — but every margin shrank rather than grew (07-25:
+  +0.127/0.563), and predicted-band diversity for the shipped weights
+  collapsed (74/75 holdout sources called `medium_high`). Two contributing
+  causes found: (1) two single-record timestamp bugs — a `1970-01-01` epoch
+  sentinel (2 CNET messages, a missing-pubDate default, not a real date) and a
+  future-dated CMS artifact (`La Repubblica`, stamped two weeks ahead via its
+  own pre-scheduled URL) — that make `split.py`'s printed window diagnostic
+  unreliable (it takes a plain pooled min/max) though the actual split point
+  is essentially unaffected; (2) **15 of the 95 merged sources (16%) have not
+  produced a new message in 30+ days**, several not in years, including
+  `Il Corriere della Sera` (stale again, 830 days — the exact source that
+  motivated writing `research/feed_health_audit.py` in the first place) and 8
+  of the label-10 disinformation sources (already the scarcest class). These
+  feeds are all audit-`ok` (HTTP 200, valid XML) — the round-11 audit checks
+  reachability, not content freshness, so it cannot see this. `data/calibrated_weights.json`
+  unchanged — this is a checkpoint, not a recalibration decision.
+
 - **Feed-health audit round 11** (`docs/feed_health_2026-07.md`), prompted
   by the daily/weekly RSS collection sitting at 95 unique sources for weeks
   despite near-daily runs. Confirms the two are the same number: the
