@@ -45,7 +45,7 @@
 {"source_id": "Corriere Immigrazione", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it/immigrazione", "rss": null}
 {"source_id": "Digi24 Romania", "source_type": "news", "label": 85.0, "url": "https://www.digi24.ro", "rss": "https://www.digi24.ro/rss"}
 {"source_id": "Euromaidan Press", "source_type": "news", "label": 85.0, "url": "https://euromaidanpress.com", "rss": "https://euromaidanpress.com/feed/"}
-{"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://www.corriere.it/dynamic-feed/rss/section/cronache.xml"}
+{"source_id": "Il Corriere della Sera", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it", "rss": "https://xml2.corriereobjects.it/rss/cronaca.xml"}
 {"source_id": "Il Fatto Quotidiano", "source_type": "news", "label": 85.0, "url": "https://www.ilfattoquotidiano.it", "rss": "https://www.ilfattoquotidiano.it/feed/"}
 {"source_id": "Il Giornale", "source_type": "news", "label": 70.0, "url": "https://www.ilgiornale.it", "rss": "https://www.ilgiornale.it/arc/outboundfeeds/rss/"}
 {"source_id": "Il Post", "source_type": "news", "label": 85.0, "url": "https://www.ilpost.it", "rss": "https://www.ilpost.it/feed/"}

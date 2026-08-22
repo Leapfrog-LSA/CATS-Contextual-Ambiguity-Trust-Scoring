@@ -12,20 +12,26 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 (2026-08-21, 113 feeds) |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | **84** |
-| stale | — | — | — | — | — | — | — | **11** |
-| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | **1** |
-| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | **15** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 as shipped (2026-08-21, 113 feeds) | Round 12 corrected (2026-08-22, 113 feeds) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | 84 | **78** |
+| stale | — | — | — | — | — | — | — | 11 | **12** |
+| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | 1 | **6** |
+| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | 15 | **15** |
 
 Round 12's `ok` count is not a regression from round 11's 95 — it is the same
 95 feeds split honestly for the first time. `stale` is a new classification
-(see below); every one of its 11 feeds would have scored `ok` under every
-prior round's classifier, silently. The two `ok`+`stale` counts still sum to
-95, matching round 11 exactly; the registry feed count also dropped by one
-(114→113, `World Daily News Report` nulled — see below).
+(see below); every one of its feeds would have scored `ok` under every prior
+round's classifier, silently. The "as shipped" column undercounted both
+`stale` and `not-xml`, because its check only confirmed a feed *looked* like
+valid XML, not that the collector could actually use it — see *Round 12
+correction*, below, which tightened the check to call the collector's own
+parser and found 6 more feeds (5 `not-xml`, `Il Corriere della Sera` itself
+moved from `ok` to `stale`) that the original check had missed. The
+"corrected" column is the honest count; the registry feed count also
+dropped by one across both (114→113, `World Daily News Report` nulled —
+see below).
 
 (The "before round 4" counts drifted slightly from the round 1–3 numbers merged
 in PR #42 — two days of natural feed flakiness, not a regression. The feed
@@ -477,28 +483,82 @@ site blocks this session (403) so live content couldn't be cross-checked.
 crossed the threshold this round — worth re-checking next round before
 concluding anything, not acting on a single borderline reading.
 
+## Round 12 correction (2026-08-22) — the Corriere della Sera fix didn't work
+
+The daily collection run the morning after round 12 surfaced the mistake
+directly: `Il Corriere della Sera`'s new registered feed
+(`corriere.it/dynamic-feed/rss/section/cronache.xml`) failed in the real
+collector with `feed carries a DTD; refusing to parse`
+(`cats/calibration/collect_rss.py`'s defensive rejection of any `<!DOCTYPE`,
+a deliberate XXE guard, not a bug to route around). Round 12's verification
+checked that the URL returned 200 + valid-*looking* XML with a recent
+`<pubDate>` — it never checked whether the collector's own parser, with its
+stricter and deliberately conservative rules, would accept the body. Every
+URL under `corriere.it/dynamic-feed/rss/section/*` emits a `<!DOCTYPE xml>`
+preamble (harmless in isolation — no external entity — but the guard is a
+blanket policy on purpose, and loosening it for one feed is a security
+decision, not made here). That entire feed system is therefore permanently
+unusable for this collector regardless of which section is picked.
+
+**Fixed properly**: back on the legacy `xml2.corriereobjects.it` system
+(no DOCTYPE), most sections are frozen same as `homepage` was, but `cronaca`
+(singular — general news) is the freshest, last updated 2026-06-03 — 80 days
+stale as of today, still `stale` by the 14-day threshold, but genuinely
+parseable and far less stale than the 830-day `homepage` it replaces.
+Registered feed now `https://xml2.corriereobjects.it/rss/cronaca.xml`,
+verified against `cats.calibration.collect_rss.parse_feed` directly (18
+messages extracted), not just against an HTTP client. The National UAE and
+Jerusalem Post's round-12 fixes were checked the same way today and are
+genuinely fine (parse cleanly, newest item today).
+
+**Structural fix, not just a one-off correction**: `classify()` no longer
+reimplements a parallel "is this XML" check — it calls
+`cats.calibration.collect_rss.parse_feed` on the response body directly, so
+`ok`/`stale` now mean "the real collector can use this," by construction,
+not "looks like it should work." Re-running the full registry with the
+corrected check also caught **5 more feeds that the old XML-shape heuristic
+had been silently over-crediting as `ok`** — they return 200 and something
+XML-shaped, but the collector extracts zero usable messages from any of
+them: `Natural News`, `Sixth Tone`, `The Hill Tech`, `Berlingske Business`,
+`Le Parisien`, and the registered clone-domain row `https://bild.pics`
+(a known impersonation domain, separate from the real `Bild`, label 10 —
+not a registry bug). None chased this round — same "flag, don't guess"
+treatment as the round-12 junk feeds, now visible for the first time instead
+of silently miscounted.
+
 ## Recommendation
 
-After round 12 the registry has, for the first time, an honest accounting of
-both reachability and freshness: **2 `dead`** (ITV News, L'Orient Today —
-confirmed 404 across every round since 4/7), **1 `not-xml`** (News Examiner —
-Cloudflare anti-bot interstitial; David Icke, round 11's other `not-xml`,
-happened to clear on this round's request — ordinary flakiness of that block
-class, not a fix), **15 `blocked`** (same IP-level sandbox wall rounds 7 and
-10 positively evidenced, not UA-based — 16 feeds total sit behind it counting
-News Examiner), and **11 `stale`**, the new class this round adds: 4 fixed
-(Il Corriere della Sera, The National UAE, Jerusalem Post, World Daily News
-Report — see round 12 above), 7 low-value junk feeds investigated and left as
-is, 2 borderline cases flagged for re-check next round. One feed initially
-flagged `blocked` (Daily Maverick) turned out to be a genuinely dead/moved
-feed rather than a sandbox block and was fixed in round 7. The one
-duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda English) was resolved
-in round 9, and drifted URLs found later (The Citizen in round 10; Il
-Corriere della Sera, The National UAE, Jerusalem Post in round 12) are fixed
-as found — the registry has no shared feeds and no *recoverable* dead or
-stale feed left unfixed among the sources worth chasing.
+After the round 12 correction the registry has, for the first time, an
+honest accounting of reachability, freshness, *and* actual collector
+compatibility: **2 `dead`** (ITV News, L'Orient Today — confirmed 404 across
+every round since 4/7), **6 `not-xml`** (News Examiner, a Cloudflare anti-bot
+interstitial — David Icke, round 11's other `not-xml`, happened to clear on
+this round's request, ordinary flakiness of that block class, not a fix —
+plus 5 newly surfaced by the corrected check: Natural News, Sixth Tone, The
+Hill Tech, Berlingske Business, Le Parisien, and the clone-domain row
+`https://bild.pics`, none previously distinguishable from a working feed
+under the old XML-shape heuristic), **15 `blocked`** (same IP-level sandbox
+wall rounds 7 and 10 positively evidenced, not UA-based), and **12 `stale`**:
+4 fixed round 12 (Il Corriere della Sera — corrected again the next day after
+its first fix turned out collector-incompatible, see *Round 12 correction* —
+The National UAE, Jerusalem Post, World Daily News Report), 7 low-value junk
+feeds investigated and left as is, 2 borderline cases flagged for re-check
+next round. One feed initially flagged `blocked` (Daily Maverick) turned out
+to be a genuinely dead/moved feed rather than a sandbox block and was fixed
+in round 7. The one duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda
+English) was resolved in round 9, and drifted URLs found later (The Citizen
+in round 10; Il Corriere della Sera, The National UAE, Jerusalem Post in
+round 12) are fixed as found — the registry has no shared feeds and no
+*recoverable* dead or stale feed left unfixed among the sources worth
+chasing.
 
 Remaining work, roughly in order of value:
+
+- **The 5 newly surfaced `not-xml` feeds** (Natural News, Sixth Tone, The
+  Hill Tech, Berlingske Business, Le Parisien) were invisible under every
+  prior round's classifier — worth the same investigation the round-12 fixes
+  got (autodiscovery / section-guessing) next time this doc is revisited, not
+  chased in the same session that found them.
 
 - **The 95-source calibration ceiling is a feed-*reachability* problem; round
   12 adds that some of the 95 were feed-*freshness* zombies too.** Round 11

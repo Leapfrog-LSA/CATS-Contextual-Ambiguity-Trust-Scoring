@@ -8,6 +8,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **Round 12's `Il Corriere della Sera` fix didn't actually work** — caught the
+  next morning when the daily collection run logged `feed carries a DTD;
+  refusing to parse` for it. The round-12 replacement feed
+  (`corriere.it/dynamic-feed/rss/section/cronache.xml`) was verified with an
+  HTTP client that confirmed 200 + valid-looking XML with a recent `pubDate`,
+  but never checked against the collector's own parser, which deliberately
+  rejects any document carrying a `<!DOCTYPE` as an XXE guard
+  (`cats/calibration/collect_rss.py`) — every URL under that feed system emits
+  one, so the "fix" was permanently unusable regardless of which section was
+  picked. Re-registered to the legacy `xml2.corriereobjects.it/rss/cronaca.xml`
+  (no DOCTYPE, freshest surviving section on that system, 80 days stale vs the
+  830-day-stale `homepage` it replaces) and verified this time by calling
+  `cats.calibration.collect_rss.parse_feed` directly, not just an HTTP client.
+  **`research/feed_health_audit.py`'s `classify()` now calls `parse_feed`
+  itself** instead of a separate XML-shape heuristic, so `ok`/`stale` mean
+  "the collector can actually use this" by construction — re-running the full
+  registry with the corrected check also caught 5 more feeds (Natural News,
+  Sixth Tone, The Hill Tech, Berlingske Business, Le Parisien) the old
+  heuristic had been silently over-crediting as `ok`. See
+  `docs/feed_health_2026-07.md` → *Round 12 correction*.
+
 ### Added
 - **Feed-health audit gains a `stale` classification, and 4 stale feeds are
   fixed (round 12)** (`research/feed_health_audit.py`,
