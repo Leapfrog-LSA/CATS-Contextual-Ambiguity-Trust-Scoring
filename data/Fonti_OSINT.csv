@@ -16,8 +16,8 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Axios,https://www.axios.com,,EN,,,News concise
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Axios Future,https://www.axios.com/future,https://www.axios.com/rss,EN,,,Tech/Future
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Barbados Today,https://barbadostoday.bb,,EN,,,Barbados
-📰 Media & Testate Giornalistiche,Globali & Internazionali,BBC News,https://www.bbc.com/news,,EN,,,Copertura globale — homepage
-📰 Media & Testate Giornalistiche,Globali & Internazionali,BBC News World,https://www.bbc.com/news/world,,EN,,,Copertura globale
+📰 Media & Testate Giornalistiche,Globali & Internazionali,BBC News,https://www.bbc.com/news,https://feeds.bbci.co.uk/news/rss.xml,EN,,,Copertura globale — homepage
+📰 Media & Testate Giornalistiche,Globali & Internazionali,BBC News World,https://www.bbc.com/news/world,https://feeds.bbci.co.uk/news/world/rss.xml,EN,,,Copertura globale
 📰 Media & Testate Giornalistiche,Globali & Internazionali,BIRN Balkan,https://birn.eu.com,,,Balcani,,Network
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Boston Globe,https://www.bostonglobe.com,,EN,,,Boston
 📰 Media & Testate Giornalistiche,Globali & Internazionali,Breaking Defense,https://breakingdefense.com,,EN,,,Difesa globale
@@ -189,7 +189,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The Drum,https://www.thedrum.com,https://www.thedrum.com/rss.xml,EN,,,Marketing Media
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The Economist,https://www.economist.com,,EN,,,Analisi settimanale
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The Examination,https://theexamination.org,,,Globale,,Sanità globale
-📰 Media & Testate Giornalistiche,Globali & Internazionali,The Hill,https://thehill.com,,EN,,,USA Congresso
+📰 Media & Testate Giornalistiche,Globali & Internazionali,The Hill,https://thehill.com,https://thehill.com/feed/?feed=partnerfeed-news-feed&format=rss,EN,,,USA Congresso
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The Hill Tech,https://thehill.com/policy/technology,https://thehill.com/news/technology/feed,EN,,,Policy Tech
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The Nevada Independent,https://thenevadaindependent.com,,EN,,,Nevada investigativo
 📰 Media & Testate Giornalistiche,Globali & Internazionali,The New Republic,https://newrepublic.com,,EN,,,USA — politica e cultura
@@ -808,7 +808,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Faro de Vigo,https://www.farodevigo.es,,ES/GL,,,"Galizia — Vigo, il più antico di Spagna"
 📰 Media & Testate Giornalistiche,Europa Occidentale,FAZ,https://www.faz.net,,DE,,,Germania conservatore
 📰 Media & Testate Giornalistiche,Europa Occidentale,Focus Online,https://www.focus.de,https://www.focus.de/rss/index.rss,DE,,,Magazine DE
-📰 Media & Testate Giornalistiche,Europa Occidentale,France 24,https://www.france24.com,,EN/FR,,,Prospettiva francese
+📰 Media & Testate Giornalistiche,Europa Occidentale,France 24,https://www.france24.com,https://www.france24.com/en/rss,EN/FR,,,Prospettiva francese
 📰 Media & Testate Giornalistiche,Europa Occidentale,France 24 Français,https://www.france24.com/fr,https://www.france24.com/fr/rss,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,France Info,https://www.francetvinfo.fr,,FR,,,Radio/TV pubblica
 📰 Media & Testate Giornalistiche,Europa Occidentale,Frankfurter Rundschau,https://www.fr.de,,DE,,,Germania sinistra
@@ -864,7 +864,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Dauphiné Libéré,https://www.ledauphine.com,,FR,,,Alpi — Grenoble
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Figaro,https://www.lefigaro.fr,,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le JDD,https://www.lejdd.fr,,FR,,,Francia — domenicale nazionale
-📰 Media & Testate Giornalistiche,Europa Occidentale,Le Monde,https://www.lemonde.fr,,FR,,,Francia
+📰 Media & Testate Giornalistiche,Europa Occidentale,Le Monde,https://www.lemonde.fr,https://www.lemonde.fr/rss/une.xml,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Parisien,https://www.leparisien.fr,https://feeds.leparisien.fr/leparisien/rss,FR,,,Parigi
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Point,https://www.lepoint.fr,,FR,,,Francia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Le Progrès,https://www.leprogres.fr,,FR,,,Alvernia-Rodano-Alpi — Lione
@@ -919,8 +919,8 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,Protothema Greece,https://en.protothema.gr,,,GR,,English — Grecia
 📰 Media & Testate Giornalistiche,Europa Occidentale,Publico PT,https://www.publico.pt,https://feeds.publico.pt/publico/rss,PT,,,Portogallo quality
 📰 Media & Testate Giornalistiche,Europa Occidentale,Reuters Institute,https://reutersinstitute.politics.ox.ac.uk,,UK,,,Ricerca media — Accademia
-📰 Media & Testate Giornalistiche,Europa Occidentale,RFI English,https://www.rfi.fr/en,,EN,,,Francia radio int.
-📰 Media & Testate Giornalistiche,Europa Occidentale,RFI Français,https://www.rfi.fr/fr,,FR,,,Radio int. FR
+📰 Media & Testate Giornalistiche,Europa Occidentale,RFI English,https://www.rfi.fr/en,https://www.rfi.fr/en/rss,EN,,,Francia radio int.
+📰 Media & Testate Giornalistiche,Europa Occidentale,RFI Français,https://www.rfi.fr/fr,https://www.rfi.fr/fr/rss,FR,,,Radio int. FR
 📰 Media & Testate Giornalistiche,Europa Occidentale,Rheinische Post,https://rp-online.de,,DE,,,NRW — Düsseldorf
 📰 Media & Testate Giornalistiche,Europa Occidentale,RTBF,https://www.rtbf.be,,FR,,,Belgio pubblica
 📰 Media & Testate Giornalistiche,Europa Occidentale,RTL Nieuws,https://www.rtlnieuws.nl,,NL,,,TV NL
@@ -952,7 +952,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Occidentale,TF1 Info,https://www.tf1info.fr,,FR,,,Francia — news TF1/LCI
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Courier,https://www.thecourier.co.uk,,EN,,,Scozia — Dundee
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Guardian World,https://www.theguardian.com/world,,EN,,,Prospettiva UK
-📰 Media & Testate Giornalistiche,Europa Occidentale,The Independent,https://www.independent.co.uk,,EN,,,UK online
+📰 Media & Testate Giornalistiche,Europa Occidentale,The Independent,https://www.independent.co.uk,https://www.independent.co.uk/rss,EN,,,UK online
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Independent US,https://www.independent.co.uk/us,https://www.independent.co.uk/us/rss,EN,,,USA edition
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Irish News,https://www.irishnews.com,,EN,,,Irlanda del Nord — Belfast
 📰 Media & Testate Giornalistiche,Europa Occidentale,The Journal (IE),https://www.thejournal.ie,,EN,,,Irlanda online
@@ -1012,7 +1012,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Azattyq (Kazakhstan),https://www.azattyq.org,,KK/EN,,,Kazakhstan RFE
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,B92,https://www.b92.net,https://www.b92.net/rss/latest,SR,,,Serbia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Balkan Insight,https://balkaninsight.com,,EN,,,Balcani in inglese
-📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,BBC Science & Environment,https://www.bbc.com/news/science_and_environment,,UK,,,News
+📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,BBC Science & Environment,https://www.bbc.com/news/science_and_environment,https://feeds.bbci.co.uk/news/science_and_environment/rss.xml,UK,,,News
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Belarus Zerkalo,https://zerkalo.io,,RU,,,Bielorussia indip.
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Belarusian Investigative Center,https://investigativecenter.by,,,BY,,Inv. — Bielorussia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,BelTA (English),https://eng.belta.by,,EN,,,Bielorussia gov
@@ -1441,7 +1441,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Africa,Awoko Sierra Leone,https://awoko.org,,EN,,,Sierra Leone
 📰 Media & Testate Giornalistiche,Africa,Ayin Network,https://3ayin.com,,AR/EN,,,Sudan — giornalismo indipendente
 📰 Media & Testate Giornalistiche,Africa,Bahrain Mirror,https://bhmirror.net,,AR,,,Bahrain indip.
-📰 Media & Testate Giornalistiche,Africa,BBC Arabic,https://www.bbc.com/arabic,,AR,,,UK/MENA
+📰 Media & Testate Giornalistiche,Africa,BBC Arabic,https://www.bbc.com/arabic,https://feeds.bbci.co.uk/arabic/rss.xml,AR,,,UK/MENA
 📰 Media & Testate Giornalistiche,Africa,BizNews,https://www.biznews.com,,EN,,,"Testata nazionale — South Africa · fonte aggregatore, verifica consigliata"
 📰 Media & Testate Giornalistiche,Africa,Burkina24,https://burkina24.com,,FR,,,Burkina Faso — testata digitale
 📰 Media & Testate Giornalistiche,Africa,Business & Financial Times,https://thebftonline.com,,EN,,,"Testata nazionale — Ghana · fonte aggregatore, verifica consigliata"
