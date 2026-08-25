@@ -14,9 +14,19 @@
 |---|---|
 | [calibration.md](calibration.md) | Weight calibration toolkit (genetic search) and the validated production weights |
 | [calibration_findings_2026-07.md](calibration_findings_2026-07.md) | First calibration on real data; the signal-polarity defect that motivated v1.3 |
+| [calibration_findings_2026-07-24.md](calibration_findings_2026-07-24.md) | Recalibration attempt blocked by a two-label holdout; motivated the split-axis fix |
+| [calibration_findings_2026-07-25.md](calibration_findings_2026-07-25.md) | Recalibration on the corrected temporal split; shipped weights re-validated (not re-shipped) |
 | [calibration_findings_2026-07-28.md](calibration_findings_2026-07-28.md) | Future-snapshot validation (6 Jul 2026): concordance 0.755, the declared production result |
+| [calibration_findings_2026-08-21.md](calibration_findings_2026-08-21.md) | Checkpoint on the grown snapshot pool (59→95 sources, ~3 to ~7 weeks): same-sign edge, smaller magnitude; no weight change |
 | [signal_research_2026-07.md](signal_research_2026-07.md) | Domain-provenance investigation → the ENGINE 1.4 asymmetric penalty |
 | [signal_diagnosis_2026-07.md](signal_diagnosis_2026-07.md) | Ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility/gaming are the redesign targets |
+
+## Data collection
+
+| Document | What it covers |
+|---|---|
+| [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (13 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
+| [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
 ## Compliance
 
@@ -24,8 +34,6 @@
 |---|---|
 | [compliance.md](compliance.md) | GDPR + EU AI Act summary mapping |
 | [eu_ai_act/](eu_ai_act/README.md) | Conformity scaffold: classification (pending, legal), Annex IV draft, Art. 9 risk register, Art. 10 data governance |
-| [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (35→9 dead feeds); `research/feed_health_audit.py` |
-| [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
 ## Planning
 

@@ -176,11 +176,16 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 | [docs/compliance.md](docs/compliance.md)     | GDPR + EU AI Act compliance                         |
 | [docs/eu\_ai\_act/](docs/eu_ai_act/)         | EU AI Act conformity scaffold (Annex IV, Art. 9/10) |
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)       |
-| [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation (concordance 0.755)      |
+| [docs/calibration\_findings\_2026-07-28.md](docs/calibration_findings_2026-07-28.md) | Future-snapshot validation, shipped result (concordance 0.755) |
+| [docs/calibration\_findings\_2026-07-25.md](docs/calibration_findings_2026-07-25.md) | Recalibration on the corrected temporal split; shipped weights re-validated |
+| [docs/calibration\_findings\_2026-08-21.md](docs/calibration_findings_2026-08-21.md) | Checkpoint on the grown snapshot pool (59→95 sources); no weight change |
+| [docs/feed\_health\_2026-07.md](docs/feed_health_2026-07.md) | RSS feed-health audit + repair log (13 rounds; `research/feed_health_audit.py`) |
+| [docs/dataset\_expansion\_runbook.md](docs/dataset_expansion_runbook.md) | Runbook to grow/maintain the labelled source registry |
 | [docs/cloud\_setup.md](docs/cloud_setup.md)  | Running CATS in Claude Code on the web (setup, env, network) |
 | [docs/signal\_research\_2026-07.md](docs/signal_research_2026-07.md) | Domain-provenance signal investigation (v2.0)       |
 | [docs/signal\_diagnosis\_2026-07.md](docs/signal_diagnosis_2026-07.md) | Signal ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility+gaming are dead weight |
 | [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan & numbered roadmap (July 2026, in Italian) |
+| [docs/README.md](docs/README.md)             | Full documentation index, organised by topic        |
 | [CHANGELOG.md](CHANGELOG.md)                 | Version history                                     |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Development guide                                   |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)     | Community standards                                 |
@@ -192,7 +197,7 @@ See [docs/architecture.md](docs/architecture.md) for full signal and security de
 
 * **NLP accuracy \~55–62% (default)**: spaCy NER + TextBlob; optional BERT sentiment and Sentence-BERT coherence backends are available for higher accuracy (see `.env.example`)
 * **Partially calibrated parameters**: signal weights are empirically calibrated with [`cats.calibration`](docs/calibration.md) and validated on a future snapshot (`data/calibrated_weights.json`), but band thresholds and silence thresholds remain unvalidated initial estimates
-* **Small validation set (July 2026)**: calibration rests on 56 RSS-labelled sources, validation on a 53-source future snapshot; see the [6 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats
+* **Small validation set**: the shipped weights (`data/calibrated_weights.json`) were calibrated on 56 RSS-labelled sources and validated on a 53-source future snapshot; see the [6 Jul findings](docs/calibration_findings_2026-07-28.md) for the honest numbers (holdout concordance 0.755, Spearman +0.553) and their caveats. Daily/weekly collection has since grown the merged snapshot pool to 95+ sources — see the [2026-08-21 checkpoint](docs/calibration_findings_2026-08-21.md) — but that growth has not yet been used to recalibrate or re-ship weights, and a same-methodology re-check on the larger pool found a *smaller*, not larger, validated edge, so more data has not automatically meant a better result
 * **Discrimination rests on few signals**: `silence` carries most rank information (holdout ρ −0.43) with SBERT `coherence` as a load-bearing tie-breaker (LOSO −0.139 concordance); volatility and gaming contribute ~nothing as currently designed — see the [signal diagnosis](docs/signal_diagnosis_2026-07.md). An adversary on a regular publishing cadence and a clean domain still collapses most of the margin (the ENGINE 1.4 domain penalty catches only infrastructure clones); the adversarial regression suite (`tests/unit/test_adversarial.py`) pins these behaviours
 * **Calibrated weights assume the SBERT coherence backend**: deploy `data/calibrated_weights.json` with `COHERENCE_BACKEND=sbert`, or the coherence contribution is forfeited (~0.62 instead of 0.755 concordance; see [calibration](docs/calibration.md))
 * **Italian-optimised**: using `it_core_news_lg`; other languages degrade accuracy — non-Italian input is detected and flagged in the response (`language.detected`), but scores are still computed with the Italian-tuned stack
