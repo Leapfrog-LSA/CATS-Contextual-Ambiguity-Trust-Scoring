@@ -31,6 +31,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `docs/feed_health_2026-07.md` → *Round 12 correction*.
 
 ### Added
+- **`collect_rss.fetch_feed` retries a 403 via `curl` before giving up,
+  recovering 3 of 15 `blocked` feeds (round 13)**
+  (`cats/calibration/collect_rss.py`, `research/feed_health_audit.py`,
+  `docs/feed_health_2026-07.md`). Three feeds long classified `blocked`
+  (`al-monitor.com`, `hrw.org`, `rnz.co.nz`) turned out to be blocking
+  httpx's specific TLS/HTTP client fingerprint, not the IP or User-Agent
+  string: `curl`, same network, same UA, gets a clean 200. The fallback
+  lives in the collector itself, not just the audit script, so every future
+  collection run benefits, not only this one; the other 12 `blocked` feeds
+  stay 403 under curl too — confirmed IP/geo or JS-challenge blocks, a
+  genuinely different class curl can't cross. `RNZ Pacific`'s registered
+  `/rss` also turned out to resolve to the homepage, not a feed; corrected
+  to `/rss/pacific.xml`, found once curl confirmed the domain wasn't blocked.
+  A bug in the first version of this fix was caught before shipping: `curl`
+  without `--fail` exits 0 on an HTTP 4xx and returns the WAF's challenge
+  page as if it were the feed body, which `parse_feed` was then rejecting
+  for the misleading reason "carries a DTD" (an HTML error page's own
+  `<!DOCTYPE html>`) instead of correctly staying `blocked` — added `--fail`
+  and re-verified all three recoveries plus a sample of the still-blocked 12
+  individually before re-running the full audit. `research/feed_health_audit.py`
+  inherits the fallback automatically, since it already calls
+  `collect_rss.fetch_feed` (round-12-correction pattern). Net:
+  `blocked` 15 → 12, `ok` 78 → 79, `stale` 12 → 13 — see
+  `docs/feed_health_2026-07.md` → *Round 13*.
 - **Feed-health audit gains a `stale` classification, and 4 stale feeds are
   fixed (round 12)** (`research/feed_health_audit.py`,
   `docs/feed_health_2026-07.md`). Follow-up to the same-day recalibration

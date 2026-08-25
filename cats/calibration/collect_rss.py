@@ -21,6 +21,13 @@ Sources whose feed fails (missing ``rss``, HTTP error, unparseable XML, fewer
 than ``--min-messages`` usable entries) are skipped with a diagnostic — the
 output only contains sources that ``build_dataset`` can actually use.
 
+A 403 falls back to ``curl`` before giving up. Some WAFs (found 2026-08-25 on
+al-monitor.com, hrw.org, rnz.co.nz) block by TLS/HTTP client fingerprint, not
+by IP or User-Agent string: httpx gets a 403 with the exact same headers curl
+sends and gets a clean 200 with. The fallback is silently skipped if ``curl``
+isn't on ``PATH``, and any curl failure re-raises the original httpx error
+rather than inventing a new one.
+
 Writing to an existing ``--out``
 --------------------------------
 A second run against a path that already holds a snapshot **merges** into it
@@ -51,6 +58,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -163,11 +172,44 @@ def parse_feed(xml_text: str) -> List[dict]:
 
 
 # ── Fetching ────────────────────────────────────────────────────────────────
+def _fetch_via_curl(url: str, client: httpx.Client, max_bytes: int) -> Optional[str]:
+    """Retry a 403 via ``curl``, whose client fingerprint some WAFs let through.
+
+    Never raises: returns ``None`` on any failure (curl missing, non-zero exit,
+    empty body, oversize) so the caller falls back to the original httpx error
+    instead of a new, less informative one.
+    """
+    curl = shutil.which("curl")
+    if curl is None:
+        return None
+    timeout_s = client.timeout.read or DEFAULT_TIMEOUT
+    try:
+        proc = subprocess.run(
+            # --fail: without it, curl exits 0 on a 4xx/5xx and prints the error
+            # page as if it were the body — indistinguishable from a real feed.
+            [curl, "-sL", "--fail", "-A", client.headers.get("user-agent", ""), "--max-time", str(int(timeout_s)), url],
+            capture_output=True,
+            timeout=timeout_s + 5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0 or not proc.stdout or len(proc.stdout) > max_bytes:
+        return None
+    return proc.stdout.decode("utf-8", errors="replace")
+
+
 def fetch_feed(url: str, client: httpx.Client, max_bytes: int = DEFAULT_MAX_BYTES) -> str:
     """GET one feed and return its body; ``ValueError`` on HTTP error or oversize body."""
     try:
         resp = client.get(url)
         resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 403:
+            fallback = _fetch_via_curl(url, client, max_bytes)
+            if fallback is not None:
+                logger.info("collect_rss_curl_fallback_used", url=url)
+                return fallback
+        raise ValueError(f"fetch failed: {exc}") from exc
     except httpx.HTTPError as exc:
         raise ValueError(f"fetch failed: {exc}") from exc
     if len(resp.content) > max_bytes:

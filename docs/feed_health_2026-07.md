@@ -12,13 +12,13 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 as shipped (2026-08-21, 113 feeds) | Round 12 corrected (2026-08-22, 113 feeds) |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | 84 | **78** |
-| stale | — | — | — | — | — | — | — | 11 | **12** |
-| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | 2 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | 1 | **6** |
-| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | 15 | **15** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 as shipped (2026-08-21, 113 feeds) | Round 12 corrected (2026-08-22, 113 feeds) | Round 13 (2026-08-25, 113 feeds) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | 84 | 78 | **79** |
+| stale | — | — | — | — | — | — | — | 11 | 12 | **13** |
+| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | 2 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | 1 | 6 | **7** |
+| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | 15 | 15 | **12** |
 
 Round 12's `ok` count is not a regression from round 11's 95 — it is the same
 95 feeds split honestly for the first time. `stale` is a new classification
@@ -526,55 +526,104 @@ not a registry bug). None chased this round — same "flag, don't guess"
 treatment as the round-12 junk feeds, now visible for the first time instead
 of silently miscounted.
 
+## Round 13 (2026-08-25) — a curl fallback recovers 3 of 15 `blocked` feeds
+
+Prompted by the recalibration checkpoint's ≥100-source target: with the pool
+at 95, the next lever identified was recovering some of the sandboxed
+`blocked` class "from a different network path." A literally different path
+wasn't available from this session, but a different *HTTP client* was: `curl`
+from the same network, same User-Agent, gets a clean 200 on three feeds that
+have been `blocked` (403) under `httpx` since round 4 —
+**al-monitor.com, hrw.org, rnz.co.nz** — confirming those three WAFs block by
+TLS/HTTP client fingerprint, not IP or User-Agent string. The other 12
+`blocked` feeds stay 403 (or serve a Cloudflare JS challenge) under curl too,
+so they're a genuinely different, harder class — IP/geo block or JS-challenge,
+not fingerprint.
+
+**Fixed in the collector itself, not just this audit script**:
+`cats.calibration.collect_rss.fetch_feed` now retries a 403 via `curl` before
+raising, so every future collection run — not just this audit — picks up the
+three recovered feeds. `research/feed_health_audit.py` inherits this for free
+by calling `fetch_feed` (already the pattern since the round-12 correction).
+`RNZ Pacific`'s registered URL was also simply wrong (`/rss` resolves to the
+homepage, not a feed) — corrected to `/rss/pacific.xml`, found by trying
+known section paths once curl confirmed the domain itself wasn't blocked.
+
+**A bug in the first version of this fix, caught before shipping**: `curl`
+without `--fail` exits 0 on an HTTP 4xx and prints the error/challenge page
+as if it were the body — the first pass silently fed Cloudflare "Just a
+moment..." pages into `parse_feed` for all 15 previously-`blocked` feeds, and
+12 of them got relabelled `not-xml` (misleadingly — "carries a DTD", since an
+HTML error page's `<!DOCTYPE html>` trips the DTD guard) instead of staying
+`blocked`. Added `--fail` so curl's exit code means what `fetch_feed` needs it
+to mean; re-verified all three recoveries plus a sample of the still-blocked
+12 individually against `fetch_feed` directly before re-running the full audit.
+
+Net: **`blocked` 15 → 12; `ok` 78 → 79 (Al-Monitor); `stale` 12 → 13** (HRW
+and RNZ Pacific are both freshly collected today, but `NHK News Web Easy`
+crossed the 14-day staleness threshold independently this round — an
+unrelated, pre-existing case, not caused by this fix). `not-xml` 6 → 7 is
+also unrelated churn: `David Icke`'s Cloudflare interstitial flipped back on
+this round (documented flaky pattern since round 11).
+
 ## Recommendation
 
-After the round 12 correction the registry has, for the first time, an
-honest accounting of reachability, freshness, *and* actual collector
-compatibility: **2 `dead`** (ITV News, L'Orient Today — confirmed 404 across
-every round since 4/7), **6 `not-xml`** (News Examiner, a Cloudflare anti-bot
-interstitial — David Icke, round 11's other `not-xml`, happened to clear on
-this round's request, ordinary flakiness of that block class, not a fix —
-plus 5 newly surfaced by the corrected check: Natural News, Sixth Tone, The
-Hill Tech, Berlingske Business, Le Parisien, and the clone-domain row
-`https://bild.pics`, none previously distinguishable from a working feed
-under the old XML-shape heuristic), **15 `blocked`** (same IP-level sandbox
-wall rounds 7 and 10 positively evidenced, not UA-based), and **12 `stale`**:
-4 fixed round 12 (Il Corriere della Sera — corrected again the next day after
-its first fix turned out collector-incompatible, see *Round 12 correction* —
-The National UAE, Jerusalem Post, World Daily News Report), 7 low-value junk
-feeds investigated and left as is, 2 borderline cases flagged for re-check
-next round. One feed initially flagged `blocked` (Daily Maverick) turned out
-to be a genuinely dead/moved feed rather than a sandbox block and was fixed
-in round 7. The one duplicate-URL row (Ukrainska Pravda / Ukrainska Pravda
-English) was resolved in round 9, and drifted URLs found later (The Citizen
-in round 10; Il Corriere della Sera, The National UAE, Jerusalem Post in
-round 12) are fixed as found — the registry has no shared feeds and no
-*recoverable* dead or stale feed left unfixed among the sources worth
-chasing.
+After round 13 the registry has an honest accounting of reachability,
+freshness, *and* actual collector compatibility, including client-fingerprint
+blocks: **2 `dead`** (ITV News, L'Orient Today — confirmed 404 across every
+round since 4/7), **7 `not-xml`** (News Examiner and David Icke, Cloudflare
+anti-bot interstitials, both flaky pass/fail across rounds not fixes — plus
+Natural News, Sixth Tone, The Hill Tech, Berlingske Business, Le Parisien,
+and the clone-domain row `https://bild.pics`, none distinguishable from a
+working feed under the pre-round-12 heuristic), **12 `blocked`** (down from
+15 — round 13 recovered 3 via a curl fallback for client-fingerprint blocks;
+the remaining 12 are IP/geo-level or JS-challenge blocks curl doesn't clear
+either, the harder class rounds 7 and 10 positively evidenced), and
+**13 `stale`**: 4 fixed round 12 (Il Corriere della Sera — corrected again
+the next day after its first fix turned out collector-incompatible, see
+*Round 12 correction* — The National UAE, Jerusalem Post, World Daily News
+Report), 7 low-value junk feeds investigated and left as is, 2 borderline
+cases flagged for re-check, 1 (`NHK News Web Easy`) newly crossed the
+threshold this round, unrelated to round 13's fix. One feed initially flagged
+`blocked` (Daily Maverick) turned out to be a genuinely dead/moved feed
+rather than a sandbox block and was fixed in round 7. The one duplicate-URL
+row (Ukrainska Pravda / Ukrainska Pravda English) was resolved in round 9,
+and drifted or client-blocked URLs found later (The Citizen in round 10; Il
+Corriere della Sera, The National UAE, Jerusalem Post in round 12;
+Al-Monitor, Human Rights Watch News, RNZ Pacific in round 13) are fixed as
+found — the registry has no shared feeds and no *recoverable* dead, stale, or
+client-fingerprint-blocked feed left unfixed among the sources worth chasing.
 
 Remaining work, roughly in order of value:
 
-- **The 5 newly surfaced `not-xml` feeds** (Natural News, Sixth Tone, The
-  Hill Tech, Berlingske Business, Le Parisien) were invisible under every
-  prior round's classifier — worth the same investigation the round-12 fixes
-  got (autodiscovery / section-guessing) next time this doc is revisited, not
-  chased in the same session that found them.
+- **The 12 remaining `blocked` feeds are IP/geo or JS-challenge blocks, not
+  client-fingerprint** — round 13's curl fallback confirmed this by ruling
+  the fingerprint explanation *out* for them, not by leaving them untested.
+  The next lever is the one rounds 7/10/11 already named: verifying from a
+  genuinely different network path (a contributor's own machine), which
+  neither curl nor a header change can substitute for.
+- **The 6 `not-xml` feeds other than the two Cloudflare interstitials**
+  (Natural News, Sixth Tone, The Hill Tech, Berlingske Business, Le Parisien)
+  were invisible under every round-11-and-earlier classifier — worth the same
+  investigation the round-12/13 fixes got (autodiscovery / section-guessing)
+  next time this doc is revisited, not chased in the same session that found
+  them.
 
-- **The 95-source calibration ceiling is a feed-*reachability* problem; round
-  12 adds that some of the 95 were feed-*freshness* zombies too.** Round 11
-  established that `data/snapshots/` merged via `cats.calibration.merge_snapshots`
-  has been stuck at 95 unique sources because the registry's `ok` count is
-  also 95. Round 12 refines that: 11 of those 95 were `stale` (contributing
-  nothing new to any snapshot regardless of how often collection runs), and 4
-  are now fixed — 3 legitimate sources (Corriere della Sera, The National
-  UAE, Jerusalem Post) should start contributing fresh messages again from
-  the next collection, and 1 garbage source (World Daily News Report) will
-  stop contributing an unrelated third-party site's content under its label.
-  The reachable-feed *count* stays near 95 either way; breaking that ceiling
-  still needs (a) recovering feeds from the sandboxed-block class below via a
-  different network path, or (b) registering genuinely new sources (the
-  49 no-feed registry rows, or entirely new catalogue entries) — but the
-  *content* behind the existing 95 is measurably less stale after this round.
+- **The 95-source calibration ceiling started as a feed-*reachability*
+  problem; round 12 found *freshness* zombies inside it; round 13 is the
+  first round to actually raise the reachable count.** Round 11 established
+  that `data/snapshots/` had been stuck at 95 unique sources because the
+  registry's `ok` count was also 95. Round 12 found 11 of those 95 were
+  `stale` and fixed 4 (3 legitimate sources restored, 1 garbage source
+  stopped). Round 13 recovers 3 sources that were never in the 95 at all —
+  Al-Monitor, Human Rights Watch News, RNZ Pacific — via the curl fallback,
+  so the reachable ceiling itself should move from 95 toward ~98 once a
+  collection run picks them up, not just the content behind the existing 95.
+  Still short of the ≥100-source target; the remaining lever is (a) the 12
+  feeds still `blocked` (now confirmed IP/geo or JS-challenge, not
+  fingerprint — see below), which need a genuinely different network path,
+  not another client-side change, or (b) registering genuinely new sources
+  (the 49 no-feed registry rows, or entirely new catalogue entries).
 - **Re-audit periodically, not just once — and now that means `stale` too.**
   Round 5 caught a fresh regression (Il Giornale) that round 4 had left
   working — feed URLs drift even after being "fixed." Round 12 adds a
@@ -584,13 +633,15 @@ Remaining work, roughly in order of value:
   a periodic re-run catches either regression before it accumulates months
   of silent data loss — re-run `research/feed_health_audit.py` before each
   calibration pass, not just when chasing dead feeds.
-- **ITV News / L'Orient Today, the 15 `blocked` feeds, and News Examiner**
+- **ITV News / L'Orient Today, the 12 `blocked` feeds, and News Examiner**
   (still `not-xml`, same anti-bot wall as `blocked`, just a different status
   code — see round 11): rounds 4-7 agree this class of sandboxed session sits
   behind an IP-level block for a wide swath of news-site WAFs — UA changes
   don't help (round 7 tried four, including a legitimate crawler UA and no UA
-  at all). Further retries from this kind of session aren't informative for
-  any of these 16 feeds; the next productive step for all of them together is
+  at all), and round 13 confirmed a client-fingerprint change (curl) doesn't
+  either, for these 12 specifically (it did for 3 others, now `ok`/`stale`).
+  Further retries from this kind of session aren't informative for any of
+  these 13 feeds; the next productive step for all of them together is
   verifying from a genuinely different network path (a contributor's own
   machine, or otherwise outside this sandboxing), not more probing from
   here.
