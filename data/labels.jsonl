@@ -128,7 +128,7 @@
 {"source_id": "NHK News Web Easy", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/news/easy", "rss": "https://www3.nhk.or.jp/rss/news/cat0.xml"}
 {"source_id": "NHK World Japan", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/nhkworld", "rss": null}
 {"source_id": "Radio New Zealand Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international/pacific-news", "rss": null}
-{"source_id": "RNZ Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international", "rss": "https://www.rnz.co.nz/rss"}
+{"source_id": "RNZ Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international", "rss": "https://www.rnz.co.nz/rss/pacific.xml"}
 {"source_id": "Sixth Tone", "source_type": "news", "label": 50.0, "url": "https://www.sixthtone.com", "rss": "https://www.sixthtone.com/rss"}
 {"source_id": "Taiwan News", "source_type": "news", "label": 70.0, "url": "https://www.taiwannews.com.tw", "rss": null}
 {"source_id": "The Conversation AU", "source_type": "news", "label": 95.0, "url": "https://theconversation.com/au", "rss": "https://theconversation.com/au/articles.atom"}

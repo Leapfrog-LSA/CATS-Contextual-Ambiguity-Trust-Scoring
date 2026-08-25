@@ -12,8 +12,9 @@ It classifies each feed:
                STALE_AFTER_DAYS old (a feed that answers correctly but has
                stopped publishing — see *The stale case*, below)
   * dead     — 404/410 or DNS/connection failure (genuinely broken → fix/replace)
-  * blocked  — 403/429 or timeout (host likely blocks this User-Agent or is slow;
-               ambiguous, not necessarily dead — flag, don't auto-remove)
+  * blocked  — still 403/429 or timeout after the curl fallback below (host
+               likely blocks by IP/geo, needs JS, or is slow; ambiguous, not
+               necessarily dead — flag, don't auto-remove)
   * not-xml  — 200 but the collector can't extract messages from it: not XML at
                all (redirect to an HTML page, etc.), or XML the collector
                deliberately refuses — carries a DTD (rejected outright as a
@@ -30,6 +31,13 @@ passed an earlier, weaker XML-shape check (looked like valid RSS, had a recent
 `<!DOCTYPE xml>` preamble) — an `ok` classification that was not actually
 usable. Reusing the exact function the collector runs closes that gap by
 construction instead of chasing each new way a feed can look fine and not be.
+
+The blocked case (2026-08-25). Not every 403 is an IP/geo block: three feeds
+long classified `blocked` (al-monitor.com, hrw.org, rnz.co.nz) turned out to
+be blocking httpx's specific TLS/HTTP client fingerprint — curl, same
+User-Agent, same network, got a clean 200. `fetch_feed` now retries a 403
+via curl before giving up (see its docstring); this script inherits that for
+free by calling `fetch_feed` instead of its own GET.
 
 The stale case (2026-08-21). Before that fix, `ok`/`dead`/`blocked`/`not-xml`
 only ever checked *reachability* — HTTP status and body shape — never whether
@@ -65,11 +73,11 @@ import json
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 
-from cats.calibration.collect_rss import parse_feed
+from cats.calibration.collect_rss import fetch_feed, parse_feed
 
 ROOT = Path(__file__).resolve().parent.parent
 UA = "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
@@ -85,28 +93,43 @@ STALE_AFTER_DAYS = 14
 
 
 def classify(url: str, timeout: float) -> Tuple[str, str]:
-    """Return (status, detail) for one feed URL."""
+    """Return (status, detail) for one feed URL.
+
+    Fetches via ``collect_rss.fetch_feed`` — the exact function the real
+    collector calls — not a separate GET, so a 403 gets the same curl
+    fallback the collector gets (some WAFs block by client fingerprint, not
+    IP or User-Agent; see ``fetch_feed``'s docstring) before being bucketed
+    as `blocked`. A URL classified anything other than `blocked`/`dead` here
+    is therefore reachable by the real collector by construction.
+    """
+    body: Optional[str] = None
+    status_code: Optional[int] = None
     for attempt, backoff in enumerate((0.0,) + _RETRY_BACKOFF_S):
         if backoff:
             time.sleep(backoff)
-        try:
-            with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": UA}) as c:
-                r = c.get(url)
-        except httpx.TimeoutException:
-            return "blocked", "timeout"
-        except httpx.HTTPError as exc:
-            return "dead", f"conn:{type(exc).__name__}"
-        if r.status_code == 429 and attempt < len(_RETRY_BACKOFF_S):
+        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": UA}) as c:
+            try:
+                body = fetch_feed(url, c)
+            except ValueError as exc:
+                cause = exc.__cause__
+                if isinstance(cause, httpx.TimeoutException):
+                    return "blocked", "timeout"
+                if isinstance(cause, httpx.HTTPStatusError):
+                    status_code = cause.response.status_code
+                elif isinstance(cause, httpx.HTTPError):
+                    return "dead", f"conn:{type(cause).__name__}"
+                else:
+                    return "dead", str(exc)  # e.g. oversize body, no httpx cause
+        if status_code == 429 and attempt < len(_RETRY_BACKOFF_S):
             continue  # rate-limited, not necessarily blocked — retry before giving up
         break
-    if r.status_code in (404, 410):
-        return "dead", f"http:{r.status_code}"
-    if r.status_code in (403, 429):
-        return "blocked", f"http:{r.status_code}"
-    if r.status_code >= 400:
-        return "blocked", f"http:{r.status_code}"
+    if body is None:
+        assert status_code is not None
+        if status_code in (404, 410):
+            return "dead", f"http:{status_code}"
+        return "blocked", f"http:{status_code}"
     try:
-        messages = parse_feed(r.text)
+        messages = parse_feed(body)
     except ValueError as exc:
         return "not-xml", f"parse:{exc}"
     if not messages:
@@ -115,7 +138,7 @@ def classify(url: str, timeout: float) -> Tuple[str, str]:
     age = datetime.now(timezone.utc) - newest
     if age > timedelta(days=STALE_AFTER_DAYS):
         return "stale", f"newest:{newest.date().isoformat()} ({age.days}d ago)"
-    return "ok", f"http:{r.status_code}"
+    return "ok", "http:200"
 
 
 def normalise_feed(url: str) -> str:
