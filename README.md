@@ -240,7 +240,12 @@ also read the [Code of Conduct](CODE_OF_CONDUCT.md).
 If CATS is useful to you, **consider starring the repo ⭐** — it helps others
 doing OSINT/disinformation work find it.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring&type=Date)](https://star-history.com/#Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring&Date)
+<!-- star-history:start -->
+<!-- Rendered weekly by .github/workflows/star-history.yml (a self-hosted
+     workaround for GitHub's June 2026 stargazers-API restriction, which
+     broke the previous live api.star-history.com badge) — filled in by its
+     first run rather than by hand. -->
+<!-- star-history:end -->
 
 ***
 
