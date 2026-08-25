@@ -1,0 +1,46 @@
+name: Star history chart
+
+# GitHub restricted third-party access to the stargazers API in June 2026
+# (github.blog — stargazer API restriction), which broke the live
+# api.star-history.com badge previously embedded in README.md: it now shows
+# a service notice instead of a chart. star-history-action works around this
+# by rendering the chart *inside this repo's own CI*, using this workflow's
+# own scoped `contents: write` permission rather than handing a personal
+# access token to an external site — the maintainer-recommended workaround
+# (see star-history.com/blog/github-stargazer-api-restriction). It commits a
+# static SVG/PNG between the <!-- star-history:start/end --> markers in
+# README.md, refreshed weekly rather than live.
+#
+# Pinned to a commit SHA, not the mutable `@v1` tag: this is a small,
+# individually-maintained third-party action (~20 stars) with write access
+# to the repo, so a tag that can be silently repointed is a real supply-chain
+# risk here in a way it isn't for GitHub's own actions/checkout etc. Comment
+# is verified against v1.0.5.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Mondays 07:00 UTC — after collect-rss.yml's 06:00 run
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: star-history
+  cancel-in-progress: true
+
+jobs:
+  star-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render and commit star history
+        uses: narayann7/star-history-action@a68d8f9d67ca20d55b682a264e69152dcf326e9c # v1.0.5
+        with:
+          repos: ${{ github.repository }}
+          output-dir: assets/star-history
+          themes: light,dark
+          readme: README.md
+          readme-format: picture
+          commit: true
+          commit-message: "chore: update star history chart [skip ci]"
