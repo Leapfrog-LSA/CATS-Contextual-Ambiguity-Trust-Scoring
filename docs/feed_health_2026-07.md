@@ -566,6 +566,44 @@ unrelated, pre-existing case, not caused by this fix). `not-xml` 6 → 7 is
 also unrelated churn: `David Icke`'s Cloudflare interstitial flipped back on
 this round (documented flaky pattern since round 11).
 
+## Round 13 addendum — 10 no-feed catalogue rows given working feeds
+
+The registry's other lever for the ≥100-source target — "registering
+genuinely new sources," named as an alternative to the blocked-feed chase
+since round 11 — turned out to mostly mean *finishing* sources already
+catalogued rather than finding new ones: 49 registry rows carried a
+source_id, label and URL but no `rss`. Checked known feed-path patterns
+(BBC's `feeds.bbci.co.uk`, RFI's `/rss` suffix, standard WordPress/CMS
+paths) against the most valuable of them (major outlets, labels 50–85) and
+verified each candidate through `fetch_feed` + `parse_feed` directly, not
+just an HTTP status, before writing anything.
+
+**10 filled in**, all confirmed live today: `BBC News`, `BBC News World`,
+`BBC Science & Environment`, `BBC Arabic` (all `feeds.bbci.co.uk/.../rss.xml`
+— a fifth BBC row, `BBC Afrique`, already had a working feed), `RFI English`,
+`RFI Français` (`rfi.fr/{en,fr}/rss` — `RFI Afrique` already worked), `Le
+Monde`, `France 24`, `The Independent`, `The Hill`.
+
+**2 candidates found but *not* added — both would have duplicated an
+existing row's feed**: the only working Al Jazeera feed
+(`aljazeera.com/xml/rss/all.xml`) is already registered under `Al Jazeera
+Africa`, not a global feed as its content might suggest, and the only
+working Foreign Policy feed (`foreignpolicy.com/feed/`) is already
+registered under `Foreign Policy Africa`. Assigning either to the bare
+`Al Jazeera English` / `Foreign Policy` rows would have reproduced the exact
+round-9 Ukrainska Pravda bug — two source_ids double-counting one feed —
+caught this time by checking every candidate URL against the registry
+*before* writing, not after. Both bare rows are left feedless; the "Africa"
+edition already covers that content under a different label context, so
+leaving it un-duplicated is correct, not merely a missed opportunity.
+
+Net for the ceiling: **95 → 105 potential sources** once these 10 are picked
+up by a collection run (round 13's 3 curl-recovered sources plus these 10 —
+some overlap is possible if a source starts publishing thin history, so the
+next merged-snapshot count is the number that matters, not this arithmetic
+sum) — past the ≥100-source roadmap target for the first time, pending
+confirmation from an actual collection.
+
 ## Recommendation
 
 After round 13 the registry has an honest accounting of reachability,
@@ -611,19 +649,23 @@ Remaining work, roughly in order of value:
 
 - **The 95-source calibration ceiling started as a feed-*reachability*
   problem; round 12 found *freshness* zombies inside it; round 13 is the
-  first round to actually raise the reachable count.** Round 11 established
-  that `data/snapshots/` had been stuck at 95 unique sources because the
-  registry's `ok` count was also 95. Round 12 found 11 of those 95 were
-  `stale` and fixed 4 (3 legitimate sources restored, 1 garbage source
-  stopped). Round 13 recovers 3 sources that were never in the 95 at all —
-  Al-Monitor, Human Rights Watch News, RNZ Pacific — via the curl fallback,
-  so the reachable ceiling itself should move from 95 toward ~98 once a
-  collection run picks them up, not just the content behind the existing 95.
-  Still short of the ≥100-source target; the remaining lever is (a) the 12
-  feeds still `blocked` (now confirmed IP/geo or JS-challenge, not
-  fingerprint — see below), which need a genuinely different network path,
-  not another client-side change, or (b) registering genuinely new sources
-  (the 49 no-feed registry rows, or entirely new catalogue entries).
+  first round to actually raise the reachable count past the ≥100-source
+  target.** Round 11 established that `data/snapshots/` had been stuck at 95
+  unique sources because the registry's `ok` count was also 95. Round 12
+  found 11 of those 95 were `stale` and fixed 4 (3 legitimate sources
+  restored, 1 garbage source stopped). Round 13 adds 3 sources the curl
+  fallback recovered (Al-Monitor, Human Rights Watch News, RNZ Pacific) plus
+  10 more found by filling in previously feedless catalogue rows (BBC News,
+  BBC News World, BBC Science & Environment, BBC Arabic, RFI English, RFI
+  Français, Le Monde, France 24, The Independent, The Hill — see the round-13
+  addendum above) — 13 net-new reachable sources, none of them a duplicate of
+  an existing row's feed (checked before writing, after finding two
+  candidates — Al Jazeera English, Foreign Policy — that would have been).
+  The reachable ceiling should move from 95 toward ~105–108 once a collection
+  run picks all of these up (some overlap possible; the next merged-snapshot
+  count is the number that actually matters). The 12 still-`blocked` feeds
+  (confirmed IP/geo or JS-challenge, not fingerprint) remain the harder
+  residual lever, needing a genuinely different network path.
 - **Re-audit periodically, not just once — and now that means `stale` too.**
   Round 5 caught a fresh regression (Il Giornale) that round 4 had left
   working — feed URLs drift even after being "fixed." Round 12 adds a

@@ -31,6 +31,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `docs/feed_health_2026-07.md` → *Round 12 correction*.
 
 ### Added
+- **10 catalogued-but-feedless registry rows given working feeds, passing the
+  ≥100-source calibration target for the first time (round 13 addendum)**
+  (`data/labels.jsonl`, `data/Fonti_OSINT.csv`, `docs/feed_health_2026-07.md`).
+  49 registry rows carried a label and URL but no `rss`; checked known
+  feed-path patterns (`feeds.bbci.co.uk`, RFI's `/rss` suffix, standard CMS
+  paths) for the most valuable of them and verified each through
+  `collect_rss.fetch_feed` + `parse_feed` directly before writing. **10
+  filled in**: `BBC News`, `BBC News World`, `BBC Science & Environment`,
+  `BBC Arabic`, `RFI English`, `RFI Français`, `Le Monde`, `France 24`,
+  `The Independent`, `The Hill`. **2 candidates found but rejected**: the
+  only working Al Jazeera and Foreign Policy feeds found are already
+  registered under `Al Jazeera Africa` and `Foreign Policy Africa`
+  respectively — assigning either to the bare `Al Jazeera English` /
+  `Foreign Policy` rows would have reproduced the round-9 Ukrainska Pravda
+  bug (two source_ids double-counting one feed), caught this time by
+  checking every candidate against the registry before writing, not after.
+  Combined with round 13's 3 curl-recovered sources: 13 net-new reachable
+  sources, taking the registry past the roadmap's ≥100-source target for the
+  first time — pending confirmation from an actual collection run, since the
+  merged-snapshot count is what actually matters.
 - **`collect_rss.fetch_feed` retries a 403 via `curl` before giving up,
   recovering 3 of 15 `blocked` feeds (round 13)**
   (`cats/calibration/collect_rss.py`, `research/feed_health_audit.py`,
