@@ -51,7 +51,7 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   inflate the low tail. See `docs/architecture.md` → *Domain-provenance penalty*.
 - **Changing band semantics requires recalibration + re-validation.** Adding or
   removing a signal, or changing thresholds (band cutoffs 80/60/40/20, silence
-  72 h in `signals/silence.py`), invalidates the calibrated weights. Recalibrate
+  96 h in `signals/silence.py`), invalidates the calibrated weights. Recalibrate
   (`python -m cats.calibration`) and re-validate on the **future holdout**; never
   ship such a change without it.
 - **Leakage discipline:** never score from the labelled disinfo set

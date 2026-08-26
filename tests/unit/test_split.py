@@ -203,22 +203,22 @@ def test_window_bounds_is_none_without_timestamps():
 
 
 def test_silence_blind_counts_windows_at_or_under_the_threshold():
-    """72 h is the threshold: a 72 h window cannot hold a gap *longer* than 72 h."""
-    exactly_72h = _rec("edge", "2026-01-01T00:00:00Z", "2026-01-04T00:00:00Z")
-    over_72h = _rec("wide", "2026-01-01T00:00:00Z", "2026-01-05T00:00:00Z")
+    """96 h is the threshold: a 96 h window cannot hold a gap *longer* than 96 h."""
+    exactly_96h = _rec("edge", "2026-01-01T00:00:00Z", "2026-01-05T00:00:00Z")
+    over_96h = _rec("wide", "2026-01-01T00:00:00Z", "2026-01-06T00:00:00Z")
     single = _rec("thin", "2026-01-01T00:00:00Z")
-    assert silence_blind_sources([exactly_72h, over_72h, single]) == (2, 3)
+    assert silence_blind_sources([exactly_96h, over_96h, single]) == (2, 3)
 
 
 def test_silence_blind_respects_the_source_type_threshold():
-    rec = {**_rec("a", "2026-01-01T00:00:00Z", "2026-01-05T00:00:00Z"), "source_type": "news"}
-    assert silence_blind_sources([rec]) == (0, 1)  # 96 h > the 72 h news threshold
+    rec = {**_rec("a", "2026-01-01T00:00:00Z", "2026-01-06T00:00:00Z"), "source_type": "news"}
+    assert silence_blind_sources([rec]) == (0, 1)  # 120 h > the 96 h news threshold
 
 
 def test_main_warns_when_no_holdout_source_can_register_a_gap(tmp_path, capsys):
     """The three-week-collection trap: a short holdout pins silence at 0."""
     src = tmp_path / "sources.jsonl"
-    # Four hours apart over two days, so each half stays well under 72 h while
+    # Four hours apart over two days, so each half stays well under 96 h while
     # keeping enough messages per side to clear min_messages.
     stamps = [f"2026-01-0{d}T{h:02d}:00:00Z" for d in (1, 2) for h in range(0, 24, 4)]
     src.write_text(
@@ -270,7 +270,7 @@ def test_main_warns_when_a_quarter_of_the_holdout_is_silence_blind(tmp_path, cap
     )
     assert rc == 0
     out = capsys.readouterr().out
-    assert "span <= the 72 h silence threshold" in out
+    assert "span <= the 96 h silence threshold" in out
     assert "by construction rather than by" in out
 
 

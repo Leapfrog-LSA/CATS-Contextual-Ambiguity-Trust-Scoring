@@ -9,6 +9,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Fixed
+- **Silence's 72h anomaly threshold was short of its plateau** — a sweep
+  (`research/gaming_volatility_diagnosis_spike.py`) found rho strengthens
+  monotonically from 24h to 96h then plateaus (96/120/168h identical), so
+  96h is the smallest threshold reaching the full available gain.
+  `SOURCE_TYPE_THRESHOLDS` changes from 72.0 to 96.0 for every source type
+  (`cats/signals/silence.py`, `docs/silence_retune_2026-08.md`).
+  `cats/calibration/split.py`'s `silence_blind_sources` picks the new value
+  up automatically (reads `threshold_for`), which does mean a split whose
+  window was fine at 72h can now be flagged blind at 96h — the diagnostic
+  working as intended, not a regression.
 - **Volatility's 0.4 spike threshold was locally the worst choice in the
   swept grid** — a finer 9-point sweep (`research/gaming_volatility_diagnosis_spike.py`)
   found 0.4 was the only point where the train-side correlation flipped to
@@ -48,6 +58,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `docs/feed_health_2026-07.md` → *Round 12 correction*.
 
 ### Changed
+- **Weights recalibrated after the silence retune, future-holdout
+  revalidated** (`data/calibrated_weights.json`, `data/train.jsonl`,
+  `data/holdout_future.jsonl`, `docs/silence_retune_2026-08.md`). Same
+  protocol, run on top of the volatility-retune baseline just below:
+  concordance 0.750, Spearman +0.554 (was 0.750 / +0.556) — movement inside
+  GA noise, still clears the 0.70 criterion. The `news`-group silence weight
+  moves 0.502 → 0.543, consistent with the signal now carrying more
+  information at the retuned threshold.
 - **Weights recalibrated after the volatility retune, future-holdout
   revalidated** (`data/calibrated_weights.json`, `data/train.jsonl`,
   `data/holdout_future.jsonl`, `docs/volatility_retune_2026-08.md`). Same
