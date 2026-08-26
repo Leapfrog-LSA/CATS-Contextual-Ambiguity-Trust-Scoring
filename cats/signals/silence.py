@@ -3,14 +3,18 @@ from typing import Dict, List, Optional
 
 from cats.signals.types import Message, SilenceResult
 
-# Per-source-type anomaly thresholds (hours). All values are currently 72h —
-# the same threshold the signal has always used — because the July 2026
-# calibration datasets were built with it; changing any value alters silence
-# scores and requires recalibration (docs/calibration.md).
+# Per-source-type anomaly thresholds (hours). All values are 96h (retuned
+# from 72h 2026-08-26, see docs/silence_retune_2026-08.md): a threshold sweep
+# on the committed calibration snapshots
+# (research/gaming_volatility_diagnosis_spike.py) found rho strengthens
+# monotonically from 24h to 96h then plateaus (96/120/168h are identical),
+# so 96h is the smallest threshold that reaches the plateau on both splits.
+# Changing any value alters silence scores and requires recalibration
+# (docs/calibration.md).
 SOURCE_TYPE_THRESHOLDS: Dict[str, float] = {
-    "social": 72.0,
-    "news": 72.0,
-    "default": 72.0,
+    "social": 96.0,
+    "news": 96.0,
+    "default": 96.0,
 }
 
 

@@ -50,8 +50,9 @@ FastAPI (async, Python 3.11)
 ### Silence
 - Sorts message timestamps; computes inter-message gaps in hours
 - Anomaly = gap > threshold (`signals/silence.py:SOURCE_TYPE_THRESHOLDS`, per
-  source type; currently 72 h for every type — changing a value alters signal
-  semantics and requires recalibration)
+  source type; currently 96 h for every type — retuned from 72 h 2026-08-26,
+  `docs/silence_retune_2026-08.md`, where rho plateaus — changing a value
+  alters signal semantics and requires recalibration)
 - Score = (anomalies / gaps) × 100
 
 ### Gaming

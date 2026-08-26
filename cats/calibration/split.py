@@ -37,8 +37,9 @@ the pool is large enough that its newest slice is label-diverse on its own.
 Both axes report the label distribution of each side, so a degenerate split is
 visible at the point it is produced rather than three pipeline stages later.
 For the same reason each side also reports its **observed window** against the
-``silence`` threshold: a source whose history spans no more than 72 h cannot
-contain a gap longer than 72 h, so its silence is 0 because the window was cut
+``silence`` threshold: a source whose history spans no more than the
+threshold (96 h as of 2026-08-26, ``docs/silence_retune_2026-08.md``) cannot
+contain a gap longer than it, so its silence is 0 because the window was cut
 short, not because the source published steadily. Cutting a three-week
 collection in two can put a large share of a side below that line, which is
 invisible in the label spread and only surfaces as an inert signal during
@@ -192,7 +193,7 @@ def silence_blind_sources(records: List[dict]) -> Tuple[int, int]:
     """(blind, total) — sources whose window is too short for ``silence`` to fire.
 
     ``compute_silence`` scores the share of inter-message gaps longer than the
-    source-type threshold (72 h for every type today). A source whose whole
+    source-type threshold (96 h for every type today). A source whose whole
     observed history spans no more than that threshold cannot contain such a
     gap, and one with fewer than two messages has no gaps at all: both score a
     flat 0. That zero is a property of the window the split handed them, not of
