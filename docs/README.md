@@ -21,6 +21,7 @@
 | [signal_research_2026-07.md](signal_research_2026-07.md) | Domain-provenance investigation → the ENGINE 1.4 asymmetric penalty |
 | [signal_diagnosis_2026-07.md](signal_diagnosis_2026-07.md) | Ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility/gaming are the redesign targets |
 | [gaming_redesign_2026-08.md](gaming_redesign_2026-08.md) | Gaming's vocab/ttr double-weight bug fixed (3-term mean); recalibrated + future-holdout revalidated, no regression |
+| [volatility_retune_2026-08.md](volatility_retune_2026-08.md) | Volatility spike threshold retuned 0.4→0.3 (finer sweep confirms it's the best point in the grid); recalibrated + future-holdout revalidated, no regression |
 
 ## Data collection
 

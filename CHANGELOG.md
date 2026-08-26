@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Fixed
+- **Volatility's 0.4 spike threshold was locally the worst choice in the
+  swept grid** — a finer 9-point sweep (`research/gaming_volatility_diagnosis_spike.py`)
+  found 0.4 was the only point where the train-side correlation flipped to
+  the semantically wrong sign (+0.028), while 0.3 gives the strongest,
+  consistent −0.14/−0.15 on train/holdout. `compute_volatility`'s default
+  `spike_threshold` changes from 0.4 to 0.3
+  (`cats/signals/volatility.py`, `docs/volatility_retune_2026-08.md`). Does
+  not raise the signal's hard ceiling: 48.9% of Italian messages carry
+  TextBlob polarity exactly 0.0, invisible to this signal at any threshold.
 - **Gaming's `vocab_score` silently double-weighted `ttr_score`** — the two
   sub-scores are mathematically identical above the 50-token floor (both
   compute `1 - unique/total`), diagnosed in `docs/signal_diagnosis_2026-07.md`
@@ -39,6 +48,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `docs/feed_health_2026-07.md` → *Round 12 correction*.
 
 ### Changed
+- **Weights recalibrated after the volatility retune, future-holdout
+  revalidated** (`data/calibrated_weights.json`, `data/train.jsonl`,
+  `data/holdout_future.jsonl`, `docs/volatility_retune_2026-08.md`). Same
+  protocol, run on top of the gaming-fix baseline just below: concordance
+  0.750, Spearman +0.556 (was 0.753 / +0.551) — movement inside GA noise,
+  still clears the 0.70 criterion. The `news`-group volatility weight moves
+  0.038 → 0.059, a small increase consistent with the signal now carrying
+  slightly more, correctly-signed information.
 - **Weights recalibrated after the gaming fix, future-holdout revalidated**
   (`data/calibrated_weights.json`, `data/train.jsonl`,
   `data/holdout_future.jsonl`, `docs/gaming_redesign_2026-08.md`). Same

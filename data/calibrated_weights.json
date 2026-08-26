@@ -1,8 +1,8 @@
 {
   "metric": "spearman",
-  "score": 0.584623,
-  "baseline_score": 0.423123,
-  "improvement": 0.1615,
+  "score": 0.597205,
+  "baseline_score": 0.443784,
+  "improvement": 0.153421,
   "groups": [
     "default",
     "news"
@@ -10,16 +10,16 @@
   "generations": 80,
   "weights": {
     "default": {
-      "coherence": 0.138784,
-      "volatility": 0.374764,
-      "silence": 0.306772,
-      "gaming": 0.17968
+      "coherence": 0.055937,
+      "volatility": 0.43227,
+      "silence": 0.325021,
+      "gaming": 0.186772
     },
     "news": {
-      "coherence": 0.427545,
-      "volatility": 0.038115,
-      "silence": 0.523767,
-      "gaming": 0.010573
+      "coherence": 0.428203,
+      "volatility": 0.058971,
+      "silence": 0.502428,
+      "gaming": 0.010399
     }
   }
 }
