@@ -40,7 +40,11 @@ FastAPI (async, Python 3.11)
 
 ### Volatility
 - TextBlob polarity per message with Italian negation correction
-- Counts spikes where |Δsentiment| > 0.4 between consecutive messages
+- Counts spikes where |Δsentiment| > 0.3 between consecutive messages
+  (retuned from 0.4 — 2026-08-26, `docs/volatility_retune_2026-08.md` — a
+  threshold sweep found 0.4 was locally the worst choice on both calibration
+  splits; changing this value alters signal semantics and requires
+  recalibration)
 - Score = (spikes / pairs) × 100
 
 ### Silence
