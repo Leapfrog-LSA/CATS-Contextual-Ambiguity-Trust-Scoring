@@ -38,11 +38,14 @@ def _vocab_diversity(tokens: List[str]) -> float:
     # return the neutral 0.0 (returning 1.0 here would hand every short corpus
     # a spurious +25 gaming points).
     #
-    # KNOWN REDUNDANCY: above the floor this equals the ttr sub-score
-    # (both are 1 - unique/total), so the gaming mean double-weights TTR —
-    # measured on the July 2026 snapshots in docs/signal_diagnosis_2026-07.md.
-    # Replacing it with a distinct heuristic changes signal semantics and
-    # requires recalibration + future-holdout revalidation; do not "fix" inline.
+    # Above the floor this is mathematically identical to the ttr sub-score
+    # (both are 1 - unique/total) — measured on the July 2026 snapshots in
+    # docs/signal_diagnosis_2026-07.md. FIXED 2026-08-26 (see
+    # docs/gaming_redesign_2026-08.md): `compute_gaming` no longer folds this
+    # into `value`, so ttr is no longer double-weighted in the score that
+    # reaches production. Still computed and returned as `vocab_score` for
+    # introspection and to keep the original diagnosis reproducible; it is
+    # not part of the aggregate.
     if len(tokens) < 50:
         return 0.0
     return 1.0 - min(len(set(tokens)) / len(tokens), 1.0)
@@ -63,9 +66,12 @@ def compute_gaming(messages: List[Message]) -> GamingResult:
     ttr = 1.0 - _ttr(tokens)
     burst = _burst(messages)
     vocab = _vocab_diversity(tokens)
+    # 3-term mean: vocab is excluded here because it duplicates ttr above the
+    # 50-token floor (see _vocab_diversity docstring). Still returned in
+    # vocab_score below, just not folded into value.
     return GamingResult(
         name="gaming",
-        value=((rep + ttr + burst + vocab) / 4) * 100,
+        value=((rep + ttr + burst) / 3) * 100,
         confidence=min(len(messages) / 50, 1.0),
         metadata={"token_count": len(tokens)},
         repetition_score=rep,

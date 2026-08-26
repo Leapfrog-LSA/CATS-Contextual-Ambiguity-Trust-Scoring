@@ -15,7 +15,7 @@ FastAPI (async, Python 3.11)
     │       ├─ Phase 2: compute_coherence()     spaCy NER + Jaccard similarity
     │       ├─ Phase 3: compute_volatility()    TextBlob sentiment spike detection
     │       ├─ Phase 4: compute_silence()       temporal gap analysis
-    │       ├─ Phase 5: compute_gaming()        TTR + burst + repetition + vocab
+    │       ├─ Phase 5: compute_gaming()        TTR + burst + repetition
     │       ├─ Phase 6: get_dynamic_weights()   context-aware weight selection
     │       ├─ Phase 7: aggregate_score()       weighted mean
     │       ├─ Phase 8: determine_band()        score → ordinal band
@@ -54,8 +54,12 @@ FastAPI (async, Python 3.11)
 - **TTR** (Type-Token Ratio): vocabulary diversity
 - **Repetition**: max bigram frequency normalised over 10
 - **Burst**: fraction of intervals < avg/3 (posting bursts)
-- **Vocab diversity**: inverse uniqueness for long texts
-- Score = mean of 4 sub-scores × 100
+- **Vocab diversity**: inverse uniqueness for long texts — computed and
+  returned (`vocab_score`) but **excluded from `value`**: above the 50-token
+  floor it is mathematically identical to TTR (both are `1 - unique/total`),
+  which silently double-weighted TTR until fixed 2026-08-26 (see
+  `docs/signal_diagnosis_2026-07.md` and `docs/gaming_redesign_2026-08.md`)
+- Score = mean of 3 sub-scores (repetition, TTR, burst) × 100
 
 ## Weight Matrix
 

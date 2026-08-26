@@ -1,3 +1,5 @@
+import pytest
+
 from cats.signals.silence import compute_silence
 from cats.signals.types import Message
 from cats.signals.volatility import compute_volatility
@@ -138,6 +140,30 @@ class TestGamingVocabFloor:
         assert _vocab_diversity(["stessa"] * 100) > 0.9
         varied = [f"parola{i}" for i in range(100)]
         assert _vocab_diversity(varied) == 0.0
+
+
+class TestGamingValueExcludesVocab:
+    def test_value_is_mean_of_repetition_ttr_burst_only(self):
+        # Regression test for the double-weighting bug fixed 2026-08-26
+        # (docs/gaming_redesign_2026-08.md): vocab_score duplicates ttr_score
+        # above the 50-token floor, so `value` must not include it.
+        from cats.signals.gaming import compute_gaming
+
+        msgs = [
+            Message(
+                timestamp=f"2026-01-{i+1:02d}T08:00:00+00:00",
+                text=(
+                    "Il governo italiano ha discusso il nuovo piano economico "
+                    "con i sindacati delle principali industrie oggi pomeriggio."
+                ),
+            )
+            for i in range(10)
+        ]
+        r = compute_gaming(msgs)
+        expected = (r.repetition_score + r.ttr_score + r.burst_score) / 3 * 100
+        assert r.value == pytest.approx(expected)
+        # vocab_score is still computed and returned, just not in the mean.
+        assert r.vocab_score == pytest.approx(r.ttr_score)
 
 
 class TestSilenceThresholds:
