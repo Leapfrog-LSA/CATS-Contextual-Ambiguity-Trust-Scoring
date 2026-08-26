@@ -9,6 +9,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Fixed
+- **Gaming's `vocab_score` silently double-weighted `ttr_score`** — the two
+  sub-scores are mathematically identical above the 50-token floor (both
+  compute `1 - unique/total`), diagnosed in `docs/signal_diagnosis_2026-07.md`
+  but left in place pending the recalibration cycle it required.
+  `compute_gaming`'s `value` is now the mean of the three genuinely distinct
+  sub-scores (repetition, ttr, burst); `vocab_score` is still computed and
+  returned for introspection, just no longer folded into `value`
+  (`cats/signals/gaming.py`, `docs/gaming_redesign_2026-08.md`).
 - **Round 12's `Il Corriere della Sera` fix didn't actually work** — caught the
   next morning when the daily collection run logged `feed carries a DTD;
   refusing to parse` for it. The round-12 replacement feed
@@ -29,6 +37,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Sixth Tone, The Hill Tech, Berlingske Business, Le Parisien) the old
   heuristic had been silently over-crediting as `ok`. See
   `docs/feed_health_2026-07.md` → *Round 12 correction*.
+
+### Changed
+- **Weights recalibrated after the gaming fix, future-holdout revalidated**
+  (`data/calibrated_weights.json`, `data/train.jsonl`,
+  `data/holdout_future.jsonl`, `docs/gaming_redesign_2026-08.md`). Same
+  protocol as the declared 28-Jul validation (train = merged 02/03/05-Jul
+  snapshots, holdout = the untouched 06-Jul snapshot, GA `--metric spearman
+  --seed 7`), rebuilt with the fixed gaming signal: concordance 0.753,
+  Spearman +0.551 (was 0.755 / +0.553) — no material regression, still clears
+  the 0.70 production criterion. The `news`-group gaming weight drops from
+  0.059 to 0.011: the calibrator now credits gaming close to its true
+  near-zero marginal value instead of partially rewarding the duplicated ttr
+  term.
 
 ### Added
 - **10 catalogued-but-feedless registry rows given working feeds, passing the

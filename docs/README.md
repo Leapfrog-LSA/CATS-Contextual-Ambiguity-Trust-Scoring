@@ -20,6 +20,7 @@
 | [calibration_findings_2026-08-21.md](calibration_findings_2026-08-21.md) | Checkpoint on the grown snapshot pool (59→95 sources, ~3 to ~7 weeks): same-sign edge, smaller magnitude; no weight change |
 | [signal_research_2026-07.md](signal_research_2026-07.md) | Domain-provenance investigation → the ENGINE 1.4 asymmetric penalty |
 | [signal_diagnosis_2026-07.md](signal_diagnosis_2026-07.md) | Ablation/LOSO diagnosis: coherence is load-bearing (SBERT), volatility/gaming are the redesign targets |
+| [gaming_redesign_2026-08.md](gaming_redesign_2026-08.md) | Gaming's vocab/ttr double-weight bug fixed (3-term mean); recalibrated + future-holdout revalidated, no regression |
 
 ## Data collection
 
