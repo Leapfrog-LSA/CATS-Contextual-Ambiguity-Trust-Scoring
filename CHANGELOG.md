@@ -87,6 +87,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   term.
 
 ### Added
+- **Content-credibility signal research spike (roadmap item 10) — result:
+  do not integrate** (`research/content_credibility_spike.py`,
+  `docs/content_credibility_spike_2026-08.md`). Tested three EN/IT
+  lexicon-based sub-scores named in the roadmap (sensationalism, claim
+  density, citation/attribution) against the same train/holdout split used
+  for this week's threshold retunes. None clears the noise bar (|ρ| ≤ 0.18
+  on the future holdout — the same magnitude as gaming's dead sub-scores);
+  `claim_density`, the only one with real magnitude, flips sign between
+  train (+0.056) and holdout (−0.179), the same instability pattern that
+  flagged volatility's old 0.4 threshold. Lexicons were fixed before any
+  correlation was computed (leakage discipline). Recommendation: a real
+  content-credibility signal needs model-based features (claim extraction,
+  hedging classification, or an LLM judge), not keyword lists — a
+  materially bigger investment not justified by this spike alone. Not
+  wired into scoring; no production code or calibrated weights changed.
 - **10 catalogued-but-feedless registry rows given working feeds, passing the
   ≥100-source calibration target for the first time (round 13 addendum)**
   (`data/labels.jsonl`, `data/Fonti_OSINT.csv`, `docs/feed_health_2026-07.md`).
