@@ -191,11 +191,23 @@ compilarle (regola di repo).
    risposte; sotto la soglia `requires_review` è forzato a `true` (prima: 1
    messaggio → 85/"high" senza flag). Solo flag: punteggi e bande invariati
    (penalizzarli richiede il ciclo di ricalibrazione).
-10. **Segnale content-credibility** (il lavoro NLP maggiore, già a roadmap
+10. ⚠️ **Segnale content-credibility** (il lavoro NLP maggiore, già a roadmap
     v2.0): densità di claim, sensazionalismo, pattern di citazione — copre la
     fake news su domini ordinari, invisibile sia ai segnali comportamentali sia
     a domain-provenance. Percorso: spike in `research/` (come per
     domain-provenance) → decisione → calibrazione → rivalidazione.
+    > **Aggiornamento (27 ago 2026):** spike eseguito
+    > (`research/content_credibility_spike.py`,
+    > `docs/content_credibility_spike_2026-08.md`) su tre euristiche lessicali
+    > EN/IT (sensazionalismo, densità di claim, citazione). Nessuna delle tre
+    > supera la soglia di rumore (|ρ| ≤ 0.18 sull'holdout futuro, la stessa
+    > magnitudine dei sub-score morti di `gaming`); `claim_density` cambia
+    > segno tra train e holdout, quindi anche il suo numero migliore non è
+    > affidabile. **Decisione: non integrare** — un segnale content-credibility
+    > reale richiederebbe feature basate su modello (estrazione di claim,
+    > classificazione di hedging, o un giudice LLM), un investimento
+    > materialmente più grande di un elenco di parole chiave, non giustificato
+    > da questo spike. Punto ancora aperto, non chiuso.
 11. **Spike di corroborazione cross-sorgente** (candidato indicato dai
     findings del 28 lug): verificare fattibilità e valore incrementale prima di
     impegnarsi — richiede un registro condiviso tra sorgenti, quindi un design
