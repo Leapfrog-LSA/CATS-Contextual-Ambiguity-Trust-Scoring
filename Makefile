@@ -14,6 +14,12 @@ nlp-download:
 	python -m spacy download it_core_news_lg
 	python -m textblob.download_corpora
 
+tranco-download:
+	curl -sL https://tranco-list.eu/top-1m.csv.zip -o /tmp/tranco_top1m.csv.zip
+	unzip -o /tmp/tranco_top1m.csv.zip -d data/
+	mv data/top-1m.csv data/tranco_top1m.csv
+	rm /tmp/tranco_top1m.csv.zip
+
 ## ── Tests ─────────────────────────────────────────────────────────────
 test:
 	pytest tests/ -v --cov=cats --cov-report=term-missing --cov-report=html

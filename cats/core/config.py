@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     spacy_model: str = "it_core_news_lg"
     nlp_gaming_min_tokens: int = 10
 
+    # Domain-provenance popularity corroboration: path to a local Tranco-format
+    # "rank,domain" CSV (https://tranco-list.eu, refreshed periodically offline
+    # — never fetched live during scoring). Missing/unreadable file degrades to
+    # the pre-existing behaviour (corroboration never fires), same pattern as
+    # the optional SBERT coherence backend.
+    domain_popularity_path: str = "data/tranco_top1m.csv"
+
     # Sentiment backend for the volatility signal: "textblob" (default, light)
     # or "bert" (requires requirements-bert.txt; falls back to textblob if the
     # transformers model is unavailable).

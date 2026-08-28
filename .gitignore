@@ -25,3 +25,4 @@ coverage.xml
 
 .venv/
 venv/
+data/tranco_top1m.csv
