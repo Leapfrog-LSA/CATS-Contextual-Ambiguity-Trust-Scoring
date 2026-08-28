@@ -208,10 +208,23 @@ compilarle (regola di repo).
     > classificazione di hedging, o un giudice LLM), un investimento
     > materialmente più grande di un elenco di parole chiave, non giustificato
     > da questo spike. Punto ancora aperto, non chiuso.
-11. **Spike di corroborazione cross-sorgente** (candidato indicato dai
+11. ⚠️ **Spike di corroborazione cross-sorgente** (candidato indicato dai
     findings del 28 lug): verificare fattibilità e valore incrementale prima di
     impegnarsi — richiede un registro condiviso tra sorgenti, quindi un design
     dati nuovo.
+    > **Aggiornamento (28 ago 2026):** spike eseguito
+    > (`research/cross_source_corroboration_spike.py`,
+    > `docs/cross_source_corroboration_spike_2026-08.md`). Prima lettura
+    > promettente (ρ +0.29/+0.33 train/holdout, segno stabile) — ma
+    > ispezionando i match, l'88% (284/321) è **una singola coppia di fonti**
+    > (CNET↔Mashable) che pubblica rubriche quotidiane templatizzate
+    > (hint Wordle/NYT), non vera corroborazione giornalistica. Rimuovendo
+    > quella coppia la correlazione scende del 20-25% e resta comunque
+    > concentrata su ~14 coppie su ~5900 possibili (20 fonti su ~109 con
+    > almeno un match). **Decisione: non costruire il registro
+    > cross-sorgente** — il fallimento del controllo di fattibilità è esso
+    > stesso la risposta a "verificare fattibilità prima di impegnarsi".
+    > Punto chiuso.
 12. **Manutenzione di domain-provenance**: aggiornamento periodico delle liste
     TLD/free-hosting/brand, ricalibrazione del coefficiente 0.6 quando il
     dataset cresce, rivalidazione via `research/validate_domain_penalty.py`.

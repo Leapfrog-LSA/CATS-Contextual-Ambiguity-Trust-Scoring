@@ -87,6 +87,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   term.
 
 ### Added
+- **Cross-source corroboration research spike (roadmap item 11) — result:
+  feasibility check failed, registry not built**
+  (`research/cross_source_corroboration_spike.py`,
+  `docs/cross_source_corroboration_spike_2026-08.md`). A per-source
+  corroboration rate (lexical overlap with another source's message within
+  ±48h) initially looked like a real signal — ρ +0.328 train / +0.290
+  holdout / +0.316 pooled, stable sign and magnitude, unlike the
+  content-credibility spike below. Inspecting the matches found 88%
+  (284/321) were **one source pair** (CNET↔Mashable) sharing a daily
+  templated puzzle-hint column format, not genuine story corroboration;
+  removing it drops the correlation 20-25% and what remains is spread
+  across only ~14 of ~5,900 possible source pairs (20 of ~109 sources ever
+  register a match). Recommendation: do not build the cross-source
+  registry the roadmap flagged as a real data-design cost — the
+  feasibility check this item asked for failed, closing the decision
+  point. Not wired into scoring; no production code changed.
 - **Content-credibility signal research spike (roadmap item 10) — result:
   do not integrate** (`research/content_credibility_spike.py`,
   `docs/content_credibility_spike_2026-08.md`). Tested three EN/IT
