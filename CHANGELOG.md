@@ -8,6 +8,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **CRED-1 cross-check reference tools (`research/`), evaluated and not
+  integrated into any pipeline.** `data/cred1_current.csv` is a snapshot of
+  [CRED-1](https://github.com/aloth/cred-1) (© Alexander Loth, CC BY 4.0,
+  aggregating OpenSources.co and the Iffy.news Index). Considered as a
+  calibration/watchlist source and rejected for that purpose: its
+  category/credibility_score taxonomy doesn't map onto `cats_flag`/
+  `evidence_level`, there's no import pipeline, and coverage of domains CATS
+  already tracks is thin. Kept only as a manual, read-only reference:
+  `research/cred1_lookup.py` looks up one domain by hand;
+  `research/compare_satire.py` and `research/compare_all_flags.py` compare
+  its labels against `data/disinfo_sources.csv` domain-by-domain. Findings
+  from that comparison (14/114 CATS domains covered, 5/14 — 36% — disagree,
+  zero coverage of the 50 Doppelganger clone domains) are in
+  `data/README.md`.
+
 ### Fixed
 - **Silence's 72h anomaly threshold was short of its plateau** — a sweep
   (`research/gaming_volatility_diagnosis_spike.py`) found rho strengthens

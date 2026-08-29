@@ -58,6 +58,32 @@ not place it on the factual-reporting scale. `suspect_source` entries are
 people/organisations without feeds and are ignored. Of the 87 probed domains,
 11 had a live feed on 2026-07-02 (most Doppelganger clones are seized/offline).
 
+## `cred1_current.csv` — external reference dataset (not used in any pipeline)
+Snapshot of [CRED-1](https://github.com/aloth/cred-1) (© Alexander Loth, CC BY 4.0),
+which aggregates OpenSources.co (CC BY 4.0, Melissa Zimdars et al.) and the
+Iffy.news Index (MIT, Reynolds Journalism Institute). 2 674 domains with a
+`category` (fake/conspiracy/unreliable/satire/mixed/reliable/rumor) and a
+0.0–1.0 `credibility_score`, plus enrichment fields (Tranco rank, domain age,
+fact-check claim count, Google Safe Browsing flag).
+
+**Not imported into `labels.jsonl`, `disinfo_sources.csv`, or any signal.**
+Evaluated as a calibration/watchlist source (2026-08-28) and rejected for that
+purpose: `category`/`credibility_score` do not map onto `cats_flag`/
+`evidence_level` as used here (see `disinfo_sources.csv` above — different
+taxonomy, different axis), there is no import pipeline, and coverage of the
+domains CATS actually tracks is thin (12%, see below). Kept only as a
+manual cross-check reference — `research/cred1_lookup.py` looks up a single
+domain; `research/compare_satire.py` and `research/compare_all_flags.py`
+compare its labels against `disinfo_sources.csv` domain-by-domain.
+
+Coverage/agreement against `disinfo_sources.csv` (2026-08-29, re-run
+`research/compare_all_flags.py` for a fresh count): only 14 of 114 CATS-known
+domains (12%) also appear in CRED-1, and of those 14, 5 (36%) disagree on
+category — in both directions. Zero of the 50 Doppelganger-style clone
+domains are covered at all (CRED-1 tracks editorial credibility, not
+domain/infrastructure impersonation). Treat any single CRED-1 label as a
+starting point to check by hand, not a verdict.
+
 ## `labels.jsonl`
 Output of step 1 (`label_from_ratings`) over the catalogue + ratings above
 (141 sources, labels 50–95), **plus** 11 very-low (10.0) sources appended from
