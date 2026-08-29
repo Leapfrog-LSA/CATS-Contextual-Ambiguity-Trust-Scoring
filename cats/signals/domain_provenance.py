@@ -20,6 +20,17 @@ false positives, but misses fake-news content on ordinary domains — so a *low*
 score is weak evidence of reliability. That asymmetry is for the aggregation /
 calibration layer to weigh.
 
+**Popularity corroboration, not a standalone flag.** A domain absent from the
+Tranco top-1M (`data/tranco_top1m.csv`, refreshed offline — see
+`domain_popularity_path`) adds a small bonus, but only ON TOP of an existing
+structural flag (free-host/suspicious-TLD/typosquat); it never fires alone.
+Empirically, 24% of legitimate sources in `data/Fonti_OSINT.csv` (government
+subdomains, regional open-data portals, niche outlets — a 25-source sample,
+2026-08-28) have no Tranco rank at all, so "unranked" alone is not a reliable
+red flag — it would mislabel real institutional sources. Used only as
+corroboration, it cannot introduce a new false positive on a domain that was
+otherwise clean; it can only sharpen confidence on a domain already flagged.
+
 **Status: standalone, not wired into scoring.** Adding a fifth signal changes
 band semantics and requires recalibration + future-holdout re-validation (see
 `CLAUDE.md`, `docs/signal_research_2026-07.md`). This module is the reusable,
@@ -41,6 +52,9 @@ import structlog
 from cats.signals.types import DomainProvenanceResult
 
 logger = structlog.get_logger()
+
+_popularity_table = None  # type: dict | None
+_popularity_load_attempted = False
 
 # Cheap/rare TLDs favoured by clone networks — the exact set Doppelganger used.
 SUSPICIOUS_TLDS = {
@@ -67,6 +81,51 @@ _FREE_HOST_POINTS = 45.0
 _SUSPICIOUS_TLD_POINTS = 40.0
 _TYPOSQUAT_POINTS = 50.0
 _BRAND_ON_BAD_TLD_POINTS = 25.0
+
+# Corroboration only — see module docstring for why this never fires alone.
+_LOW_POPULARITY_CORROBORATION_POINTS = 15.0
+
+
+def _load_popularity_table() -> "dict | None":
+    """Lazily load the local Tranco-format popularity table once; cache the result.
+
+    Missing/unreadable file degrades to ``None`` (corroboration never fires),
+    the same graceful-degradation pattern as the optional SBERT coherence
+    backend — never raises.
+    """
+    global _popularity_table, _popularity_load_attempted
+    if _popularity_table is not None or _popularity_load_attempted:
+        return _popularity_table
+    _popularity_load_attempted = True
+    try:
+        from cats.core.config import settings
+
+        table: dict = {}
+        with open(settings.domain_popularity_path, encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                rank_str, domain = line.split(",", 1)
+                table[domain.strip().lower()] = int(rank_str)
+        _popularity_table = table
+        logger.info("domain_popularity_loaded", entries=len(table))
+    except Exception as exc:
+        logger.warning("domain_popularity_unavailable", error=str(exc))
+        _popularity_table = None
+    return _popularity_table
+
+
+def _is_unranked(host: str) -> bool:
+    """True when ``host`` has no Tranco rank AND the table loaded successfully.
+
+    Returns False (never corroborates) when the table itself is unavailable —
+    absence of data must not look like absence of popularity.
+    """
+    table = _load_popularity_table()
+    if table is None:
+        return False
+    return host not in table
 
 
 def _levenshtein(a: str, b: str) -> int:
@@ -140,6 +199,14 @@ def compute_domain_provenance(url: str) -> DomainProvenanceResult:
         score += _TYPOSQUAT_POINTS
     if brand_on_bad_tld:
         score += _BRAND_ON_BAD_TLD_POINTS
+
+    # Corroboration only: never a standalone trigger (see module docstring —
+    # 24% of legitimate catalogue sources are unranked; only ever amplifies an
+    # existing structural flag, so a previously-clean domain cannot newly fire).
+    already_flagged = free_host or suspicious_tld or typosquat or brand_on_bad_tld
+    low_popularity_corroboration = already_flagged and _is_unranked(host)
+    if low_popularity_corroboration:
+        score += _LOW_POPULARITY_CORROBORATION_POINTS
     score = min(score, 100.0)
 
     reasons = [
@@ -149,6 +216,7 @@ def compute_domain_provenance(url: str) -> DomainProvenanceResult:
             ("suspicious_tld", suspicious_tld),
             ("typosquat", typosquat),
             ("brand_on_bad_tld", brand_on_bad_tld),
+            ("low_popularity_corroboration", low_popularity_corroboration),
         )
         if fired
     ]
@@ -161,5 +229,6 @@ def compute_domain_provenance(url: str) -> DomainProvenanceResult:
         free_host=free_host,
         typosquat=typosquat,
         brand_on_bad_tld=brand_on_bad_tld,
+        low_popularity_corroboration=low_popularity_corroboration,
         host=host,
     )

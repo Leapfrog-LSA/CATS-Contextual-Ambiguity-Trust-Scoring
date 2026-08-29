@@ -43,6 +43,11 @@ def test_clone_url_penalises_and_reports_domain():
     assert clone["trust_score"] < base["trust_score"]
     assert "domain_provenance" in clone["signals"]
     assert "domain_penalty" in clone["explanation"]
+    # 40.0 suspicious_tld + 25.0 brand_on_bad_tld. This runs without the
+    # (not committed, see .gitignore) Tranco popularity table, so the
+    # corroboration bonus in cats/signals/domain_provenance.py never fires
+    # here -- see tests/unit/test_domain_provenance.py::TestPopularityCorroboration
+    # for the corroboration path itself (mocked, deterministic).
     assert clone["explanation"]["domain_penalty"]["domain_red_flag_score"] == 65.0
 
 

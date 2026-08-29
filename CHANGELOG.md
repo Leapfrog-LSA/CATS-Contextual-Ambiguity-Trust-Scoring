@@ -23,6 +23,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   from that comparison (14/114 CATS domains covered, 5/14 — 36% — disagree,
   zero coverage of the 50 Doppelganger clone domains) are in
   `data/README.md`.
+- **`domain_provenance` popularity corroboration.** A domain already flagged
+  by an existing structural rule (free-host/suspicious-TLD/typosquat) that is
+  also absent from the Tranco top-1M now gets a +15 corroboration bonus.
+  Deliberately never a standalone trigger: a 25-source sample of
+  `data/Fonti_OSINT.csv` found 24% of legitimate catalogue sources (government
+  subdomains, regional open-data portals, niche outlets) have no Tranco rank
+  at all, so "unranked" alone would mislabel real institutional sources.
+  The popularity table itself is **not committed** (22 MB, 1M rows) — fetch it
+  with the new `make tranco-download` before evaluating URLs, same pattern as
+  `make nlp-download` for the spaCy model; without it the signal degrades
+  cleanly to pre-corroboration behaviour (unit tests mock the table instead
+  of depending on the download). Re-validated through the production path
+  (`research/validate_domain_penalty.py` on the 06-Jul future holdout, n=53,
+  with the table present): aggregate concordance/Spearman unchanged
+  (0.762/0.578, identical with and without the corroboration bonus) — the
+  three already-corrected sources get a sharper penalty, no pairwise
+  ranking flips on this holdout. `cats/signals/domain_provenance.py`,
+  `cats/signals/types.py`, `cats/core/config.py`, `Makefile`.
 
 ### Fixed
 - **Silence's 72h anomaly threshold was short of its plateau** — a sweep
