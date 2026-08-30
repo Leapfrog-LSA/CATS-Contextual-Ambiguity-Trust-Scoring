@@ -251,16 +251,30 @@ CATS_WEIGHTS_FILE=/path/to/calibrated_weights.json   # e.g. data/calibrated_weig
 it per source-type group, falling back to the static estimates when the setting
 is unset or the file is missing/invalid.
 
-> **Validated for production (6 Jul 2026).** `data/calibrated_weights.json`
-> was validated on a **future** snapshot the calibrator never saw: pairwise
-> concordance **0.755** (> 0.70), Spearman **+0.553**, band agreement 79.2%
-> within one band, with the low tail discriminating correctly (see
-> [calibration_findings_2026-07-28.md](calibration_findings_2026-07-28.md) and
-> the Art. 15 accuracy declaration). These are the recommended production
-> weights. **Caveat:** the result rests mostly on the *silence* signal;
-> coherence/volatility/gaming still carry little rank information (roadmap
-> item), so re-validate before relying on CATS against an adversary who can
-> manage their publishing cadence.
+> **Validated for production, most recently 28 Aug 2026.** `data/calibrated_weights.json`
+> was originally validated on a **future** snapshot the calibrator never saw
+> (6 Jul 2026): pairwise concordance 0.755, Spearman +0.553, band agreement
+> 79.2% within one band, low tail discriminating correctly (see
+> [calibration_findings_2026-07-28.md](calibration_findings_2026-07-28.md)).
+> Since then, three diagnosed signal bugs (gaming's duplicated sub-score, a
+> mistuned volatility threshold, a short silence threshold) were fixed, each
+> with its own recalibration + future-holdout revalidation cycle on the same
+> 56/53-source split — see
+> [gaming_redesign_2026-08.md](gaming_redesign_2026-08.md),
+> [volatility_retune_2026-08.md](volatility_retune_2026-08.md) and
+> [silence_retune_2026-08.md](silence_retune_2026-08.md). **Current numbers:
+> concordance 0.750 (0.762 with the domain-provenance penalty), Spearman
+> +0.554 (+0.578)** — no regression from the original result, small
+> movement within GA/measurement noise. These are the recommended
+> production weights. **Caveat:** the result still rests mostly on the
+> *silence* signal; coherence is a load-bearing tie-breaker; volatility and
+> gaming carry little rank information even after their bugs were fixed — a
+> content-credibility signal and a cross-source corroboration signal were
+> both investigated as replacements and rejected on real data (see
+> [content_credibility_spike_2026-08.md](content_credibility_spike_2026-08.md),
+> [cross_source_corroboration_spike_2026-08.md](cross_source_corroboration_spike_2026-08.md)) —
+> so re-validate before relying on CATS against an adversary who can manage
+> their publishing cadence.
 >
 > **Backend requirement:** these weights were calibrated with the **SBERT**
 > coherence backend, and the ablation diagnosis

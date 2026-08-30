@@ -7,7 +7,7 @@
 
 | Field | Value |
 |---|---|
-| Generated (UTC) | 2026-07-06 15:56:22Z |
+| Generated (UTC) | 2026-08-30 06:48:39Z |
 | Holdout dataset | `data/holdout_future.jsonl` |
 | Samples (n) | 53 |
 | Weights | data/calibrated_weights.json |
@@ -19,8 +19,8 @@ between predicted scores and ground-truth labels, not absolute error.
 
 | Metric | Value |
 |---|---|
-| Spearman rank correlation | **+0.553** |
-| Pairwise concordance (AUC-like) | **0.755** |
+| Spearman rank correlation | **+0.554** |
+| Pairwise concordance (AUC-like) | **0.750** |
 | Band agreement (exact) | 26.4% |
 | Band agreement (within 1 band) | 79.2% |
 
@@ -31,18 +31,18 @@ between predicted scores and ground-truth labels, not absolute error.
 
 | Band | n | Mean predicted | Mean label |
 |---|---|---|---|
-| very_low | 1 | 13.0 | 10.0 |
-| low | 4 | 34.9 | 10.0 |
-| medium | 5 | 53.9 | 37.0 |
-| medium_high | 42 | 65.8 | 67.1 |
-| high | 1 | 84.0 | 95.0 |
+| very_low | 1 | 8.7 | 10.0 |
+| low | 4 | 32.3 | 10.0 |
+| medium | 5 | 55.5 | 37.0 |
+| medium_high | 42 | 67.3 | 67.1 |
+| high | 1 | 86.6 | 95.0 |
 
 ### Per source type
 
 | Source type | n | Spearman | Concordance |
 |---|---|---|---|
 | default | 2 | n/a | n/a |
-| news | 51 | 0.512 | 0.734 |
+| news | 51 | 0.513 | 0.728 |
 
 ## Conditions & caveats
 

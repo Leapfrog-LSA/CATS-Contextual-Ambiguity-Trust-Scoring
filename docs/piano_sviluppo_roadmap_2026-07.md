@@ -228,14 +228,32 @@ compilarle (regola di repo).
 12. **Manutenzione di domain-provenance**: aggiornamento periodico delle liste
     TLD/free-hosting/brand, ricalibrazione del coefficiente 0.6 quando il
     dataset cresce, rivalidazione via `research/validate_domain_penalty.py`.
+    > **Aggiornamento (28 ago 2026):** primo passo fatto — corroborazione di
+    > popolarità via Tranco (dominio già flaggato + assente dalla top-1M →
+    > +15 al red-flag score, mai da solo). Rivalidato: concordance 0.762
+    > invariata con/senza il bonus sull'holdout corrente. Liste TLD/brand e
+    > ricalibrazione del coefficiente 0.6 restano da fare quando il dataset
+    > cresce ulteriormente.
 
 ### Fase D — Ricalibrazione e v2.0 (2027)
 
 13. **Ricalibrazione completa sul dataset ampliato**: pesi, soglie di banda
-    80/60/40/20 e soglie silence per tipo di sorgente (oggi tutte 72 h),
-    coefficiente della penalità di dominio; criterio di uscita: **concordanza /
-    AUC ≥ 0.78 su holdout futuro ≥ 100 sorgenti** e coda bassa che discrimina.
-    Aggiornare l'accuracy declaration (Art. 15) con i numeri misurati.
+    80/60/40/20 e soglie silence per tipo di sorgente (oggi tutte 96 h — non
+    più 72 h: vedi il retune del 26 ago 2026,
+    `docs/silence_retune_2026-08.md`), coefficiente della penalità di
+    dominio; criterio di uscita: **concordanza / AUC ≥ 0.78 su holdout futuro
+    ≥ 100 sorgenti** e coda bassa che discrimina. Aggiornare l'accuracy
+    declaration (Art. 15) con i numeri misurati.
+    > **Aggiornamento (26-28 ago 2026):** i tre bug/soglie diagnosticati a
+    > luglio sono stati corretti singolarmente, ciascuno con ciclo
+    > ricalibrazione + rivalidazione (`gaming_redesign_2026-08.md`,
+    > `volatility_retune_2026-08.md`, `silence_retune_2026-08.md`) — nessuna
+    > regressione, concordance attuale 0.750 (0.762 con la penalità di
+    > dominio). Questo NON è ancora la ricalibrazione completa di questo
+    > item: pesi e soglie di banda restano quelli calibrati sullo split
+    > 56/53 originale, non sull'holdout ≥100 sorgenti con storia multi-mese
+    > che questo item richiede — quel gate resta aperto, bloccato dal tempo
+    > di calendario necessario a maturare la storia per sorgente.
 14. **Release v2.0**: bump `ENGINE_VERSION`, changelog di rottura (punteggi non
     comparabili), `/explain` che segnala l'engine mismatch, release PyPI con
     conferma esplicita del maintainer.

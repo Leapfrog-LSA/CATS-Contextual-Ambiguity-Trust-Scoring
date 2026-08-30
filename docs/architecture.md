@@ -140,7 +140,23 @@ concordance **0.755 → 0.775** with every correction landing on a low-reliabili
 clone (reproduce via `research/validate_domain_penalty.py`). The four calibrated
 behavioural weights are unchanged. Scores of sources evaluated with a
 red-flagged URL are not comparable with ENGINE 1.3 scores (`/explain` flags the
-mismatch).
+mismatch). Re-run on the current (August 2026) calibrated weights after the
+gaming/volatility/silence fixes: **0.750 → 0.762** — same mechanism, smaller
+starting point (see the fix write-ups linked from the README).
+
+**Popularity corroboration (August 2026).** A domain already flagged by one of
+the structural rules above that is *also* absent from the [Tranco](https://tranco-list.eu)
+top-1M popularity ranking gets a further +15 to its red-flag score —
+corroboration only, never a standalone trigger: 24% of legitimate sources in
+`data/Fonti_OSINT.csv` (government subdomains, regional open-data portals,
+niche outlets) have no Tranco rank at all, so "unranked" alone would mislabel
+real institutional sources. The popularity table (`data/tranco_top1m.csv`,
+`make tranco-download`) is not committed and degrades cleanly when absent,
+same pattern as the optional SBERT coherence backend. See
+`cats/signals/domain_provenance.py` for the implementation and
+`tests/unit/test_domain_provenance.py::TestPopularityCorroboration` for the
+safety property that it cannot introduce a new false positive on a
+previously-clean domain.
 
 ### Response-time guardrails (risk register R3/R5)
 
