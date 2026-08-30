@@ -160,3 +160,4 @@
 {"source_id": "David Icke", "source_type": "news", "label": 10.0, "url": "https://davidicke.com", "rss": "https://davidicke.com/feed/"}
 {"source_id": "La Repubblica", "source_type": "news", "label": 85.0, "url": "https://www.repubblica.it", "rss": "https://www.repubblica.it/rss/homepage/rss2.0.xml"}
 {"source_id": "Open", "source_type": "news", "label": 85.0, "url": "https://www.open.online", "rss": "https://www.open.online/feed/"}
+{"source_id": "La Stampa", "source_type": "news", "label": 85.0, "url": "https://www.lastampa.it", "rss": "https://www.lastampa.it/rss/copertina.xml"}

@@ -623,7 +623,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Italia,La Repubblica Firenze,https://firenze.repubblica.it,,,IT-Toscana,,Firenze — Toscana
 📰 Media & Testate Giornalistiche,Italia,La Sentinella del Canavese,https://lasentinella.gelocal.it,,IT,,,Piemonte (Ivrea) — gruppo GEDI
 📰 Media & Testate Giornalistiche,Italia,La Sicilia,https://www.lasicilia.it,https://www.lasicilia.it/rss.xml,,IT-Sicilia,,Sicilia — Quotidiano
-📰 Media & Testate Giornalistiche,Italia,La Stampa,https://www.lastampa.it,,,,,Torino e nazionale — Quotidiano
+📰 Media & Testate Giornalistiche,Italia,La Stampa,https://www.lastampa.it,https://www.lastampa.it/rss/copertina.xml,IT,,,Torino e nazionale — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,La Tribuna di Treviso,https://tribunatreviso.gelocal.it,,IT,,,Treviso — gruppo GEDI
 📰 Media & Testate Giornalistiche,Italia,La Verità,https://www.laverita.info,https://www.laverita.info/feed/,,,,Sovranista — Quotidiano
 📰 Media & Testate Giornalistiche,Italia,La7,https://www.la7.it/tg-la7,,,,,Cairo — Cairoeditore — TV
@@ -719,7 +719,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Italia,Volere la Luna,https://volerelaluna.it,,,,,Analisi critica — Politica — Blog
 📰 Media & Testate Giornalistiche,Italia,VoxEurop Italia,https://voxeurop.eu/it,https://voxeurop.eu/it/feed/,,,Online,Europa — Prospettiva europea
 📰 Media & Testate Giornalistiche,Italia,Whistleblower.it,https://www.whistleblower.it,,,IT,,Protezione whistleblower — Italia
-📰 Media & Testate Giornalistiche,Italia,Wired Italia,https://www.wired.it,https://www.wired.it/feed/,,,Online,Tech/Cultura — Tech/Culture
+📰 Media & Testate Giornalistiche,Italia,Wired Italia,https://www.wired.it,https://www.wired.it/feed/rss,,,Online,Tech/Cultura — Tech/Culture
 📰 Media & Testate Giornalistiche,Italia,ZeroUno,https://www.zerounoweb.it,https://www.zerounoweb.it/feed/,,,,Enterprise — ICT
 📰 Media & Testate Giornalistiche,Europa Occidentale,192.com,https://www.192.com,,,,,Ricerca persone UK — Freemium — People Search
 📰 Media & Testate Giornalistiche,Europa Occidentale,20minutos,https://www.20minutos.es,,ES,,,Spagna free press

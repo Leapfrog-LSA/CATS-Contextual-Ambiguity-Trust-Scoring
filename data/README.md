@@ -92,7 +92,11 @@ Very Low (10.0) outlets with live RSS feeds appended directly (Natural News,
 Global Research, Before It's News, Activist Post, WND, Veterans Today, RT News,
 David Icke — ratings re-verified on the linked MBFC pages on 2026-07-05, rows
 in `ratings_provenance.csv`; they are appended rather than joined because they
-are not in the `Fonti_OSINT` catalogue) — **160 total**. Next step:
+are not in the `Fonti_OSINT` catalogue), **plus** 3 more Italian High-rated
+outlets added directly to the catalogue+ratings join since (`repubblica.it`,
+`open.online`, and `lastampa.it` — the last added 2026-08-30, see
+[`dataset_expansion_runbook.md`](../docs/dataset_expansion_runbook.md)) —
+**163 total**. Next step:
 
 ```bash
 python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
