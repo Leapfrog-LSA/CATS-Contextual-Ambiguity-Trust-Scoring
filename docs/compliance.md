@@ -24,7 +24,7 @@
 |---|---|
 | Transparency | Explainability endpoint; disclaimer on every explanation response |
 | Human oversight | `requires_review` flag (low bands, or insufficient evidence); contest/review endpoints |
-| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.755 → 0.775 with the domain penalty); band/silence thresholds still initial estimates |
+| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.750 → 0.762 with the domain penalty, as of the Aug 2026 gaming/volatility/silence fixes); band/silence thresholds still initial estimates |
 | Ordinal scoring | WP 4.3 — scores are rankings, not absolute probabilities |
 
 ## Known Limitations (WP 4.1)
@@ -42,7 +42,8 @@
 | v1.4 | ✅ Validation | Calibrated weights validated on a future snapshot (concordance 0.755) |
 | v1.5 | ✅ Hardening | Domain-provenance asymmetric penalty (ENGINE 1.4, 0.755 → 0.775) |
 | v1.6 | ✅ Guardrails & audit fixes | Language flag (R3) · minimum-evidence flag (R5) · adversarial regression suite · audit-IP spoofing fix, degraded NLP startup, calibrated weights shipped in Docker |
-| v2.0 (2027) | Validation | Concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout; recalibration with the diagnosis inputs; full EU AI Act **Annex IV** technical documentation |
+| Aug 2026 | ✅ Signal fixes | Gaming/volatility/silence bugs fixed and recalibrated (concordance 0.755 → 0.750, 0.775 → 0.762 with domain penalty — no regression); content-credibility and cross-source corroboration signals spiked and rejected; Tranco popularity corroboration added to the domain penalty |
+| v2.0 (2027) | Validation | Concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout with multi-month per-source history; band-threshold validation; full EU AI Act **Annex IV** technical documentation |
 
 > **Annex IV vs Annex IX.** The general "document the system" artefact under the
 > AI Act is **Annex IV** technical documentation (Art. 11) — *not* Annex IX.
