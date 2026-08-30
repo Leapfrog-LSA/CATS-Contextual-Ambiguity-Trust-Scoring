@@ -100,20 +100,27 @@ required.
 
 Well-known Italian national outlets to consider adding. **Each row's RSS URL and
 MBFC Factual-Reporting rating must be looked up and verified** before it is
-committed — they are left blank here on purpose (no invented data):
+committed. Status as of 2026-08-30 (was all blank/unverified before):
 
-| Outlet | Homepage | RSS (verify) | MBFC rating (look up) |
+| Outlet | Homepage | RSS (verified) | MBFC rating |
 |---|---|---|---|
-| Corriere della Sera | corriere.it | — | — |
-| La Repubblica | repubblica.it | — | — |
-| Il Sole 24 Ore | ilsole24ore.com | — | — |
-| ANSA | ansa.it | — | — |
-| La Stampa | lastampa.it | — | — |
-| Il Post | ilpost.it | — | — |
-| Rai News | rainews.it | — | — |
-| Il Fatto Quotidiano | ilfattoquotidiano.it | — | — |
-| Open | open.online | — | — |
-| Wired Italia | wired.it | — | — |
+| Corriere della Sera | corriere.it | `xml2.corriereobjects.it/rss/cronaca.xml` — in catalogue, labelled, collected | High |
+| La Repubblica | repubblica.it | `repubblica.it/rss/homepage/rss2.0.xml` — labelled, collected | High |
+| Il Sole 24 Ore | ilsole24ore.com | `ilsole24ore.com/rss/italia.xml` — labelled, collected | Mostly Factual |
+| ANSA | ansa.it | `ansa.it/sito/ansait_rss.xml` — labelled, collected | High |
+| La Stampa | lastampa.it | `lastampa.it/rss/copertina.xml` — **added 2026-08-30** (found via homepage RSS autodiscovery; catalogue cell was empty) | **High**, added 2026-08-30 (mediabiasfactcheck.com/la-stampa/) |
+| Il Post | ilpost.it | `ilpost.it/feed/` — labelled, but currently **blocked** (403 to this egress on both httpx and curl; `research/feed_health_audit.py` flags it, not a catalogue bug — IP-reputation pattern per `feed_health_2026-07.md`) | High |
+| Rai News | rainews.it | **not found** — the catalogue's `rainews.it/rss` cell 200s but is an HTML "Archivio RSS" directory page, not a feed; no per-section feed URL surfaced via homepage autodiscovery or by reading that page. Left blank rather than guess a subpage | **not covered by MBFC** (checked 2026-08-30, two targeted searches) |
+| Il Fatto Quotidiano | ilfattoquotidiano.it | `ilfattoquotidiano.it/feed/` — labelled, collected | High |
+| Open | open.online | `open.online/feed/` — labelled, collected | High |
+| Wired Italia | wired.it | `wired.it/feed/rss` — **fixed 2026-08-30** (old catalogue value `wired.it/feed/` now 400s; new URL confirmed live via autodiscovery + real `<item>`s) | **not covered by MBFC** for the IT edition — only the US/global *Wired Magazine* has a page, a different editorial operation; applying its rating to `wired.it` would misattribute, so left unrated |
+
+Net: only **La Stampa** was a genuine gap (added). The other placeholders had
+already been resolved in earlier sessions but the table was never updated to
+say so — verify against the table above before re-researching an outlet from
+scratch. Rai News and Wired Italia remain open, blocked on the reasons above
+rather than on missing verification effort; re-check periodically in case
+MBFC adds either or RaiNews starts advertising a real feed.
 
 For the low tail, add a few documented Italian low-reliability feeds (e.g. from
 the disinformation registry in `data/disinfo_sources.csv` that expose RSS) —
