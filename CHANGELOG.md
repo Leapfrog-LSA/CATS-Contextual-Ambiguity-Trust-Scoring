@@ -9,6 +9,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Volatility source-relative (z-score) normalization research spike —
+  result: not shipped, promising lead flagged for revisit**
+  (`research/volatility_normalization_spike.py`,
+  `docs/volatility_source_relative_spike_2026-08.md`). Raised in review:
+  the current spike threshold is global (same cutoff for every source
+  regardless of its natural tone variance); tested normalizing each
+  sentiment delta against the source's own mean/std instead. At one point
+  in the sweep (k=1.5) this beats production on both splits (train −0.326,
+  holdout −0.210 vs. the shipped −0.141/−0.151) — but one step away in the
+  same grid (k=2.0) the sign flips positive and gets stronger positive
+  still at k=2.5, the same instability pattern that disqualified
+  `claim_density` in the content-credibility spike. A hybrid
+  (absolute-floor + z-score) design reaches an even stronger holdout ρ
+  (−0.352) at the same k=1.5 but shows the identical flip at k=2.0 across
+  every floor tried — the instability is a property of the z-score
+  threshold itself, not the near-zero-variance edge case the floor was
+  meant to guard against. Not shipped on this evidence; flagged as the
+  most promising of the recent spikes (unlike the two rejected below) —
+  the sign-flip's consistency across 5 independent floor settings suggests
+  a real "grading a source on its own curve" mechanism worth re-testing
+  once a larger future holdout can tell a genuine k-dependent effect apart
+  from a sample artifact.
 - **CRED-1 cross-check reference tools (`research/`), evaluated and not
   integrated into any pipeline.** `data/cred1_current.csv` is a snapshot of
   [CRED-1](https://github.com/aloth/cred-1) (© Alexander Loth, CC BY 4.0,
