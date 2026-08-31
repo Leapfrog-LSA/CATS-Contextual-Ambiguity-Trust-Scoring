@@ -25,6 +25,7 @@
 | [silence_retune_2026-08.md](silence_retune_2026-08.md) | Silence anomaly threshold retuned 72h→96h (rho plateaus there); recalibrated + future-holdout revalidated, no regression |
 | [content_credibility_spike_2026-08.md](content_credibility_spike_2026-08.md) | Content-credibility signal spike (claim density, sensationalism, citation): none of three lexicon-based sub-scores clears the bar — recommendation is not to integrate |
 | [cross_source_corroboration_spike_2026-08.md](cross_source_corroboration_spike_2026-08.md) | Cross-source corroboration spike: initially-promising correlation traced to a single source-pair content-genre artifact (CNET/Mashable puzzle columns) — feasibility check failed, registry not built |
+| [volatility_source_relative_spike_2026-08.md](volatility_source_relative_spike_2026-08.md) | Source-relative (z-score) volatility normalization spike: a numerically strong result flips sign across a narrow hyperparameter window — not shipped, flagged to revisit at a larger holdout |
 
 ## Data collection
 
