@@ -252,10 +252,10 @@ If CATS is useful to you, **consider starring the repo ⭐** — it helps others
 doing OSINT/disinformation work find it.
 
 <!-- star-history:start -->
-<!-- Rendered weekly by .github/workflows/star-history.yml (a self-hosted
-     workaround for GitHub's June 2026 stargazers-API restriction, which
-     broke the previous live api.star-history.com badge) — filled in by its
-     first run rather than by hand. -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/star-history/star-history-dark.svg">
+  <img alt="Star history" src="assets/star-history/star-history-light.svg">
+</picture>
 <!-- star-history:end -->
 
 ***
