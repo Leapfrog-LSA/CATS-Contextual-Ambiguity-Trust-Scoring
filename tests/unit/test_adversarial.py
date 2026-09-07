@@ -89,15 +89,19 @@ class TestR4AdversarialEvasion:
         result = score(_daily_dicts(), source_type="news", weights=_NEWS_WEIGHTS, load_nlp=False, explain=False)
         assert result["band"] not in {"low", "very_low"}
 
-    def test_domain_penalty_catches_regular_cadence_clone(self):
+    def test_domain_penalty_catches_regular_cadence_clone(self, monkeypatch):
         # The ENGINE 1.4 counter-measure: the same source WITH its clone URL
         # (free-hosting subdomain, red-flag 45) drops by exactly 0.6 * 45 = 27
-        # and lands in a strictly lower band. Runs without the (not
-        # committed, see .gitignore) Tranco popularity table, so the
-        # corroboration bonus in cats/signals/domain_provenance.py never
-        # fires here -- see
+        # and lands in a strictly lower band. Popularity table mocked as
+        # "ranked" so this stays deterministic whether or not the real Tranco
+        # table (not committed -- see .gitignore) happens to be present in
+        # this environment -- see
         # tests/unit/test_domain_provenance.py::TestPopularityCorroboration
-        # for that path (mocked, deterministic).
+        # for the unranked/corroboration path itself.
+        import cats.signals.domain_provenance as dp
+
+        monkeypatch.setattr(dp, "_popularity_table", {"ilcorrispondente.blogspot.com": 123456})
+        monkeypatch.setattr(dp, "_popularity_load_attempted", True)
         base = score(_daily_dicts(), source_type="news", weights=_NEWS_WEIGHTS, load_nlp=False, explain=False)
         clone = score(
             _daily_dicts(),

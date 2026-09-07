@@ -8,6 +8,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **Domain-provenance list/coefficient maintenance** (roadmap item 12,
+  `docs/domain_provenance_maintenance_2026-09.md`). A false-positive audit
+  against the full 5 275-source `data/Fonti_OSINT.csv` catalogue (not
+  previously checked — every prior validation only measured effect on the
+  53-source labelled holdout) found two real precision gaps: (1) four
+  `SUSPICIOUS_TLDS` entries (`co`, `in`, `me`, `ws`) are real national
+  ccTLDs with substantial legitimate use (0.85% of the catalogue for `in`
+  alone) despite documented real clone use too — moved to a new
+  `AMBIGUOUS_CCTLDS` set gated behind Tranco-unranked corroboration, same
+  pattern as the existing popularity bonus; (2) the fixed edit-distance-≤2
+  typosquat check over-triggered on short brands (`ansa.it` alone
+  false-flagged 6 unrelated legitimate domains) — now length-tiered,
+  requiring distance 1 for brands of 7 characters or fewer. Catalogue
+  false-positive rate: 0.68% → 0.53% (36 → 28 of 5 275). `MAJOR_BRANDS`
+  also gained 7 real Doppelganger targets missed by the original
+  extraction. `DOMAIN_PENALTY_WEIGHT` (0.6) re-swept and confirmed
+  sign-stable on a 0.3–2.0 plateau — unchanged. Future-holdout concordance
+  unchanged (0.762) when the Tranco table is present; a documented tradeoff
+  makes that specific gain conditional on `make tranco-download` having
+  been run (not automated anywhere in this repo). Also fixed a latent test
+  bug this audit surfaced: two tests relied on the ambient absence of
+  `data/tranco_top1m.csv` rather than mocking it, the same fragility class
+  as the pre-existing SBERT/BERT backend-availability tests.
+
 ### Added
 - **Volatility source-relative (z-score) normalization research spike —
   result: not shipped, promising lead flagged for revisit**
