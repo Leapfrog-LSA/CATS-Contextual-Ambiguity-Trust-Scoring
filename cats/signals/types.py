@@ -52,5 +52,6 @@ class DomainProvenanceResult(SignalResult):
     free_host: bool = False
     typosquat: bool = False
     brand_on_bad_tld: bool = False
+    ambiguous_cctld_unranked: bool = False
     low_popularity_corroboration: bool = False
     host: str = ""

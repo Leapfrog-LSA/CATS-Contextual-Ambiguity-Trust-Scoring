@@ -234,6 +234,25 @@ compilarle (regola di repo).
     > invariata con/senza il bonus sull'holdout corrente. Liste TLD/brand e
     > ricalibrazione del coefficiente 0.6 restano da fare quando il dataset
     > cresce ulteriormente.
+    > **Aggiornamento (7 set 2026 —
+    > `docs/domain_provenance_maintenance_2026-09.md`):** primo audit di
+    > falsi positivi sull'intero catalogo (5 275 fonti in
+    > `data/Fonti_OSINT.csv`, mai controllato prima — ogni validazione
+    > precedente misurava solo l'effetto sull'holdout etichettato a 53
+    > fonti). Trovati e corretti due problemi reali di precisione: quattro
+    > ccTLD nazionali genuini (`co`, `in`, `me`, `ws`) erroneamente
+    > classificati come TLD "a buon mercato" da clone (ora richiedono anche
+    > l'assenza dal ranking Tranco); il controllo typosquat a distanza
+    > fissa ≤2 sovra-innescava sui brand corti (`ansa.it` da solo
+    > flaggava 6 fonti legittime non correlate) — ora la soglia è
+    > proporzionata alla lunghezza del brand. Falsi positivi sul catalogo:
+    > 0.68% → 0.53% (36 → 28 su 5 275). Aggiunti anche 7 brand reali mancanti
+    > a `MAJOR_BRANDS`. Coefficiente 0.6 ri-verificato con uno sweep
+    > (0.0–2.0): stabile su un plateau 0.3–2.0, nessuna modifica necessaria.
+    > Nessuna regressione di concordance sull'holdout futuro quando la
+    > tabella Tranco è presente; segnalato un compromesso — quel guadagno
+    > specifico ora dipende da `make tranco-download` (non automatizzato in
+    > questa repo), raccomandato come follow-up per un umano.
 
 ### Fase D — Ricalibrazione e v2.0 (2027)
 

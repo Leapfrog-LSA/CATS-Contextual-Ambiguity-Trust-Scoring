@@ -158,6 +158,27 @@ same pattern as the optional SBERT coherence backend. See
 safety property that it cannot introduce a new false positive on a
 previously-clean domain.
 
+**List maintenance (September 2026).** A false-positive audit of the TLD/brand
+lists against the full 5 275-source `data/Fonti_OSINT.csv` catalogue
+(`docs/domain_provenance_maintenance_2026-09.md`) found and fixed two real
+precision gaps: four `SUSPICIOUS_TLDS` entries (`co`, `in`, `me`, `ws`) are
+genuine national ccTLDs (Colombia, India, Montenegro, Samoa) with substantial
+legitimate use, moved to `AMBIGUOUS_CCTLDS` and gated behind the same
+Tranco-unranked check as the corroboration bonus above rather than firing on
+TLD alone; and the fixed edit-distance-2 typosquat window was tightened to
+distance-1 for brands of 7 characters or fewer, since short brands (`ansa.it`)
+have many more within-distance-2 neighbours by chance. `MAJOR_BRANDS` also
+gained 7 real Doppelganger targets missed by the original extraction
+(`nd-aktuell.de`, `rbc.ua`, `obozrevatel.com`, `delfi.lt/.lv/.ee`, `lsm.lv`).
+The `DOMAIN_PENALTY_WEIGHT` coefficient (0.6) was swept 0.0–2.0 and found
+sign-stable on a wide plateau (0.3–2.0 all give identical concordance) — no
+change made. One tradeoff worth knowing: the ccTLD fix's contribution to
+concordance (the `co`-family catch) now depends on the Tranco table being
+present, whereas before it fired unconditionally — without
+`data/tranco_top1m.csv` the future-holdout concordance for domain-provenance's
+one remaining fired case is 0.750 (vs. 0.762 with it); `make tranco-download`
+is a manual step, not run automatically anywhere in this repo today.
+
 ### Response-time guardrails (risk register R3/R5)
 
 Two blocks accompany every evaluation (`/evaluate` response and `cats.lite`

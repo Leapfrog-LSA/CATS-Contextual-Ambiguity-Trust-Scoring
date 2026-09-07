@@ -123,6 +123,65 @@ class TestPopularityCorroboration:
         assert r.value == 45.0
 
 
+class TestAmbiguousCcTlds:
+    """AMBIGUOUS_CCTLDS (2026-09 maintenance): real national ccTLDs (Colombia,
+    India, Montenegro, Samoa) that Doppelganger has also used -- fire only
+    when the domain is ALSO Tranco-unranked, never on TLD alone. See
+    docs/domain_provenance_maintenance_2026-09.md.
+    """
+
+    def test_ranked_cctld_source_scores_zero(self, monkeypatch):
+        # A real, established outlet on an ambiguous ccTLD, ranked in Tranco.
+        _mock_popularity_table(monkeypatch, {"thewire.in": 15045})
+        r = compute_domain_provenance("https://thewire.in")
+        assert r.value == 0.0
+        assert r.ambiguous_cctld_unranked is False
+
+    def test_unranked_cctld_source_is_flagged(self, monkeypatch):
+        _mock_popularity_table(monkeypatch, {})
+        r = compute_domain_provenance("https://empiresports.co")
+        assert r.ambiguous_cctld_unranked is True
+        assert r.value == 40.0
+        assert r.metadata["reasons"] == ["ambiguous_cctld_unranked"]
+
+    def test_ambiguous_cctld_does_not_also_get_corroboration_bonus(self, monkeypatch):
+        # Firing already required unranked-ness -- the separate +15
+        # corroboration bonus must not double-count that same evidence.
+        _mock_popularity_table(monkeypatch, {})
+        r = compute_domain_provenance("https://empiresports.co")
+        assert r.low_popularity_corroboration is False
+        assert r.value == 40.0  # not 55.0
+
+
+class TestLengthTieredTyposquat:
+    """A fixed distance<=2 window over-triggers on short brands (2026-09
+    maintenance finding: "ansa.it" alone false-flagged 6 unrelated legitimate
+    domains in data/Fonti_OSINT.csv). Brands of 7 chars or fewer now require
+    distance==1; longer brands keep distance<=2.
+    """
+
+    def test_short_brand_distance_two_is_not_flagged(self):
+        # "ansa.it" is 7 chars; "fnsi.it" is distance 2 away.
+        r = compute_domain_provenance("https://fnsi.it")
+        assert r.typosquat is False
+        assert r.value == 0.0
+
+    def test_short_brand_distance_one_is_still_flagged(self, monkeypatch):
+        # Distance-1 near-misses on short brands are still caught. Ranked so
+        # the corroboration bonus doesn't fire, deterministic either way.
+        _mock_popularity_table(monkeypatch, {"ansb.it": 1})
+        r = compute_domain_provenance("https://ansb.it")
+        assert r.typosquat is True
+        assert r.value == 50.0
+
+    def test_long_brand_distance_two_is_still_flagged(self, monkeypatch):
+        # "theguardian.com" is 15 chars; distance<=2 still applies.
+        _mock_popularity_table(monkeypatch, {"theguordlan.com": 1})
+        r = compute_domain_provenance("https://theguordlan.com")
+        assert r.typosquat is True
+        assert r.value == 50.0
+
+
 class TestDegradation:
     def test_no_domain_is_neutral_zero_confidence(self):
         r = compute_domain_provenance("")
