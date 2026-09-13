@@ -156,6 +156,24 @@ compilarle (regola di repo).
    per-sorgente multi-mese; allargare la coda bassa e la coda lunga italiana
    (oggi MBFC copre 104/310 domini, quasi nessuna testata regionale).
    *(processo continuo — gli snapshot si accumulano ogni lunedì)*
+   > **Aggiornamento (13 set 2026 —
+   > `docs/snapshot_history_audit_2026-09.md`):** primo merge completo dei
+   > 50 snapshot accumulati dal 2 luglio (mai fatto prima — solo fusioni a
+   > coppie per collisioni same-day). I numeri grezzi sembrano superare la
+   > soglia (109 fonti, mediana 72 giorni di span), ma un filtro di sanità
+   > sui timestamp basato sui dati (un istogramma mensile mostra una rottura
+   > netta: gennaio-maggio 2026 insieme contribuiscono solo 109 messaggi su
+   > 107.976) scopre che alcuni feed intercalano contenuto con data palesemente
+   > sbagliata nella finestra "recente" (un item CNET con epoch 1970, un
+   > 97.7% dei messaggi di Il Corriere della Sera datati 2022-2024 non 2026).
+   > Applicando il filtro, 8 fonti (tutte già note come a bassa affidabilità)
+   > restano a zero messaggi utilizzabili — i loro feed sono di fatto
+   > inattivi. Risultato netto: **99 fonti genuinamente utilizzabili, una in
+   > meno della soglia dei 100** — non ancora soddisfatta, nonostante il
+   > conteggio grezzo suggerisse il contrario. Nessun codice di produzione o
+   > dataset spedito modificato; l'unione pulita resta un artefatto derivato,
+   > non committato (troppo grande, ~83MB), rigenerabile con
+   > `research/snapshot_history_audit_2026-09.py`.
 6. ✅ **Trasformare il risk register in test eseguibili** (9 lug 2026): suite
    avversariale `tests/unit/test_adversarial.py` per i TODO R3/R4/R5 di
    `risk_management_art9.md` — clone a cadenza regolare (il caso che batte
