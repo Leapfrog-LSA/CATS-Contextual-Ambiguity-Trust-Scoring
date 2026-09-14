@@ -8,6 +8,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Snapshot history audit** (`research/snapshot_history_audit_2026-09.py`,
+  `docs/snapshot_history_audit_2026-09.md`). First full merge of all 50
+  snapshots accumulated since 2026-07-02 (previously only ever merged in
+  same-day collision pairs), checking Fase B's "≥100 sources with
+  multi-month history" exit bar. Raw numbers look like a pass (109 sources,
+  median 72-day span), but a monthly histogram of all messages shows a
+  sharp break: January-May 2026 combined contribute only 109 of 107 976
+  deduplicated messages, and some feeds interleave clearly mis-dated content
+  into their "recent" window (a CNET item defaulting to the 1970 epoch, a
+  1994 LA Times item, a source — Il Corriere della Sera — where 97.7% of its
+  collected messages turn out to date from 2022-2024, not 2026). A
+  data-driven sanity filter (drop messages outside 2026-06-01 to today)
+  removes 0.61% of messages overall but reduces 8 sources to zero usable
+  messages entirely — all previously-known low-reliability/disinfo-labelled
+  sources whose feeds are effectively dormant, not actively publishing.
+  Net result: 99 genuinely usable sources, one short of the Fase B bar, not
+  the 109 the raw count suggested. No production code or shipped dataset
+  changed; the cleaned merge is a derived, gitignored artifact
+  (`data/snapshots_merged_clean_2026-09.jsonl`, regenerate via the script)
+  for a future Fase D recalibration attempt.
+
 ### Fixed
 - **Domain-provenance list/coefficient maintenance** (roadmap item 12,
   `docs/domain_provenance_maintenance_2026-09.md`). A false-positive audit

@@ -27,6 +27,7 @@
 | [cross_source_corroboration_spike_2026-08.md](cross_source_corroboration_spike_2026-08.md) | Cross-source corroboration spike: initially-promising correlation traced to a single source-pair content-genre artifact (CNET/Mashable puzzle columns) — feasibility check failed, registry not built |
 | [volatility_source_relative_spike_2026-08.md](volatility_source_relative_spike_2026-08.md) | Source-relative (z-score) volatility normalization spike: a numerically strong result flips sign across a narrow hyperparameter window — not shipped, flagged to revisit at a larger holdout |
 | [domain_provenance_maintenance_2026-09.md](domain_provenance_maintenance_2026-09.md) | Domain-provenance list/coefficient maintenance: false-positive audit against the full 5 275-source catalogue found and fixed two precision gaps (ambiguous ccTLDs, short-brand typosquat over-triggering); 0.6 penalty coefficient re-checked, unchanged |
+| [snapshot_history_audit_2026-09.md](snapshot_history_audit_2026-09.md) | First full merge of all 50 accumulated snapshots: raw numbers look like Fase B is met (109 sources), but a data-driven sanity filter for mis-dated feed content (a CNET item defaulting to 1970, sources serving stale archives) reveals only 99 genuinely usable sources — one short of the bar |
 
 ## Data collection
 
