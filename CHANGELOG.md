@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`cats.lite.score_feed(url)`** (Task 16). Scores a source directly from its
+  RSS/Atom feed: fetches `url`, and if it is not itself a feed, discovers one
+  via the page's `<link rel="alternate">` tags or well-known paths (`/feed`,
+  `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`), then calls
+  `score()` on the extracted messages. Raises `FeedNotFoundError` (host
+  answers, no feed found) or `FeedFetchError` (host unreachable); reuses
+  `cats.calibration.collect_rss.fetch_feed`/`parse_feed` rather than
+  duplicating feed handling. See `docs/api.md` → *Library: scoring from a
+  feed*.
 - **Snapshot history audit** (`research/snapshot_history_audit_2026-09.py`,
   `docs/snapshot_history_audit_2026-09.md`). First full merge of all 50
   snapshots accumulated since 2026-07-02 (previously only ever merged in
