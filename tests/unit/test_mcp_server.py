@@ -72,6 +72,16 @@ def test_explain_bands_returns_table_and_disclaimer():
 
 
 def test_main_without_mcp_extra_raises_clear_error(monkeypatch):
+    # If something else in the test session already imported the real `mcp`
+    # package (e.g. gradio, when both optional extras happen to be installed
+    # together, imports it transitively), its submodules stay cached in
+    # sys.modules; blocking only the top-level "mcp" key would then leave
+    # `from mcp.server.fastmcp import FastMCP` resolving from that stale
+    # cache instead of raising ImportError -- so this actually spins up a
+    # real stdio MCP server reading pytest's captured stdin. Clear every
+    # mcp/mcp.* entry first so the None sentinel is the only thing found.
+    for name in [m for m in sys.modules if m == "mcp" or m.startswith("mcp.")]:
+        monkeypatch.delitem(sys.modules, name)
     monkeypatch.setitem(sys.modules, "mcp", None)
 
     with pytest.raises(SystemExit, match=r"pip install cats-scoring\[mcp\]"):

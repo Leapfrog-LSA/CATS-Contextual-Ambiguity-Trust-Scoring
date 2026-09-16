@@ -9,6 +9,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Public demo (Gradio, for Hugging Face Spaces)** (Task 19,
+  `examples/demo/app.py`). URL field + `source_type` selector + button; shows
+  score/band, primary driver, per-signal breakdown, methodology, and
+  language/evidence/domain-provenance warnings, with the ordinal-score
+  disclaimer always visible and a link back to the repo. Thin UI over
+  `cats.lite.score_feed` — no signal logic here. In-memory per-session rate
+  limit (~10 requests/minute); no user data collected or persisted —
+  requests are scored and discarded. `load_nlp=True` degrades silently if
+  the spaCy model isn't installed (same graceful-degradation behaviour as
+  the rest of CATS). `examples/demo/README.md` has local-run and
+  Hugging-Face-Space deploy instructions, including how to add
+  `it_core_news_lg` to the Space build. Not part of the normal test surface;
+  `tests/unit/test_demo_imports.py` skips via `pytest.importorskip("gradio")`
+  when the (non-core) `gradio` dependency isn't installed.
 - **MCP server** (Task 20, `cats/mcp_server.py`). Exposes CATS scoring as MCP
   tools for an LLM client: `score_source(url, source_type="default")` →
   `cats.lite.score_feed`, `score_messages(messages, source_type="default",
