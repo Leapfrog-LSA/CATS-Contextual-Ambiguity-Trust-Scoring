@@ -26,12 +26,17 @@ path touches them.
 Same caveats as the API: scores are ordinal (WP 4.3), the default NLP is
 Italian-optimised (WP 4.1) and, without ``init_nlp``/the spaCy model,
 NER coherence degrades to a neutral zero-confidence value.
+
+For a source you only have a URL for, ``score_feed(url)`` fetches its
+RSS/Atom feed (with autodiscovery) and calls ``score`` for you.
 """
 
 from __future__ import annotations
 
 import os
-from typing import Dict, List, Optional
+from html.parser import HTMLParser
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin, urlparse
 
 # The signal/scoring modules read ``cats.core.config.settings`` at import time,
 # which fails fast when the deployment-only variables are missing — correct for
@@ -47,6 +52,10 @@ _LITE_ENV_DEFAULTS = {
 for _k, _v in _LITE_ENV_DEFAULTS.items():
     os.environ.setdefault(_k, _v)
 
+import httpx  # noqa: E402
+import structlog  # noqa: E402
+
+from cats.calibration.collect_rss import DEFAULT_USER_AGENT, fetch_feed, parse_feed  # noqa: E402
 from cats.pipeline.language import detect_language  # noqa: E402
 from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
@@ -66,7 +75,169 @@ from cats.signals.silence import compute_silence  # noqa: E402
 from cats.signals.types import SignalResult  # noqa: E402
 from cats.signals.volatility import compute_volatility  # noqa: E402
 
+logger = structlog.get_logger()
+
 _nlp_attempted = False
+
+_WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml")
+
+
+class FeedNotFoundError(ValueError):
+    """Raised by :func:`score_feed` when no RSS/Atom feed could be discovered for a URL."""
+
+
+class FeedFetchError(ValueError):
+    """Raised by :func:`score_feed` when the source (and every candidate feed path) was unreachable."""
+
+
+class _FeedLinkParser(HTMLParser):
+    """Collects ``<link rel="alternate" type="application/{rss,atom}+xml" href=...>`` targets."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.feed_links: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        if tag.lower() != "link":
+            return
+        attrs_d = {k.lower(): (v or "") for k, v in attrs}
+        rel = attrs_d.get("rel", "").lower().split()
+        type_ = attrs_d.get("type", "").lower()
+        href = attrs_d.get("href", "")
+        if "alternate" in rel and type_ in ("application/rss+xml", "application/atom+xml") and href:
+            self.feed_links.append(href)
+
+
+def _discover_feed_links(html_text: str) -> List[str]:
+    parser = _FeedLinkParser()
+    try:
+        parser.feed(html_text)
+    except Exception:  # malformed HTML must degrade, not crash discovery
+        return []
+    return parser.feed_links
+
+
+def _reachable(exc: ValueError) -> bool:
+    """Whether ``exc`` (from :func:`fetch_feed`) still means the host answered.
+
+    An HTTP status error (404, 500, …) or an oversize-body rejection means we
+    got a real response; only a transport-level failure (DNS, connect,
+    timeout) means the host itself was unreachable.
+    """
+    cause = exc.__cause__
+    if cause is None or isinstance(cause, httpx.HTTPStatusError):
+        return True
+    return not isinstance(cause, httpx.HTTPError)
+
+
+def _resolve_feed(url: str, client: httpx.Client) -> Tuple[str, List[dict], str]:
+    """Find a scorable feed for ``url``: direct fetch, then HTML autodiscovery, then well-known paths."""
+    saw_reachable = False
+    html_body: Optional[str] = None
+
+    def _attempt(candidate: str, *, keep_html: bool) -> Optional[List[dict]]:
+        nonlocal saw_reachable, html_body
+        try:
+            body = fetch_feed(candidate, client)
+        except ValueError as exc:
+            if _reachable(exc):
+                saw_reachable = True
+            return None
+        saw_reachable = True
+        try:
+            messages = parse_feed(body)
+        except ValueError:
+            if keep_html:
+                html_body = body
+            return None
+        return messages or None
+
+    messages = _attempt(url, keep_html=True)
+    if messages:
+        return url, messages, "direct"
+
+    if html_body:
+        for link in _discover_feed_links(html_body):
+            candidate = urljoin(url, link)
+            messages = _attempt(candidate, keep_html=False)
+            if messages:
+                return candidate, messages, "html_link"
+
+    parsed = urlparse(url)
+    root = f"{parsed.scheme}://{parsed.netloc}"
+    for path in _WELL_KNOWN_FEED_PATHS:
+        candidate = root + path
+        messages = _attempt(candidate, keep_html=False)
+        if messages:
+            return candidate, messages, "well_known_path"
+
+    if not saw_reachable:
+        raise FeedFetchError(f"could not reach {url} or any candidate feed path")
+    raise FeedNotFoundError(f"no RSS/Atom feed found for {url}")
+
+
+def score_feed(
+    url: str,
+    source_type: str = "default",
+    *,
+    max_messages: int = 200,
+    timeout: float = 20.0,
+    client: Optional[httpx.Client] = None,
+    **score_kwargs,
+) -> Dict:
+    """Score a source straight from its RSS/Atom feed: fetch, discover, then :func:`score`.
+
+    ``url`` may omit its scheme (``https://`` is assumed). If it is not itself
+    a feed, autodiscovery tries the page's ``<link rel="alternate">`` tags,
+    then well-known paths (``/feed``, ``/rss``, …). ``client`` is an
+    injectable ``httpx.Client`` (e.g. with a ``MockTransport``) for tests;
+    when omitted, a client is created and closed internally.
+
+    Raises :class:`FeedNotFoundError` if the host answers but no feed is
+    found, or :class:`FeedFetchError` if the host (and every candidate path)
+    is unreachable. :func:`score` still raises ``ValueError`` if the feed
+    yields zero usable messages after normalisation.
+
+    The result adds a ``source`` block (``url``, ``feed_url``, ``messages``,
+    ``first_timestamp``, ``last_timestamp``, ``discovery``) to ``score()``'s
+    normal output. The domain-provenance penalty is applied against the
+    original ``url``, not the feed URL, so it scores the source rather than
+    its feed host.
+    """
+    if "://" not in url:
+        url = f"https://{url}"
+
+    owns_client = client is None
+    active_client = client or httpx.Client(
+        timeout=timeout, follow_redirects=True, headers={"User-Agent": DEFAULT_USER_AGENT}
+    )
+    try:
+        feed_url, messages, discovery = _resolve_feed(url, active_client)
+    finally:
+        if owns_client:
+            active_client.close()
+
+    messages.sort(key=lambda m: m["timestamp"])
+    messages = messages[-max_messages:]
+
+    result = score(messages, source_type=source_type, url=url, **score_kwargs)
+    result["source"] = {
+        "url": url,
+        "feed_url": feed_url,
+        "messages": len(messages),
+        "first_timestamp": messages[0]["timestamp"],
+        "last_timestamp": messages[-1]["timestamp"],
+        "discovery": discovery,
+    }
+    logger.info(
+        "score_feed_completed",
+        url=url,
+        feed_url=feed_url,
+        discovery=discovery,
+        messages=len(messages),
+        trust_score=result["trust_score"],
+    )
+    return result
 
 
 def init_nlp(model_name: Optional[str] = None) -> bool:

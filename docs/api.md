@@ -193,3 +193,39 @@ and a `cats_trust_score` histogram. Unauthenticated, for scraping.
 | 0–19   | `very_low` | Do not use without validation |
 
 > **Note**: scores are ordinal rankings, not absolute probabilities (WP 4.3).
+
+---
+
+## Library: scoring from a feed
+
+Everything above is the FastAPI deployment. For research, notebooks or quick
+evaluation, `cats.lite` runs the same signal pipeline with no database, Redis
+or API key — see the module docstring for `score(messages, ...)`.
+
+`score_feed(url)` goes one step further: given just a source's URL, it fetches
+its RSS/Atom feed and scores it directly, without building the `messages` list
+by hand.
+
+```python
+from cats.lite import score_feed
+
+result = score_feed("https://example-news-outlet.it", source_type="news")
+print(result["trust_score"], result["band"])
+print(result["source"])  # feed_url, message count, time span, how it was found
+```
+
+If `url` is not itself a feed, `score_feed` tries autodiscovery in order:
+1. the page's `<link rel="alternate" type="application/rss+xml|atom+xml">` tags,
+2. well-known paths (`/feed`, `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`).
+
+`FeedNotFoundError` is raised if the host answers but no feed is found;
+`FeedFetchError` if the host (and every candidate path) is unreachable. As
+with `score()`, `ValueError` is raised if the feed yields zero usable
+messages after normalisation. The domain-provenance penalty (see
+[architecture.md](architecture.md#domain-provenance-penalty-engine-14)) is
+applied against the source `url`, not the feed URL.
+
+`score_feed` accepts an injectable `client: httpx.Client` — useful for tests,
+or to reuse a client with custom headers/proxies across calls — plus
+`max_messages`, `timeout`, and any `score()` keyword argument
+(`weights`, `explain`, `load_nlp`, …).

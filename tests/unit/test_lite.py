@@ -1,6 +1,7 @@
+import httpx
 import pytest
 
-from cats.lite import score
+from cats.lite import FeedFetchError, FeedNotFoundError, score, score_feed
 
 _MESSAGES = [
     {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
@@ -69,3 +70,137 @@ def test_clean_url_does_not_change_score():
 def test_no_url_keeps_four_signals():
     result = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
     assert set(result["signals"]) == {"coherence", "volatility", "silence", "gaming"}
+
+
+# ── score_feed ────────────────────────────────────────────────────────────
+
+
+def _rss(items):
+    """Build a minimal RSS 2.0 document from ``[(title, rfc822_pubdate), ...]``."""
+    entries = "\n".join(
+        f"  <item>\n    <title>{title}</title>\n    <pubDate>{pub}</pubDate>\n  </item>" for title, pub in items
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">'
+        f"<channel>\n  <title>Test feed</title>\n{entries}\n</channel></rss>"
+    )
+
+
+_FIVE_ITEMS = _rss(
+    [
+        ("Prima notizia", "Mon, 01 Jun 2026 08:00:00 GMT"),
+        ("Seconda notizia", "Tue, 02 Jun 2026 08:00:00 GMT"),
+        ("Terza notizia", "Wed, 03 Jun 2026 08:00:00 GMT"),
+        ("Quarta notizia", "Thu, 04 Jun 2026 08:00:00 GMT"),
+        ("Quinta notizia", "Fri, 05 Jun 2026 08:00:00 GMT"),
+    ]
+)
+
+_PLAIN_HTML = "<html><head><title>Example</title></head><body><p>Not a feed.</p></body></html>"
+
+_HTML_WITH_LINK = (
+    "<html><head><title>Example</title>"
+    '<link rel="alternate" type="application/rss+xml" title="RSS" href="/blog/feed.xml"/>'
+    "</head><body><p>Blog homepage.</p></body></html>"
+)
+
+
+def _client_for(handler) -> httpx.Client:
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_score_feed_direct_rss():
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert str(request.url) == "https://example.com/rss"
+        return httpx.Response(200, text=_FIVE_ITEMS)
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/rss", client=client, load_nlp=False)
+
+    assert result["source"]["discovery"] == "direct"
+    assert result["source"]["feed_url"] == "https://example.com/rss"
+    assert result["source"]["messages"] == 5
+    assert 0.0 <= result["trust_score"] <= 100.0
+    assert set(result["signals"]) >= {"coherence", "volatility", "silence", "gaming"}
+
+
+def test_score_feed_autodiscovery_html_link():
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=_HTML_WITH_LINK)
+        if url == "https://example.com/blog/feed.xml":
+            return httpx.Response(200, text=_FIVE_ITEMS)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/", client=client, load_nlp=False)
+
+    assert result["source"]["discovery"] == "html_link"
+    assert result["source"]["feed_url"] == "https://example.com/blog/feed.xml"
+    assert result["source"]["messages"] == 5
+
+
+def test_score_feed_well_known_path():
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=_PLAIN_HTML)
+        if url == "https://example.com/feed":
+            return httpx.Response(200, text=_FIVE_ITEMS)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        result = score_feed("example.com", client=client, load_nlp=False)
+
+    assert result["source"]["discovery"] == "well_known_path"
+    assert result["source"]["feed_url"] == "https://example.com/feed"
+    assert result["source"]["url"] == "https://example.com"
+
+
+def test_score_feed_not_found():
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=_PLAIN_HTML)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        with pytest.raises(FeedNotFoundError):
+            score_feed("https://example.com/", client=client, load_nlp=False)
+
+
+def test_score_feed_unreachable_host_raises_fetch_error():
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("connection refused", request=request)
+
+    with _client_for(handler) as client:
+        with pytest.raises(FeedFetchError):
+            score_feed("https://example.com/", client=client, load_nlp=False)
+
+
+def test_score_feed_max_messages_keeps_latest():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=_FIVE_ITEMS)
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/rss", client=client, load_nlp=False, max_messages=2)
+
+    assert result["source"]["messages"] == 2
+    assert result["source"]["first_timestamp"] < result["source"]["last_timestamp"]
+    assert result["source"]["last_timestamp"].startswith("2026-06-05")
+
+
+def test_score_feed_applies_domain_penalty_to_source_url(monkeypatch):
+    import cats.signals.domain_provenance as dp
+
+    monkeypatch.setattr(dp, "_popularity_table", {"spiegel.ltd": 392949})
+    monkeypatch.setattr(dp, "_popularity_load_attempted", True)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=_FIVE_ITEMS)
+
+    with _client_for(handler) as client:
+        result = score_feed("https://spiegel.ltd/rss", client=client, load_nlp=False, source_type="news")
+
+    assert "domain_provenance" in result["signals"]
