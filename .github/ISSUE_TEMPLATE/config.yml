@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discuss a score, or ask a question, before filing an issue
+    url: https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/discussions
+    about: For open-ended questions or discussion — use the "Score feedback" issue template instead for a specific score you disagree with.
