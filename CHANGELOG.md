@@ -8,6 +8,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
+  ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
+  `score_feed` + Colab), a 5-line real-world use case, and a 5-line honest
+  limits section, all linking out to `docs/` for the full detail (nothing
+  removed — the 20-row documentation table, the full API JSON example, the
+  architecture diagram and the versioned roadmap tables all already live in
+  `docs/api.md`, `docs/architecture.md`, `docs/README.md` and
+  `docs/piano_sviluppo_roadmap_2026-07.md`). Internal shorthand (WP 4.1/4.3,
+  ENGINE 1.4, R3/R5) dropped from the top-level README; `.gitbook/`/
+  `SUMMARY.md` untouched. Star-history markers preserved.
+
 ### Added
 - **`cats.lite.score_feed(url)`** (Task 16). Scores a source directly from its
   RSS/Atom feed: fetches `url`, and if it is not itself a feed, discovers one
