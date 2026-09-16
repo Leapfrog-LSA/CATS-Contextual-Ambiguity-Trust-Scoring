@@ -233,9 +233,28 @@ Full plan: [docs/piano\_sviluppo\_roadmap\_2026-07.md](docs/piano_sviluppo_roadm
 - **Content-credibility and cross-source corroboration signals — spiked and rejected.** Both were investigated as candidate new signals; neither cleared the bar on real data (see [content-credibility](docs/content_credibility_spike_2026-08.md), [corroboration](docs/cross_source_corroboration_spike_2026-08.md)) — closing two open roadmap questions with a documented "no," not silence.
 - **Domain-provenance popularity corroboration** — a domain already flagged by an existing structural rule that's also absent from the Tranco top-1M now gets a small corroboration bonus; never a standalone trigger (see [architecture](docs/architecture.md)).
 
+### Next — autumn 2026 (v1.7)
+
+Focus shifts from signal research to **usability**, with no change to the
+scoring semantics (signals, weights, thresholds and `ENGINE_VERSION` stay as
+validated):
+
+1. **`cats.lite.score_feed(url)`** — score a source straight from its RSS/Atom
+   feed (feed autodiscovery, domain-provenance penalty applied to the source URL).
+2. **`cats score <url>` CLI** — `pip install cats-scoring && cats score https://…`
+   as the whole first-contact experience (human-readable and `--json` output).
+3. **One-screen README** — the research index moves to [docs/README.md](docs/README.md).
+4. **MCP server** (`cats-scoring[mcp]`) so agents and Claude can call CATS as a tool.
+5. **No-install public demo** and a citable whitepaper DOI.
+6. **Score-feedback issue template** — disagreements with a score become the
+   project's first human-labelled validation set (used for validation only,
+   never as signal input).
+7. **English NLP stack — research spike only**; ships, if ever, through the
+   full recalibration cycle below.
+
 ### Pending — v2.0 (2027)
 
-1. **Full recalibration on a grown validation set** — band-threshold validation (80/60/40/20) and the domain-penalty coefficient, gated on a ≥ 100-source future holdout with multi-month per-source history (target: concordance/AUC ≥ 0.78). The current merged pool already exceeds 100 sources; the multi-month history criterion is the remaining gate.
+1. **Full recalibration on a grown validation set** — band-threshold validation (80/60/40/20) and the domain-penalty coefficient, gated on a ≥ 100-source future holdout with multi-month per-source history (target: concordance/AUC ≥ 0.78). First attempt scheduled for **January 2027** regardless of the source count; shipped only if the bar is met.
 2. **A real content-credibility or corroboration signal**, if ever revisited, needs model-based features (claim extraction, embedding similarity) rather than the lexicon/keyword heuristics already tried and rejected above.
 3. **Full EU AI Act technical documentation** (Annex IV) — pending the human/legal high-risk classification decision (`docs/eu_ai_act/`).
 4. **Multilingual support** — beyond the Italian-optimised NLP stack (the language flag is the first step).
