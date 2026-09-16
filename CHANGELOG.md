@@ -8,6 +8,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-09-16
+
 ### Changed
 - **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
   ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
