@@ -1,0 +1,2 @@
+cats-scoring
+gradio>=5.0,<7.0
