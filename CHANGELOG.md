@@ -18,6 +18,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `cats.calibration.collect_rss.fetch_feed`/`parse_feed` rather than
   duplicating feed handling. See `docs/api.md` → *Library: scoring from a
   feed*.
+- **`cats score <url>` CLI** (Task 17, `cats/cli.py`). Thin `argparse` wrapper
+  over `cats.lite.score`/`score_feed` — no signal logic outside `cats/signals`.
+  `cats score <url-or-feed> [--source-type news|default] [--json]
+  [--max-messages N] [--weights FILE] [--no-nlp]`, or `cats score --messages
+  FILE.jsonl [...]` for already-structured input. Human-readable output by
+  default (score, band, primary driver, per-signal breakdown, language and
+  evidence flags, a `Review required:`/`Domain red flags:` line when
+  applicable, and the WP 4.1/4.3 ordinal disclaimer); `--json` prints
+  `score()`'s/`score_feed()`'s raw result. Exit codes: `0` ok, `2` bad
+  arguments, `3` feed not found/unreachable, `4` no valid messages. `cats
+  --version` prints `cats.__version__`. Installed via `[project.scripts]`
+  (`pip install -e .` → `cats`); no new dependencies.
 - **Snapshot history audit** (`research/snapshot_history_audit_2026-09.py`,
   `docs/snapshot_history_audit_2026-09.md`). First full merge of all 50
   snapshots accumulated since 2026-07-02 (previously only ever merged in
