@@ -102,6 +102,44 @@ outlets added directly to the catalogue+ratings join since (`repubblica.it`,
 python -m cats.calibration.collect_rss --labels data/labels.jsonl --out labelled_sources.jsonl
 ```
 
+## `human_labels.jsonl` — human score-disagreement labels
+
+Empty at first; grows as reviewers file "score feedback" issues (see
+`.github/ISSUE_TEMPLATE/score_feedback.yml`) or use the public demo/API
+contest flow. Schema, `validate(path)` and `append(record)` live in
+`cats/calibration/human_labels.py`; `research/ingest_score_feedback.py`
+turns a saved GitHub issue body into a draft record for review. One JSON
+object per line:
+
+```json
+{
+  "source_url": "https://example-news-outlet.it/rss",
+  "domain": "example-news-outlet.it",
+  "cats_score": 67.3,
+  "cats_band": "medium_high",
+  "engine_version": "1.4",
+  "cats_version": "1.7.0",
+  "human_band": "high",
+  "reason": "Consistent daily cadence for 3+ years, no clone domain flags; the silence signal is penalising a source that simply publishes weekly.",
+  "date": "2026-09-16",
+  "provenance": "issue",
+  "issue_url": "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/issues/123"
+}
+```
+
+`cats_band`/`human_band` must be one of the five CATS bands, `cats_band`
+must match `determine_band(cats_score)`, and `issue_url` is required when
+`provenance` is `"issue"`. `provenance` is one of `issue | demo |
+api_contest`.
+
+**Use is validation-only, and always will be: never signal input.** These
+are human disagreements with a score, not ground truth — feeding them into
+the signals or the weighted aggregation would let the same disagreement both
+grade CATS and train it (leakage). The intended use is comparing CATS's
+ranking against these human verdicts, the same validation role
+`data/labels.jsonl` plays for distant-supervision ratings but sourced from
+people instead.
+
 ## Pipeline outputs (merged snapshots 2026-07-02/03/05)
 `labelled_sources.jsonl` = `merge_snapshots` over the three snapshots in
 `data/snapshots/` (50 sources / 3 426 messages), temporal 80/20 split

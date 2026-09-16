@@ -8,6 +8,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **`data/human_labels.jsonl` schema + ingest script** (Task 28,
+  `cats/calibration/human_labels.py`). Empty registry file for human
+  score-disagreement verdicts (from the score-feedback issue template, the
+  demo, or an API-contest channel): `source_url`, `domain`, `cats_score`,
+  `cats_band`, `engine_version`, `cats_version`, `human_band`, `reason`,
+  `date`, `provenance` (`issue|demo|api_contest`), `issue_url` (required for
+  `provenance: issue`). `validate(path)`/`append(record)`/`load(path)`
+  enforce the schema — `cats_band` must match `determine_band(cats_score)`,
+  bands must be one of the five valid ones, dates ISO-8601 — and `append`
+  never partially writes an invalid record.
+  **Validation-only by design: never fed into a signal or the weighted
+  aggregation** (that would be leakage — the same disagreement would both
+  grade and train CATS). `research/ingest_score_feedback.py` parses a saved
+  GitHub issue body into a draft record (printed for review by default;
+  `--append` only writes once it validates and consent was given). See the
+  new `data/human_labels.jsonl` section in `data/README.md`.
+
 ### Changed
 - **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
   ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
