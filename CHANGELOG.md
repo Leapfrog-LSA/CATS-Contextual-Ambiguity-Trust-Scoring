@@ -8,6 +8,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **MCP server** (Task 20, `cats/mcp_server.py`). Exposes CATS scoring as MCP
+  tools for an LLM client: `score_source(url, source_type="default")` →
+  `cats.lite.score_feed`, `score_messages(messages, source_type="default",
+  url=None)` → `cats.lite.score`, and a static `explain_bands()` reference.
+  Every response carries a `disclaimer: "Ordinal score, not a probability (WP
+  4.3)"`. Thin wrapper — no signal logic outside `cats/signals`. Run via
+  `cats-mcp` (stdio) after `pip install cats-scoring[mcp]`; the `mcp` package
+  is an optional extra imported lazily inside `main()`, so importing the
+  module (and running its tests) never requires it — a missing extra exits
+  with a clear message instead of a raw `ImportError`. See
+  [docs/mcp.md](docs/mcp.md) for the Claude Code configuration snippet and
+  full tool reference.
+
 ## [1.7.0] — 2026-09-16
 
 ### Changed
