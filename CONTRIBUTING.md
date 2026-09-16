@@ -45,3 +45,22 @@ make test                     # all tests
 
 Use GitHub Issues with the appropriate template (bug / feature request).
 For security issues, see [SECURITY.md](SECURITY.md).
+
+## Reporting a score disagreement
+
+If a CATS score or band for a specific source doesn't look right, open an
+issue with the **"Score feedback"** template
+(`.github/ISSUE_TEMPLATE/score_feedback.yml`) rather than the generic bug
+report — it asks for exactly what a reviewer needs: the source URL, the
+command/call and version you used, the score you got vs. the one you
+expected, and your reasoning. This never changes a score automatically, and
+CATS scores are ordinal rankings of behavioural reliability, not fact-checks
+— explain what publishing/behavioural pattern the score seems to be missing,
+not whether a specific claim is true or false.
+
+With your explicit consent (a checkbox on the template), a maintainer may
+add your case, anonymised, to `data/human_labels.jsonl` — a record of
+human/CATS disagreements used only for **validation** of future
+calibration, never as direct input to the signals themselves (that would be
+leakage). Declining the checkbox is fine; the issue is still reviewed either
+way.

@@ -1,0 +1,91 @@
+name: "Score feedback: this score doesn't look right"
+description: Report a CATS score/band you disagree with, so it can be reviewed and, with your consent, recorded as a human label for future calibration.
+title: "[Score feedback] "
+labels: ["score-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a disagreement with a CATS score. This does **not**
+        change the score automatically — it's reviewed by a maintainer and, only
+        with your consent below, may be added anonymised to
+        `data/human_labels.jsonl` for future calibration/validation (never used
+        as direct input to the signals themselves). See
+        [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-a-score-disagreement).
+
+  - type: input
+    id: source_url
+    attributes:
+      label: Source URL
+      description: The URL you scored.
+      placeholder: https://example-news-outlet.it
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Command / call used
+      description: The exact `cats score ...` command, API request, or `score()`/`score_feed()` call.
+      placeholder: cats score https://example-news-outlet.it --source-type news
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: CATS version
+      description: Output of `cats --version`, `cats.__version__`, or the API's `/health` response.
+      placeholder: cats-scoring 1.7.0
+    validations:
+      required: true
+
+  - type: input
+    id: score_got
+    attributes:
+      label: Score / band you got
+      placeholder: "67.3 / medium_high"
+    validations:
+      required: true
+
+  - type: input
+    id: score_expected
+    attributes:
+      label: Score / band you expected
+      description: A precise number isn't necessary — a band is fine (e.g. "should be high, not medium").
+      placeholder: should be high
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why do you think the score is wrong?
+      description: >-
+        What you know about this source's *behaviour* (publishing consistency,
+        narrative drift, cadence, signs of manipulation) that the score seems
+        to be missing or getting wrong. CATS is not a fact-checker — please
+        describe reliability patterns, not whether specific claims are true or
+        false.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: >-
+            I consent to this case (source URL, scores, and my stated reason —
+            no other personal data) being added anonymised to
+            `data/human_labels.jsonl` for future calibration/validation.
+          required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        Reminder: CATS scores are ordinal rankings of source reliability
+        patterns, not absolute probabilities, and CATS never labels a source
+        as "disinformation" — see the top-level
+        [README](../../README.md#trust-score-bands) and
+        [docs/architecture.md](../../docs/architecture.md).

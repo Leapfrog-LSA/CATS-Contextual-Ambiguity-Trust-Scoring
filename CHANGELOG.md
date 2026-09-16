@@ -9,6 +9,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Score-feedback issue template** (Task 26,
+  `.github/ISSUE_TEMPLATE/score_feedback.yml`). A GitHub issue form for "this
+  score doesn't look right": source URL, command/call and version used,
+  score/band obtained vs. expected, reasoning, and an explicit opt-in consent
+  checkbox to add the (anonymised) case to `data/human_labels.jsonl` for
+  future calibration/validation — never as direct signal input.
+  `.github/ISSUE_TEMPLATE/config.yml` (new) links to Discussions for
+  open-ended questions; existing bug-report/feature-request templates
+  unchanged. `CONTRIBUTING.md` gained a "Reporting a score disagreement"
+  section pointing to the new template.
 - **Public demo (Gradio, for Hugging Face Spaces)** (Task 19,
   `examples/demo/app.py`). URL field + `source_type` selector + button; shows
   score/band, primary driver, per-signal breakdown, methodology, and
