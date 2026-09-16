@@ -19,6 +19,34 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   open-ended questions; existing bug-report/feature-request templates
   unchanged. `CONTRIBUTING.md` gained a "Reporting a score disagreement"
   section pointing to the new template.
+- **Public demo (Gradio, for Hugging Face Spaces)** (Task 19,
+  `examples/demo/app.py`). URL field + `source_type` selector + button; shows
+  score/band, primary driver, per-signal breakdown, methodology, and
+  language/evidence/domain-provenance warnings, with the ordinal-score
+  disclaimer always visible and a link back to the repo. Thin UI over
+  `cats.lite.score_feed` — no signal logic here. In-memory per-session rate
+  limit (~10 requests/minute); no user data collected or persisted —
+  requests are scored and discarded. `load_nlp=True` degrades silently if
+  the spaCy model isn't installed (same graceful-degradation behaviour as
+  the rest of CATS). `examples/demo/README.md` has local-run and
+  Hugging-Face-Space deploy instructions, including how to add
+  `it_core_news_lg` to the Space build. Not part of the normal test surface;
+  `tests/unit/test_demo_imports.py` skips via `pytest.importorskip("gradio")`
+  when the (non-core) `gradio` dependency isn't installed.
+- **MCP server** (Task 20, `cats/mcp_server.py`). Exposes CATS scoring as MCP
+  tools for an LLM client: `score_source(url, source_type="default")` →
+  `cats.lite.score_feed`, `score_messages(messages, source_type="default",
+  url=None)` → `cats.lite.score`, and a static `explain_bands()` reference.
+  Every response carries a `disclaimer: "Ordinal score, not a probability (WP
+  4.3)"`. Thin wrapper — no signal logic outside `cats/signals`. Run via
+  `cats-mcp` (stdio) after `pip install cats-scoring[mcp]`; the `mcp` package
+  is an optional extra imported lazily inside `main()`, so importing the
+  module (and running its tests) never requires it — a missing extra exits
+  with a clear message instead of a raw `ImportError`. See
+  [docs/mcp.md](docs/mcp.md) for the Claude Code configuration snippet and
+  full tool reference.
+
+## [1.7.0] — 2026-09-16
 
 ### Changed
 - **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
