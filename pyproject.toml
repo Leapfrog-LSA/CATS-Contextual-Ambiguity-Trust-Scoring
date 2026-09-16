@@ -35,6 +35,9 @@ dependencies = [
 sbert = ["sentence-transformers>=2.7,<4.0"]
 bert = ["transformers>=4.40,<5.0", "torch>=2.2,<3.0"]
 
+[project.scripts]
+cats = "cats.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring"
 Documentation = "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/tree/main/docs"
