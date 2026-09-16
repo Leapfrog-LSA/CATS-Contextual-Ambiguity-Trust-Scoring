@@ -11,8 +11,8 @@ authors:
   - name: "Leapfrog-LSA"
 repository-code: "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring"
 license: MIT
-version: 1.6.0
-date-released: 2026-07-12
+version: 1.7.0
+date-released: 2026-09-16
 keywords:
   - OSINT
   - trust-scoring
