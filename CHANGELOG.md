@@ -8,6 +8,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **English NLP stack research spike — not shipped** (Task 27,
+  `research/english_stack_spike.py`, `docs/english_stack_spike_2026-11.md`).
+  Compares the shipped Italian-optimised stack (`it_core_news_lg` NER
+  coherence, TextBlob + Italian negation correction for volatility) against
+  `en_core_web_lg` + plain TextBlob on the future holdout's English-marker
+  subset (34 of 53 sources — `cats.pipeline.language.detect_language` has no
+  `"english"` category, so the spike adds its own local marker-word
+  heuristic, not proposed for production). Result: concordance 0.691 → 0.724,
+  Spearman 0.434 → 0.479 — a real, consistently-signed gain, but on n=34 with
+  an unvalidated language heuristic and a spaCy-model-version confound
+  (`en_core_web_lg` 3.8.0 vs. shipped `it_core_news_lg` 3.7.0). Flagged as
+  the most promising of the recent NLP-adjacent spikes, revisit at a larger
+  future holdout. **No changes to `cats/signals/*` or the calibrated
+  weights** — the spike imports and reconfigures `cats.signals.coherence`'s
+  model and reimplements volatility's polarity step locally.
+
 ### Changed
 - **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
   ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
