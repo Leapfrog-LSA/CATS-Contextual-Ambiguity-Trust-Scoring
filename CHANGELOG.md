@@ -8,7 +8,62 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-09-16
+
+### Changed
+- **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
+  ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
+  `score_feed` + Colab), a 5-line real-world use case, and a 5-line honest
+  limits section, all linking out to `docs/` for the full detail (nothing
+  removed — the 20-row documentation table, the full API JSON example, the
+  architecture diagram and the versioned roadmap tables all already live in
+  `docs/api.md`, `docs/architecture.md`, `docs/README.md` and
+  `docs/piano_sviluppo_roadmap_2026-07.md`). Internal shorthand (WP 4.1/4.3,
+  ENGINE 1.4, R3/R5) dropped from the top-level README; `.gitbook/`/
+  `SUMMARY.md` untouched. Star-history markers preserved.
+
 ### Added
+- **`cats.lite.score_feed(url)`** (Task 16). Scores a source directly from its
+  RSS/Atom feed: fetches `url`, and if it is not itself a feed, discovers one
+  via the page's `<link rel="alternate">` tags or well-known paths (`/feed`,
+  `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`), then calls
+  `score()` on the extracted messages. Raises `FeedNotFoundError` (host
+  answers, no feed found) or `FeedFetchError` (host unreachable); reuses
+  `cats.calibration.collect_rss.fetch_feed`/`parse_feed` rather than
+  duplicating feed handling. See `docs/api.md` → *Library: scoring from a
+  feed*.
+- **`cats score <url>` CLI** (Task 17, `cats/cli.py`). Thin `argparse` wrapper
+  over `cats.lite.score`/`score_feed` — no signal logic outside `cats/signals`.
+  `cats score <url-or-feed> [--source-type news|default] [--json]
+  [--max-messages N] [--weights FILE] [--no-nlp]`, or `cats score --messages
+  FILE.jsonl [...]` for already-structured input. Human-readable output by
+  default (score, band, primary driver, per-signal breakdown, language and
+  evidence flags, a `Review required:`/`Domain red flags:` line when
+  applicable, and the WP 4.1/4.3 ordinal disclaimer); `--json` prints
+  `score()`'s/`score_feed()`'s raw result. Exit codes: `0` ok, `2` bad
+  arguments, `3` feed not found/unreachable, `4` no valid messages. `cats
+  --version` prints `cats.__version__`. Installed via `[project.scripts]`
+  (`pip install -e .` → `cats`); no new dependencies.
+- **Snapshot history audit** (`research/snapshot_history_audit_2026-09.py`,
+  `docs/snapshot_history_audit_2026-09.md`). First full merge of all 50
+  snapshots accumulated since 2026-07-02 (previously only ever merged in
+  same-day collision pairs), checking Fase B's "≥100 sources with
+  multi-month history" exit bar. Raw numbers look like a pass (109 sources,
+  median 72-day span), but a monthly histogram of all messages shows a
+  sharp break: January-May 2026 combined contribute only 109 of 107 976
+  deduplicated messages, and some feeds interleave clearly mis-dated content
+  into their "recent" window (a CNET item defaulting to the 1970 epoch, a
+  1994 LA Times item, a source — Il Corriere della Sera — where 97.7% of its
+  collected messages turn out to date from 2022-2024, not 2026). A
+  data-driven sanity filter (drop messages outside 2026-06-01 to today)
+  removes 0.61% of messages overall but reduces 8 sources to zero usable
+  messages entirely — all previously-known low-reliability/disinfo-labelled
+  sources whose feeds are effectively dormant, not actively publishing.
+  Net result: 99 genuinely usable sources, one short of the Fase B bar, not
+  the 109 the raw count suggested. No production code or shipped dataset
+  changed; the cleaned merge is a derived, gitignored artifact
+  (`data/snapshots_merged_clean_2026-09.jsonl`, regenerate via the script)
+  for a future Fase D recalibration attempt.
 - **English NLP stack research spike — not shipped** (Task 27,
   `research/english_stack_spike.py`, `docs/english_stack_spike_2026-11.md`).
   Compares the shipped Italian-optimised stack (`it_core_news_lg` NER
@@ -76,63 +131,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with a clear message instead of a raw `ImportError`. See
   [docs/mcp.md](docs/mcp.md) for the Claude Code configuration snippet and
   full tool reference.
-
-## [1.7.0] — 2026-09-16
-
-### Changed
-- **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to
-  ~130 lines: leads with a real `cats score` output, a 30-second try-it (CLI +
-  `score_feed` + Colab), a 5-line real-world use case, and a 5-line honest
-  limits section, all linking out to `docs/` for the full detail (nothing
-  removed — the 20-row documentation table, the full API JSON example, the
-  architecture diagram and the versioned roadmap tables all already live in
-  `docs/api.md`, `docs/architecture.md`, `docs/README.md` and
-  `docs/piano_sviluppo_roadmap_2026-07.md`). Internal shorthand (WP 4.1/4.3,
-  ENGINE 1.4, R3/R5) dropped from the top-level README; `.gitbook/`/
-  `SUMMARY.md` untouched. Star-history markers preserved.
-
-### Added
-- **`cats.lite.score_feed(url)`** (Task 16). Scores a source directly from its
-  RSS/Atom feed: fetches `url`, and if it is not itself a feed, discovers one
-  via the page's `<link rel="alternate">` tags or well-known paths (`/feed`,
-  `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`), then calls
-  `score()` on the extracted messages. Raises `FeedNotFoundError` (host
-  answers, no feed found) or `FeedFetchError` (host unreachable); reuses
-  `cats.calibration.collect_rss.fetch_feed`/`parse_feed` rather than
-  duplicating feed handling. See `docs/api.md` → *Library: scoring from a
-  feed*.
-- **`cats score <url>` CLI** (Task 17, `cats/cli.py`). Thin `argparse` wrapper
-  over `cats.lite.score`/`score_feed` — no signal logic outside `cats/signals`.
-  `cats score <url-or-feed> [--source-type news|default] [--json]
-  [--max-messages N] [--weights FILE] [--no-nlp]`, or `cats score --messages
-  FILE.jsonl [...]` for already-structured input. Human-readable output by
-  default (score, band, primary driver, per-signal breakdown, language and
-  evidence flags, a `Review required:`/`Domain red flags:` line when
-  applicable, and the WP 4.1/4.3 ordinal disclaimer); `--json` prints
-  `score()`'s/`score_feed()`'s raw result. Exit codes: `0` ok, `2` bad
-  arguments, `3` feed not found/unreachable, `4` no valid messages. `cats
-  --version` prints `cats.__version__`. Installed via `[project.scripts]`
-  (`pip install -e .` → `cats`); no new dependencies.
-- **Snapshot history audit** (`research/snapshot_history_audit_2026-09.py`,
-  `docs/snapshot_history_audit_2026-09.md`). First full merge of all 50
-  snapshots accumulated since 2026-07-02 (previously only ever merged in
-  same-day collision pairs), checking Fase B's "≥100 sources with
-  multi-month history" exit bar. Raw numbers look like a pass (109 sources,
-  median 72-day span), but a monthly histogram of all messages shows a
-  sharp break: January-May 2026 combined contribute only 109 of 107 976
-  deduplicated messages, and some feeds interleave clearly mis-dated content
-  into their "recent" window (a CNET item defaulting to the 1970 epoch, a
-  1994 LA Times item, a source — Il Corriere della Sera — where 97.7% of its
-  collected messages turn out to date from 2022-2024, not 2026). A
-  data-driven sanity filter (drop messages outside 2026-06-01 to today)
-  removes 0.61% of messages overall but reduces 8 sources to zero usable
-  messages entirely — all previously-known low-reliability/disinfo-labelled
-  sources whose feeds are effectively dormant, not actively publishing.
-  Net result: 99 genuinely usable sources, one short of the Fase B bar, not
-  the 109 the raw count suggested. No production code or shipped dataset
-  changed; the cleaned merge is a derived, gitignored artifact
-  (`data/snapshots_merged_clean_2026-09.jsonl`, regenerate via the script)
-  for a future Fase D recalibration attempt.
 
 ### Fixed
 - **Domain-provenance list/coefficient maintenance** (roadmap item 12,
