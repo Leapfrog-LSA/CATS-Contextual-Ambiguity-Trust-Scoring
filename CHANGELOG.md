@@ -24,6 +24,60 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   future holdout. **No changes to `cats/signals/*` or the calibrated
   weights** — the spike imports and reconfigures `cats.signals.coherence`'s
   model and reimplements volatility's polarity step locally.
+- **`data/human_labels.jsonl` schema + ingest script** (Task 28,
+  `cats/calibration/human_labels.py`). Empty registry file for human
+  score-disagreement verdicts (from the score-feedback issue template, the
+  demo, or an API-contest channel): `source_url`, `domain`, `cats_score`,
+  `cats_band`, `engine_version`, `cats_version`, `human_band`, `reason`,
+  `date`, `provenance` (`issue|demo|api_contest`), `issue_url` (required for
+  `provenance: issue`). `validate(path)`/`append(record)`/`load(path)`
+  enforce the schema — `cats_band` must match `determine_band(cats_score)`,
+  bands must be one of the five valid ones, dates ISO-8601 — and `append`
+  never partially writes an invalid record.
+  **Validation-only by design: never fed into a signal or the weighted
+  aggregation** (that would be leakage — the same disagreement would both
+  grade and train CATS). `research/ingest_score_feedback.py` parses a saved
+  GitHub issue body into a draft record (printed for review by default;
+  `--append` only writes once it validates and consent was given). See the
+  new `data/human_labels.jsonl` section in `data/README.md`.
+- **Score-feedback issue template** (Task 26,
+  `.github/ISSUE_TEMPLATE/score_feedback.yml`). A GitHub issue form for "this
+  score doesn't look right": source URL, command/call and version used,
+  score/band obtained vs. expected, reasoning, and an explicit opt-in consent
+  checkbox to add the (anonymised) case to `data/human_labels.jsonl` for
+  future calibration/validation — never as direct signal input.
+  `.github/ISSUE_TEMPLATE/config.yml` (new) links to Discussions for
+  open-ended questions; existing bug-report/feature-request templates
+  unchanged. `CONTRIBUTING.md` gained a "Reporting a score disagreement"
+  section pointing to the new template.
+- **Public demo (Gradio, for Hugging Face Spaces)** (Task 19,
+  `examples/demo/app.py`). URL field + `source_type` selector + button; shows
+  score/band, primary driver, per-signal breakdown, methodology, and
+  language/evidence/domain-provenance warnings, with the ordinal-score
+  disclaimer always visible and a link back to the repo. Thin UI over
+  `cats.lite.score_feed` — no signal logic here. In-memory per-session rate
+  limit (~10 requests/minute); no user data collected or persisted —
+  requests are scored and discarded. `load_nlp=True` degrades silently if
+  the spaCy model isn't installed (same graceful-degradation behaviour as
+  the rest of CATS). `examples/demo/README.md` has local-run and
+  Hugging-Face-Space deploy instructions, including how to add
+  `it_core_news_lg` to the Space build. Not part of the normal test surface;
+  `tests/unit/test_demo_imports.py` skips via `pytest.importorskip("gradio")`
+  when the (non-core) `gradio` dependency isn't installed.
+- **MCP server** (Task 20, `cats/mcp_server.py`). Exposes CATS scoring as MCP
+  tools for an LLM client: `score_source(url, source_type="default")` →
+  `cats.lite.score_feed`, `score_messages(messages, source_type="default",
+  url=None)` → `cats.lite.score`, and a static `explain_bands()` reference.
+  Every response carries a `disclaimer: "Ordinal score, not a probability (WP
+  4.3)"`. Thin wrapper — no signal logic outside `cats/signals`. Run via
+  `cats-mcp` (stdio) after `pip install cats-scoring[mcp]`; the `mcp` package
+  is an optional extra imported lazily inside `main()`, so importing the
+  module (and running its tests) never requires it — a missing extra exits
+  with a clear message instead of a raw `ImportError`. See
+  [docs/mcp.md](docs/mcp.md) for the Claude Code configuration snippet and
+  full tool reference.
+
+## [1.7.0] — 2026-09-16
 
 ### Changed
 - **README rewritten to one screen** (Task 18). Cuts `README.md` from ~270 to

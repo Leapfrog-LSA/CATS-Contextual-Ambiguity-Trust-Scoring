@@ -6,6 +6,7 @@
 |---|---|
 | [api.md](api.md) | Full REST API reference (evaluate, batch, explain, contest, review, stats) |
 | [architecture.md](architecture.md) | Signal algorithms, aggregation engine, polarity/penalty design decisions, security design |
+| [mcp.md](mcp.md) | MCP server (`cats-mcp`): install, run, Claude Code config, tool reference |
 | [cloud_setup.md](cloud_setup.md) | Running CATS in Claude Code on the web: setup script, test env vars, network access |
 
 ## Calibration & empirical validation
