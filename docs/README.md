@@ -50,6 +50,7 @@
 | Document | What it covers |
 |---|---|
 | [piano_sviluppo_roadmap_2026-07.md](piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan and 15-point phased roadmap (July 2026, in Italian) |
+| [zenodo_deposit_checklist.md](zenodo_deposit_checklist.md) | Human checklist for converting the whitepaper to PDF and depositing it on Zenodo with a citable DOI |
 
 The technical whitepaper (`CATS_WhitePaper_Tecnico_v1.0.docx`, in Italian) and
 the pipeline scheme (`cats_scheme.png`) also live in this folder.

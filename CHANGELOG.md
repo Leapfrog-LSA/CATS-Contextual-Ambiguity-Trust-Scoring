@@ -8,6 +8,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Zenodo deposit checklist for the whitepaper** (Task 21). New
+  `docs/zenodo_deposit_checklist.md`: PDF-conversion checks, a Zenodo
+  metadata field table sourced from `CITATION.cff`/`LICENSE`, the
+  GitHub↔Zenodo auto-DOI-on-release decision, and the post-publish steps
+  (DOI into `README.md`/`CITATION.cff`). The actual `.docx`→PDF conversion
+  and Zenodo deposit remain a human step — no CATS code touched.
+
 ## [1.7.0] — 2026-09-16
 
 ### Changed
