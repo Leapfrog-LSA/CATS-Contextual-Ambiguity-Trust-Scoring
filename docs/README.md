@@ -38,6 +38,12 @@
 | [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (13 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
 | [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
+## Observatory
+
+| Document | What it covers |
+|---|---|
+| [observatory/](observatory/) | Aggregate-only source-pool snapshots (`research/observatory_aggregate.py`): counts, band distribution and median signals by source type/language/country — never source names, URLs or domains |
+
 ## Compliance
 
 | Document | What it covers |

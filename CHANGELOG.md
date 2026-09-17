@@ -15,6 +15,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GitHub↔Zenodo auto-DOI-on-release decision, and the post-publish steps
   (DOI into `README.md`/`CITATION.cff`). The actual `.docx`→PDF conversion
   and Zenodo deposit remain a human step — no CATS code touched.
+- **Observatory aggregate report — option (a) only** (Task 23,
+  `research/observatory_aggregate.py`). Merges `data/snapshots/*.jsonl`
+  (reusing `cats.calibration.merge_snapshots`), scores every source with
+  the unchanged production pipeline (`cats.lite.score` — zero signal logic
+  here), and writes `docs/observatory/<date>.md`: source count, band
+  distribution and per-signal median grouped by `source_type`, detected
+  language, and a best-effort ccTLD-derived country label. **Never a
+  source name, URL or domain** — `_check_no_identifiers` asserts this
+  before writing, independently exercised by
+  `tests/unit/test_observatory_aggregate.py`. Per the maintainer's explicit
+  decision, only this aggregate-only option is implemented; the two
+  named-source options from the plan are not — pending legal review, not
+  executed without separate written instruction.
 
 ## [1.7.0] — 2026-09-16
 
