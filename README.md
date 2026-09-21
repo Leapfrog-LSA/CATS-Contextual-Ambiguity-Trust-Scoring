@@ -13,14 +13,16 @@ CATS scores how *reliable a source's behaviour has been over time* — narrative
 ## See it run
 
 ```
-$ cats score ansa.it --source-type news
-Source     https://ansa.it   (feed: https://ansa.it/rss.xml, 28 messages, 2026-09-15 → 2026-09-16)
-Score      71.37   band: medium_high
-Driver     silence (share 35.0%)
-Signals    coherence 50.0 · volatility 14.81 · silence 0.0 · gaming 40.82 · domain_provenance 0.0
+$ COHERENCE_BACKEND=sbert cats score ansa.it --source-type news
+Source     https://ansa.it   (feed: https://ansa.it/rss.xml, 28 messages, 2026-09-20 → 2026-09-21)
+Score      62.87   band: medium_high
+Driver     silence (share 39.8%)
+Signals    coherence 20.42 · volatility 7.41 · silence 0.0 · gaming 39.0 · domain_provenance 0.0
 Language   italian (1.0)      Evidence  28 ≥ 3 ✓
 Note       Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md.
 ```
+
+`COHERENCE_BACKEND=sbert` is not decoration: [why](#the-coherence-backend-matters).
 
 <!-- TODO [umano]: sostituire con assets/cli_demo.png o una GIF dell'esecuzione reale -->
 
@@ -30,6 +32,25 @@ Note       Ordinal score, not a probability. Cross-validate key claims. See docs
 pip install cats-scoring
 cats score <url>                       # any source URL — feed autodiscovery included
 ```
+
+### The coherence backend matters
+
+`data/calibrated_weights.json` was calibrated with the **SBERT** coherence
+backend. On the default spaCy-NER backend `coherence` — ~0.40 of the weight for
+news sources — is close to inert (mean 1.7 / sd 5.3 against SBERT's 23.3 / 11.6),
+so a default install forfeits its contribution and lands nearer **≈0.62**
+concordance than the **0.750** the calibrated weights reach.
+
+For the numbers quoted here:
+
+```bash
+pip install -r requirements-sbert.txt   # pulls torch + transformers, ~2 GB
+export COHERENCE_BACKEND=sbert
+```
+
+It falls back to NER *silently* when the model is unavailable — check the logs
+for `sbert_loaded` to confirm it took effect.
+[Measurement](docs/signal_diagnosis_2026-07.md).
 
 Or as a library:
 
@@ -77,6 +98,7 @@ On top of the four behavioural signals, an asymmetric **domain-provenance penalt
 ## Honest limits
 
 * Default NLP accuracy is roughly 55–62% (spaCy NER + TextBlob); optional SBERT/BERT backends do better.
+* **The default install does not reproduce the calibrated numbers**: the shipped weights assume `COHERENCE_BACKEND=sbert`, and on the default NER backend `coherence` is close to inert (≈0.62 concordance instead of 0.750). See [the backend note](#the-coherence-backend-matters).
 * Ranking still leans heavily on one signal (`silence`), with `coherence` as the main tie-breaker.
 * The default stack is Italian-optimised — other languages are detected and flagged, not blocked, but accuracy degrades.
 * Calibration is validated on a 56-source train / 53-source future-holdout split — informative, not large-scale.

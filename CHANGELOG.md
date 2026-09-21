@@ -8,6 +8,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **README now states the SBERT requirement** instead of implying the optional
+  backends are merely nicer. `data/calibrated_weights.json` was calibrated with
+  `COHERENCE_BACKEND=sbert`; on the default spaCy-NER backend `coherence` is
+  close to inert (mean 1.7 / sd 5.3 against SBERT's 23.3 / 11.6), so a default
+  install forfeits ~0.40 of the news weight and lands nearer ≈0.62 concordance
+  than 0.750. New *The coherence backend matters* section with the install
+  steps, a note that the backend falls back to NER **silently**, and a line
+  under *Honest limits*. `.env.example` already carried this warning; the README
+  did not. The *See it run* block is regenerated under `COHERENCE_BACKEND=sbert`
+  — verified via `sbert_loaded` and `metadata["backend"] == "sbert"`, not
+  assumed. No code, signal, weight or threshold changes.
+
 ### Fixed
 - **`cats score --json` now emits parseable JSON.** structlog is unconfigured in
   the CLI and its default logger prints to *stdout*, so the spaCy-load and
