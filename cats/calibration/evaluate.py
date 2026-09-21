@@ -10,6 +10,9 @@ For a dataset of ``{source_type, signals, label}`` records it reports:
   * a per-(predicted-)band table: count, mean predicted score, mean label
   * band agreement — how often the predicted band matches the band the *label*
     falls into (exact and within one band)
+  * per-class precision / recall / F1 over the reliable-vs-unreliable split,
+    plus their macro-F1 — rank metrics average over the whole range and can
+    stay high while the low tail is missed, which is the tail that matters
   * a per-source_type breakdown
 
 Usage::
@@ -46,6 +49,18 @@ from cats.scoring.weights import _STATIC_WEIGHTS
 BAND_ORDER = ["very_low", "low", "medium", "medium_high", "high"]
 _BAND_INDEX = {b: i for i, b in enumerate(BAND_ORDER)}
 
+# The binary split the per-class metrics are computed over. Defined through
+# `determine_band` rather than a literal cutoff so it always follows the shipped
+# band semantics: changing the band thresholds moves this split with them, and
+# introduces no second threshold to keep in sync. "Unreliable" is the rare,
+# harder class — reporting its F1 separately is the point of the split.
+UNRELIABLE_BANDS = frozenset({"low", "very_low"})
+
+
+def is_unreliable(score: float) -> bool:
+    """Whether a score (predicted or label) falls in the unreliable low tail."""
+    return determine_band(score) in UNRELIABLE_BANDS
+
 
 @dataclass
 class BandRow:
@@ -53,6 +68,24 @@ class BandRow:
     count: int
     mean_predicted: float
     mean_label: float
+
+
+@dataclass
+class ClassRow:
+    """Precision/recall/F1 for one side of the reliable-vs-unreliable split.
+
+    ``None`` marks a quantity the data cannot define rather than a zero:
+    precision needs at least one prediction of the class, recall at least one
+    labelled member, F1 either. Reporting 0.0 there would read as "the model
+    failed" when the truth is "this dataset cannot say".
+    """
+
+    label: str
+    support: int  # samples whose *label* falls in this class
+    predicted: int  # samples *predicted* into this class
+    precision: Optional[float]
+    recall: Optional[float]
+    f1: Optional[float]
 
 
 @dataclass
@@ -71,7 +104,9 @@ class EvalReport:
     concordance: float
     band_agreement_exact: float
     band_agreement_adjacent: float
+    macro_f1: Optional[float]
     bands: List[BandRow] = field(default_factory=list)
+    per_class: List[ClassRow] = field(default_factory=list)
     per_source_type: List[GroupRow] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -88,12 +123,21 @@ class EvalReport:
             f"Concordance (AUC~) : {self.concordance:.3f}",
             f"Band agreement     : {self.band_agreement_exact:.1%} exact, "
             f"{self.band_agreement_adjacent:.1%} within 1 band",
+            f"Macro-F1           : {self.macro_f1:.3f}" if self.macro_f1 is not None else "Macro-F1           : n/a",
             "",
             "Per predicted band:",
             f"  {'band':12s} {'n':>4s} {'mean_pred':>10s} {'mean_label':>11s}",
         ]
         for r in self.bands:
             lines.append(f"  {r.band:12s} {r.count:>4d} {r.mean_predicted:>10.1f} {r.mean_label:>11.1f}")
+        lines.append("")
+        lines.append("Per class (unreliable = bands low/very_low):")
+        lines.append(f"  {'class':12s} {'supp':>5s} {'pred':>5s} {'precis':>7s} {'recall':>7s} {'f1':>7s}")
+        for c in self.per_class:
+            pr = f"{c.precision:.3f}" if c.precision is not None else "n/a"
+            rc = f"{c.recall:.3f}" if c.recall is not None else "n/a"
+            f1 = f"{c.f1:.3f}" if c.f1 is not None else "n/a"
+            lines.append(f"  {c.label:12s} {c.support:>5d} {c.predicted:>5d} {pr:>7s} {rc:>7s} {f1:>7s}")
         lines.append("")
         lines.append("Per source_type:")
         lines.append(f"  {'source_type':12s} {'n':>4s} {'spearman':>9s} {'concord':>8s}")
@@ -141,6 +185,43 @@ def _band_agreement(preds: Sequence[float], labels: Sequence[float]) -> tuple[fl
     return (exact / n, adjacent / n) if n else (0.0, 0.0)
 
 
+def _class_metrics(preds: Sequence[float], labels: Sequence[float]) -> List[ClassRow]:
+    """Precision/recall/F1 for each side of the reliable-vs-unreliable split.
+
+    Both the prediction and the label are reduced to a class by the band they
+    fall into, so this measures the same thing a reader of the band does: did
+    the score put this source in the low tail, and did the label agree?
+
+    F1 uses the ``2·tp / (2·tp + fp + fn)`` form: identical to the harmonic
+    mean of precision and recall wherever both are defined, and it still yields
+    0.0 (rather than a division by zero) for a class that was missed entirely
+    but does occur in the data.
+    """
+    rows: List[ClassRow] = []
+    for name, want_unreliable in (("unreliable", True), ("reliable", False)):
+        tp = fp = fn = 0
+        for p, lbl in zip(preds, labels):
+            pred_in = is_unreliable(p) == want_unreliable
+            label_in = is_unreliable(lbl) == want_unreliable
+            if pred_in and label_in:
+                tp += 1
+            elif pred_in:
+                fp += 1
+            elif label_in:
+                fn += 1
+        rows.append(
+            ClassRow(
+                label=name,
+                support=tp + fn,
+                predicted=tp + fp,
+                precision=round(tp / (tp + fp), 4) if tp + fp else None,
+                recall=round(tp / (tp + fn), 4) if tp + fn else None,
+                f1=round(2 * tp / (2 * tp + fp + fn), 4) if 2 * tp + fp + fn else None,
+            )
+        )
+    return rows
+
+
 def evaluate_dataset(
     samples: Sequence[LabeledSample],
     weights_by_group: WeightsByGroup,
@@ -153,6 +234,8 @@ def evaluate_dataset(
     labels = [s.label for s in samples]
 
     exact, adjacent = _band_agreement(preds, labels)
+    per_class = _class_metrics(preds, labels)
+    defined_f1 = [c.f1 for c in per_class if c.f1 is not None]
 
     # Per predicted band.
     by_band: Dict[str, List[int]] = {b: [] for b in BAND_ORDER}
@@ -193,7 +276,9 @@ def evaluate_dataset(
         concordance=round(pairwise_concordance(preds, labels), 4),
         band_agreement_exact=round(exact, 4),
         band_agreement_adjacent=round(adjacent, 4),
+        macro_f1=round(_mean(defined_f1), 4) if defined_f1 else None,
         bands=bands,
+        per_class=per_class,
         per_source_type=per_group,
     )
 

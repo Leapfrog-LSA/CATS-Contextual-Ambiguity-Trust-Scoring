@@ -9,6 +9,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Per-class F1 on the low tail in the eval harness**
+  (`cats.calibration.evaluate`). Alongside Spearman, concordance and band
+  agreement, the report now splits sources into `unreliable` (bands
+  `low`/`very_low`) and `reliable` and reports precision, recall and F1 for
+  each, plus their macro-F1. The split is derived from `determine_band`, so
+  it follows the shipped band cutoffs and adds no second threshold; a class
+  absent from the data reports `n/a`, never a misleading `0.0`. Rank metrics
+  average over the whole range and can stay high while the low tail is
+  missed — on the 06-Jul future holdout with the shipped calibrated weights,
+  concordance 0.750 comes with **unreliable recall 0.333** (5 of 15 flagged;
+  precision 1.000 on those 5, macro-F1 0.692). Measurement only: no signal,
+  weight, threshold or score is touched, and `ENGINE_VERSION` is unchanged.
 - **Zenodo deposit checklist for the whitepaper** (Task 21). New
   `docs/zenodo_deposit_checklist.md`: PDF-conversion checks, a Zenodo
   metadata field table sourced from `CITATION.cff`/`LICENSE`, the
