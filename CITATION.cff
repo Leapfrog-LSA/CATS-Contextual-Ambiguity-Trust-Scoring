@@ -13,6 +13,27 @@ repository-code: "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trus
 license: MIT
 version: 1.7.0
 date-released: 2026-09-16
+# TODO [umano]: paste the Zenodo concept DOI here after the first deposit.
+# Use the CONCEPT DOI (the one that always resolves to the latest version),
+# not the version-specific DOI, so the citation survives future releases.
+# doi: "10.5281/zenodo.XXXXXXX"
+#
+# TODO [umano]: once the whitepaper is deposited, uncomment and complete the
+# block below so `cff` emits the paper as the preferred citation while the
+# software entry above stays available. Fill authors with the real personal
+# names (given-names / family-names) — a bare organisational `name:` is
+# accepted for software but reads poorly in a paper citation.
+# preferred-citation:
+#   type: report
+#   title: "CATS — Contextual Ambiguity & Trust Scoring: White Paper Tecnico"
+#   authors:
+#     - given-names: ""
+#       family-names: ""
+#   year: 2026
+#   institution:
+#     name: "Leapfrog-LSA"
+#   doi: "10.5281/zenodo.XXXXXXX"
+#   url: "https://doi.org/10.5281/zenodo.XXXXXXX"
 keywords:
   - OSINT
   - trust-scoring

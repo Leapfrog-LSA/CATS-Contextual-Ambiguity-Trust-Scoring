@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
+  `preferred-citation` as commented `TODO [umano]` blocks, with a note to use the
+  **concept** DOI (which always resolves to the latest version) rather than a
+  version-specific one, and a reminder that a paper citation wants real personal
+  names rather than the organisational `name:` the software entry uses. Nothing is
+  active yet: the file still parses to exactly the fields it had before, and the
+  maintainer fills the placeholders in after depositing.
+
+### Changed
 - **README now states the SBERT requirement** instead of implying the optional
   backends are merely nicer. `data/calibrated_weights.json` was calibrated with
   `COHERENCE_BACKEND=sbert`; on the default spaCy-NER backend `coherence` is
