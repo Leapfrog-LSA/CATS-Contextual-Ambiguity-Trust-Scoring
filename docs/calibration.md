@@ -302,7 +302,43 @@ python -m cats.calibration.evaluate \
 It reports Spearman, pairwise concordance, a per-(predicted-)band table
 (count, mean predicted score, mean label), **band agreement** (how often the
 predicted band matches the band the label falls into, exact and within one
-band), and a per-`source_type` breakdown.
+band), **per-class precision/recall/F1** (see below), and a per-`source_type`
+breakdown.
+
+### Per-class F1 — reading the low tail
+
+Rank metrics average over the whole score range. A source set can rank well
+overall while the *low tail* — the sources an analyst most needs flagged — is
+missed entirely, and no single averaged number shows it. The harness therefore
+also reduces both prediction and label to a binary class via `determine_band`
+(`unreliable` = bands `low`/`very_low`, i.e. below 40; `reliable` = the rest)
+and reports precision, recall and F1 for each side, plus their macro-F1.
+
+The split is *derived* from the band cutoffs rather than hard-coded, so
+changing the band thresholds moves it automatically — there is no second
+threshold to keep in sync. A class with no labelled members (or no
+predictions) reports `n/a` rather than `0.0`: the data cannot define the
+quantity, which is not the same as the scorer failing.
+
+On the 06-Jul-2026 future holdout with the shipped calibrated weights:
+
+```text
+Concordance (AUC~) : 0.750
+Macro-F1           : 0.692
+
+Per class (unreliable = bands low/very_low):
+  class         supp  pred  precis  recall      f1
+  unreliable      15     5   1.000   0.333   0.500
+  reliable        38    48   0.792   1.000   0.884
+```
+
+Read together: every source CATS calls unreliable on this holdout *is*
+unreliable, but it calls only 5 of the 15 — recall 0.333. That is
+[§3.1 of the roadmap](piano_sviluppo_roadmap_2026-07.md) ("discrimination
+rests on one signal") stated as a number instead of a description, and it is
+the figure the Phase D recalibration has to move. Both figures rest on 53
+sources; the perfect precision in particular is measured over 5 predictions
+and should be read as small-sample.
 
 **Before vs after calibration** is a one-command comparison and shows why
 calibration matters on this dataset:
