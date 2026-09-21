@@ -8,6 +8,7 @@ library, and formats the result.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 from typing import List, Optional
@@ -101,28 +102,39 @@ def _run_score(args: argparse.Namespace) -> int:
             print(f"error: could not read --weights file: {exc}", file=sys.stderr)
             return 2
 
+    # Everything the library writes to stdout while scoring goes to stderr
+    # instead, so stdout carries the result and nothing else. structlog is
+    # unconfigured in the CLI and its default logger prints to *stdout*, so
+    # without this the spaCy-load and feed-discovery lines land in front of the
+    # report — and under --json they make the output unparseable
+    # (`cats score <url> --json | jq` dies on the first log line). Redirecting
+    # around the call, rather than reconfiguring structlog globally, keeps the
+    # fix local: no global logging state is mutated (the API configures its own
+    # JSON logging in `cats.api.main`), and stray prints from any dependency are
+    # caught too.
     try:
-        if args.messages:
-            try:
-                messages = _load_messages(args.messages)
-            except (OSError, json.JSONDecodeError) as exc:
-                print(f"error: could not read --messages file: {exc}", file=sys.stderr)
-                return 2
-            result = score(
-                messages,
-                source_type=args.source_type,
-                weights=weights,
-                load_nlp=not args.no_nlp,
-                url=args.url,
-            )
-        else:
-            result = score_feed(
-                args.url,
-                source_type=args.source_type,
-                max_messages=args.max_messages,
-                weights=weights,
-                load_nlp=not args.no_nlp,
-            )
+        with contextlib.redirect_stdout(sys.stderr):
+            if args.messages:
+                try:
+                    messages = _load_messages(args.messages)
+                except (OSError, json.JSONDecodeError) as exc:
+                    print(f"error: could not read --messages file: {exc}", file=sys.stderr)
+                    return 2
+                result = score(
+                    messages,
+                    source_type=args.source_type,
+                    weights=weights,
+                    load_nlp=not args.no_nlp,
+                    url=args.url,
+                )
+            else:
+                result = score_feed(
+                    args.url,
+                    source_type=args.source_type,
+                    max_messages=args.max_messages,
+                    weights=weights,
+                    load_nlp=not args.no_nlp,
+                )
     except (FeedNotFoundError, FeedFetchError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 3

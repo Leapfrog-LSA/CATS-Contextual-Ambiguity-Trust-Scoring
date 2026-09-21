@@ -8,6 +8,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **`cats score --json` now emits parseable JSON.** structlog is unconfigured in
+  the CLI and its default logger prints to *stdout*, so the spaCy-load and
+  feed-discovery lines landed in front of the report — under `--json` that made
+  the output unparseable (`cats score <url> --json | jq` failed on the first log
+  line) and in human mode it interleaved log records with the result. The CLI now
+  redirects stdout to stderr for the duration of the scoring call, so stdout
+  carries the result and nothing else. No global logging state is mutated: the API
+  keeps its own JSON logging config in `cats.api.main`. Stray `print()` output
+  from any dependency is captured the same way.
+
 ### Added
 - **Per-class F1 on the low tail in the eval harness**
   (`cats.calibration.evaluate`). Alongside Spearman, concordance and band
