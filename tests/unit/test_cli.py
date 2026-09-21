@@ -1,6 +1,7 @@
 import json
 
 import pytest
+import structlog
 
 from cats import __version__
 from cats.cli import main
@@ -194,3 +195,32 @@ def test_score_bad_weights_file_exit_code_2(argv, capsys):
     captured = capsys.readouterr()
     assert exit_code == 2
     assert "error" in captured.err
+
+
+def _scoring_that_logs(*args, **kwargs):
+    """Stand-in for `score_feed` that logs on the way, as the real one does."""
+    structlog.get_logger("cats.test").info("feed_fetched", messages=48)
+    return dict(_RESULT)
+
+
+def test_json_output_stays_parseable_when_the_library_logs(monkeypatch, capsys):
+    # Regression: structlog is unconfigured by default and prints to STDOUT, so
+    # every line the library logged landed in front of the JSON and
+    # `cats score <url> --json | jq` died on the first one.
+    monkeypatch.setattr("cats.cli.score_feed", _scoring_that_logs)
+
+    assert main(["score", "https://esempio.it", "--json"]) == 0
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["trust_score"] == 67.3
+    assert "feed_fetched" in captured.err
+
+
+def test_human_output_is_not_interleaved_with_log_lines(monkeypatch, capsys):
+    monkeypatch.setattr("cats.cli.score_feed", _scoring_that_logs)
+
+    assert main(["score", "https://esempio.it"]) == 0
+
+    captured = capsys.readouterr()
+    assert captured.out.startswith("Source")
+    assert "feed_fetched" not in captured.out
