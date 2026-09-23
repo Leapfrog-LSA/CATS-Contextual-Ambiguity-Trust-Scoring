@@ -43,8 +43,25 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   key-figures table, now "documentati", matching the README badge). Text-only
   edits in `word/document.xml`; structure, formatting and schema validity
   unchanged.
+- **`cats.calibration.fetch_snapshots` + `make snapshots-download`** (Task 25):
+  downloads the RSS snapshots from the new data repository
+  `Leapfrog-LSA/cats-snapshots` into `data/snapshots/`, verifying every file
+  against the repository's `SHA256SUMS` manifest. Files already present with a
+  matching hash are skipped; a local file that differs is never overwritten
+  (the remote copy is saved as `<name>.remote` for a `merge_snapshots` union and
+  the command exits non-zero); manifest entries are restricted to
+  `snapshots/labelled_sources_<date>.jsonl`, so a manifest cannot write outside
+  the destination. `--ref` pins a data-repo commit for reproducible runs.
 
 ### Changed
+- **RSS snapshots moved out of this repository** (Task 25). New daily
+  snapshots are collected in `Leapfrog-LSA/cats-snapshots`; the weekly
+  `collect-rss.yml` workflow that committed them to `main` is removed here. The
+  60 snapshots already committed (2026-07-02 → 2026-09-23) stay under
+  `data/snapshots/` unchanged — calibration results and research scripts cite
+  them by path — and are also in the data repository. `data/snapshots/*.jsonl`
+  is now git-ignored, so downloaded snapshots cannot be committed back by
+  accident (tracked files are unaffected).
 - **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
   `preferred-citation` as commented `TODO [umano]` blocks, with a note to use the
   **concept** DOI (which always resolves to the latest version) rather than a

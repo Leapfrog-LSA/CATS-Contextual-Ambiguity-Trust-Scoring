@@ -98,11 +98,35 @@ size-capped (`--max-bytes`) and documents carrying a DTD are rejected.
 
 ### Accumulating history across snapshots
 
-The scheduled workflow [`collect-rss.yml`](../.github/workflows/collect-rss.yml)
-fetches the registry weekly and commits dated snapshots under
-`data/snapshots/`. `cats.calibration.merge_snapshots` unions them into
-cumulative per-source histories (messages deduplicated on
-`(timestamp, text)`, newest metadata wins):
+Dated snapshots (one `labelled_sources_<YYYY-MM-DD>.jsonl` per collection
+day) are collected by a scheduled workflow in the separate data repository
+[`Leapfrog-LSA/cats-snapshots`](https://github.com/Leapfrog-LSA/cats-snapshots),
+not in this one: at ~2–4 MB a day they had become most of this repository's
+size and history. The snapshots committed here before the move — through
+**2026-09-23** — stay under `data/snapshots/` unchanged, because the published
+calibration and research results cite them by path (the 2026-07-02/03/05
+training snapshots and the 2026-07-06 future holdout among them); nothing is
+added there any more.
+
+To work with the full history, download the data repository's snapshots into
+the same directory. Every file is checked against the repository's
+`SHA256SUMS` manifest; files already present with a matching hash are skipped,
+and a local file that differs is **never overwritten** — the remote version is
+saved next to it as `<name>.remote` and the command exits non-zero, so you can
+union the two with `merge_snapshots`:
+
+```bash
+make snapshots-download        # = python -m cats.calibration.fetch_snapshots
+# pin a data-repo commit for a reproducible run:
+python -m cats.calibration.fetch_snapshots --ref <commit-sha>
+```
+
+Downloaded files are git-ignored (`data/snapshots/*.jsonl`), so they cannot be
+committed back here by accident; the files that were already tracked stay
+tracked.
+
+`cats.calibration.merge_snapshots` unions snapshots into cumulative per-source
+histories (messages deduplicated on `(timestamp, text)`, newest metadata wins):
 
 ```bash
 python -m cats.calibration.merge_snapshots \

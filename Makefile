@@ -1,6 +1,6 @@
 .PHONY: install dev-install nlp-download test test-unit test-integration lint format \
         docker-up docker-down docker-build docker-logs db-migrate db-revision db-downgrade \
-        calibrate eval split report generate-key clean help
+        calibrate eval split report generate-key clean help snapshots-download
 
 ## ── Setup ─────────────────────────────────────────────────────────────
 install:
@@ -19,6 +19,11 @@ tranco-download:
 	unzip -o /tmp/tranco_top1m.csv.zip -d data/
 	mv data/top-1m.csv data/tranco_top1m.csv
 	rm /tmp/tranco_top1m.csv.zip
+
+# RSS snapshots live in the Leapfrog-LSA/cats-snapshots data repository;
+# downloads are hash-verified and never overwrite a differing local file.
+snapshots-download:
+	python -m cats.calibration.fetch_snapshots --dest data/snapshots
 
 ## ── Tests ─────────────────────────────────────────────────────────────
 test:
