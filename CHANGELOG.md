@@ -8,6 +8,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Technical whitepaper v1.1** (`docs/CATS_WhitePaper_Tecnico_v1.1.docx`),
+  the source for the Zenodo deposit. v1.0 (March 2026) is kept as the
+  historical record. What changed: a new **§1.4** positioning CATS against the
+  literature (the source/claim/support/dependence taxonomy, behavioural
+  reliability as prior art, the relationship to the Admiralty Code, why no LLM
+  produces the score); a new **§5.4** with the measured validation figures
+  (concordance 0.750 / 0.762, Spearman +0.554, macro-F1 0.692, and recall
+  0.333 with precision 1.000 on the unreliable class) and the caveats that go
+  with them; the domain-provenance penalty in §2.2; the 96 h silence threshold
+  in §4.3; calibrated-vs-static weights and the SBERT requirement in §5.2; the
+  risk and roadmap tables realigned; the repository URL in Appendix D fixed
+  (it pointed at a non-existent `github.com/cats-project/cats`) plus 12
+  academic references added.
+- **Most importantly**: v1.0 asserted in three places that CATS "is classified
+  as a limited-risk AI system", citing Art. 6(2)/Annex III once and Art. 50
+  once. That determination has never been made —
+  `docs/eu_ai_act/classification.md` records it as **pending legal
+  determination**, and the qualification is use-dependent. All three passages
+  now state that the classification is not determined and point at the
+  worksheet. No classification was chosen here: an invented legal claim was
+  replaced with the actual state.
+- v1.1 also passes OOXML schema validation, which v1.0 did not (misordered
+  child elements in `styles.xml`, `numbering.xml`, `document.xml`, `app.xml`).
+
 ### Changed
 - **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
   `preferred-citation` as commented `TODO [umano]` blocks, with a note to use the
