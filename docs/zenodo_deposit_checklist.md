@@ -9,22 +9,34 @@ own metadata from scratch each time.
 
 ## 0. Source file
 
-- `docs/CATS_WhitePaper_Tecnico_v1.0.docx` (Italian). Confirm before
-  converting whether the content still matches the **shipped** v1.7.0
-  engine (signals, weights, band thresholds, `ENGINE_VERSION`) — the
-  whitepaper is versioned independently (`v1.0`) and may predate later
-  calibration/retune docs indexed in `docs/README.md`. If it's stale on any
-  numeric claim, fix the source `.docx` first; don't deposit a whitepaper
-  that contradicts the current `docs/calibration_findings_*.md`.
+- **`docs/CATS_WhitePaper_Tecnico_v1.1.docx` (Italian) — deposit this one.**
+  This staleness check has been done: v1.0 (March 2026) predated the domain
+  penalty, the calibrated weights, the future-holdout validation and the
+  96 h silence threshold, and it asserted an EU AI Act classification that
+  [`classification.md`](eu_ai_act/classification.md) records as a **pending
+  legal determination**. v1.1 (September 2026) carries the measured numbers
+  in a new §5.4, a new §1.4 positioning the work against the literature, and
+  states that the classification is not determined.
+- `docs/CATS_WhitePaper_Tecnico_v1.0.docx` is kept as the historical record.
+  Do not deposit it.
+- Re-run this check before any future deposit: if the `.docx` is stale on a
+  numeric claim, fix it first; don't deposit a whitepaper that contradicts
+  the current `docs/calibration_findings_*.md`.
 
 ## 1. Convert to PDF
 
-- [ ] Export `CATS_WhitePaper_Tecnico_v1.0.docx` → PDF (Word/LibreOffice
+- [ ] Export `CATS_WhitePaper_Tecnico_v1.1.docx` → PDF (Word/LibreOffice
       "Save as PDF", not a printed screenshot — Zenodo indexes PDF text).
 - [ ] Open the PDF and check: page breaks, headers/footers, and any tables
-      or the `cats_scheme.png` pipeline diagram didn't shift or clip.
+      or the `cats_scheme.png` pipeline diagram didn't shift or clip. Pay
+      particular attention to the two tables added in v1.1 (§1.4.1 taxonomy,
+      §5.4 validation): they were inserted programmatically and their
+      typographic rendering has not been eyeballed.
+- [ ] Verify references 12–23 in Appendix D against the primary sources
+      before depositing. They come from a September 2026 literature review,
+      and a wrong citation under a permanent DOI stays wrong.
 - [ ] Name it something Zenodo-stable, e.g.
-      `CATS_WhitePaper_Tecnico_v1.0.pdf` (keep the version in the filename —
+      `CATS_WhitePaper_Tecnico_v1.1.pdf` (keep the version in the filename —
       Zenodo treats a later upload to the same record as a new version, not
       a rename).
 
