@@ -32,6 +32,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   replaced with the actual state.
 - v1.1 also passes OOXML schema validation, which v1.0 did not (misordered
   child elements in `styles.xml`, `numbering.xml`, `document.xml`, `app.xml`).
+- **Four overclaims carried over from v1.0 removed from v1.1** before the PDF
+  export: the disclaimer box said "i parametri non sono calibrati
+  empiricamente", contradicting §5.4 (it now says the aggregation weights are
+  calibrated and validated on the 53-source temporal holdout, the band
+  thresholds are not); the Conclusions called the system "production-ready";
+  the GDPR bullet of the regulatory section claimed the endpoints "garantiscono
+  la piena conformità" (conformity is now left to each adopting organisation);
+  and the Executive Summary called the API "GDPR-compliant" twice (text and
+  key-figures table, now "documentati", matching the README badge). Text-only
+  edits in `word/document.xml`; structure, formatting and schema validity
+  unchanged.
 
 ### Changed
 - **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
