@@ -82,6 +82,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **A structurally wrong calibrated-weights file failed every evaluation.**
+  `cats.scoring.weights._calibrated_table` promises to fall back to the static
+  WP 4.1 weights when `CATS_WEIGHTS_FILE` holds invalid contents, but it only
+  caught `ValueError`/`KeyError`/`TypeError`: a file whose top level, `weights`
+  table or a group was not a mapping (e.g. `{"weights": {"news": null}}`) raised
+  `AttributeError` — and since `lru_cache` does not cache exceptions, every
+  `get_dynamic_weights` call, i.e. every evaluation, raised again. It now falls
+  back to the static weights and logs `calibrated_weights_invalid`, like every
+  other invalid file. Error handling only: a valid weights file loads exactly as
+  before, so scores and `ENGINE_VERSION` are unchanged. The four shapes that
+  `tests/unit/test_weights_loading.py` pinned as a known gap now sit in its
+  fallback test.
 - **`docs/compliance.md` reported pre-August thresholds as current.** Its
   limitations section still gave volatility spike 0.4 and silence 72 h as the
   operating thresholds, with the retuned values listed as "candidates pending

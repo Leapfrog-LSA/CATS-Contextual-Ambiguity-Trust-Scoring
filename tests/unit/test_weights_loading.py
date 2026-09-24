@@ -92,34 +92,18 @@ def test_missing_file_falls_back_to_static(tmp_path, weights_file):
         "{not json",  # malformed JSON (json.JSONDecodeError is a ValueError)
         {"weights": {"news": {"coherence": 0.5, "volatility": 0.9}}},  # sums to 1.4
         {"weights": {"news": {"coherence": "high"}}},  # non-numeric weight
-    ],
-)
-def test_invalid_file_falls_back_to_static(tmp_path, weights_file, payload):
-    weights_file(_write(tmp_path, payload))
-    assert weights._calibrated_table() == {}
-    assert weights.get_dynamic_weights({"source_type": "news"}) == weights._STATIC_WEIGHTS["news"]
-
-
-@pytest.mark.parametrize(
-    "payload",
-    [
+        # Structurally wrong files: these raised AttributeError before the fix,
+        # failing every evaluation instead of falling back.
         [1, 2],  # top level is not a mapping
         {"weights": [1]},  # weights table is not a mapping
         {"weights": {"news": None}},  # group is not a mapping
         {"weights": {"news": [0.5, 0.5]}},  # group is a list
     ],
 )
-def test_wrongly_shaped_file_currently_raises(tmp_path, weights_file, payload):
-    # KNOWN GAP, pinned on purpose: the docstring promises a static fallback for
-    # invalid contents, but a structurally wrong file raises AttributeError,
-    # which the loader does not catch (it catches ValueError/KeyError/TypeError).
-    # lru_cache does not cache exceptions, so every evaluation would fail rather
-    # than fall back. cats/scoring/weights.py is maintainer-gated (CLAUDE.md), so
-    # the fix is left to a deliberate change; when it lands, move these payloads
-    # into test_invalid_file_falls_back_to_static above.
+def test_invalid_file_falls_back_to_static(tmp_path, weights_file, payload):
     weights_file(_write(tmp_path, payload))
-    with pytest.raises(AttributeError):
-        weights.get_dynamic_weights({"source_type": "news"})
+    assert weights._calibrated_table() == {}
+    assert weights.get_dynamic_weights({"source_type": "news"}) == weights._STATIC_WEIGHTS["news"]
 
 
 def test_unavailable_settings_fall_back_to_static(monkeypatch, weights_file):
