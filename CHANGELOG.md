@@ -9,6 +9,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Unit tests for the coherence backends and calibrated-weights loading.**
+  `tests/unit/test_coherence_backends.py` drives both coherence backends with a
+  fake spaCy pipeline and a fake `sentence_transformers` module — mean Jaccard of
+  consecutive pairs, PER/ORG/GPE/LOC-only filtering, case normalisation,
+  confidence cap, cosine clamping, inference-error fallback to NER, and SBERT
+  model caching / no-retry after failure. `tests/unit/test_weights_loading.py`
+  covers `CATS_WEIGHTS_FILE`: the shipped file shape and a bare table, per-group
+  fallback to the static estimates, returned copies, and fallback on a missing,
+  malformed-JSON or non-summing file. Unit coverage: `signals/coherence.py`
+  52% → 100%, `scoring/weights.py` 64% → 98%. No production code changed.
+  **Known gap pinned, not fixed:** a structurally wrong weights file (top level
+  or a group that is not a mapping) raises `AttributeError` instead of falling
+  back to the static weights as the loader's docstring promises, so every
+  evaluation would fail; `cats/scoring/weights.py` is maintainer-gated, so the
+  test pins the current behaviour until a deliberate fix.
 - **Technical whitepaper v1.1** (`docs/CATS_WhitePaper_Tecnico_v1.1.docx`),
   the source for the Zenodo deposit. v1.0 (March 2026) is kept as the
   historical record. What changed: a new **§1.4** positioning CATS against the
