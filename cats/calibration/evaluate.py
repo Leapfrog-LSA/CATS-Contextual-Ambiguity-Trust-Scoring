@@ -165,6 +165,8 @@ def load_weights_file(path: Path, groups: Sequence[str]) -> WeightsByGroup:
     """
     data = json.loads(path.read_text(encoding="utf-8"))
     table = data.get("weights", data) if isinstance(data, dict) else {}
+    if not isinstance(table, dict):  # e.g. {"weights": [...]}: treat as no groups
+        table = {}
     out: WeightsByGroup = {}
     for g in groups:
         w = table.get(g)

@@ -82,6 +82,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **The offline weights loader crashed on a non-mapping `weights` table.**
+  `cats.calibration.evaluate.load_weights_file` (used by `python -m
+  cats.calibration.evaluate` and `cats.calibration.report --weights`) already
+  fell back to the static WP 4.1 weights for a top-level list or a malformed
+  group, but `{"weights": [...]}` or `{"weights": "..."}` raised `AttributeError`.
+  It now treats such a file like one without the groups: every group gets the
+  static estimates, the same as the live loader in `cats.scoring.weights`.
 - **A structurally wrong calibrated-weights file failed every evaluation.**
   `cats.scoring.weights._calibrated_table` promises to fall back to the static
   WP 4.1 weights when `CATS_WEIGHTS_FILE` holds invalid contents, but it only

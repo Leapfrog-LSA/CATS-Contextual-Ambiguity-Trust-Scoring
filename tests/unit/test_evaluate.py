@@ -98,6 +98,23 @@ def test_load_weights_file_falls_back_for_missing_group(tmp_path):
     assert abs(sum(weights["social"].values()) - 1.0) < 1e-9
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        [1, 2],  # top level is not a mapping (already handled)
+        {"weights": [1]},  # weights table is not a mapping
+        {"weights": "news"},  # weights table is a string
+        {"weights": {"news": None}},  # group is not a mapping (already handled)
+    ],
+)
+def test_load_weights_file_wrong_shape_falls_back_to_static(tmp_path, payload):
+    # A structurally wrong file is treated like a file without the groups: every
+    # group gets the static WP 4.1 estimates instead of an AttributeError.
+    p = tmp_path / "w.json"
+    p.write_text(json.dumps(payload), encoding="utf-8")
+    assert load_weights_file(p, ["news", "social"]) == static_weights_for(["news", "social"])
+
+
 def test_main_runs_on_sample_dataset(capsys):
     rc = main(["--dataset", "examples/calibration_sample.jsonl"])
     assert rc == 0
