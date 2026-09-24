@@ -67,6 +67,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **`docs/compliance.md` reported pre-August thresholds as current.** Its
+  limitations section still gave volatility spike 0.4 and silence 72 h as the
+  operating thresholds, with the retuned values listed as "candidates pending
+  recalibration"; both were retuned in Aug 2026 (0.3 and 96 h), each with its own
+  recalibration and future-holdout revalidation. It now states the current values,
+  links the two retune findings, and names what is still uncalibrated: the band
+  cutoffs 80/60/40/20 and any per-source-type silence threshold. The accuracy row
+  no longer calls the silence threshold an initial estimate.
+- **Two fallback tests failed whenever the optional NLP extras were installed.**
+  `test_sbert_backend_falls_back_when_unavailable` and
+  `test_falls_back_to_textblob_when_unavailable` asserted the SBERT→NER and
+  BERT→TextBlob fallbacks by relying on `sentence-transformers` / `transformers`
+  *not* being installed: with `requirements-sbert.txt` present the real models
+  loaded and both failed (reproduced: 2 failed / 317 passed). They now force the
+  absence with a `None` entry in `sys.modules`, so the import raises `ImportError`
+  in any environment: 319 passed both with and without the extras.
 - **`cats score --json` now emits parseable JSON.** structlog is unconfigured in
   the CLI and its default logger prints to *stdout*, so the spaCy-load and
   feed-discovery lines landed in front of the report — under `--json` that made

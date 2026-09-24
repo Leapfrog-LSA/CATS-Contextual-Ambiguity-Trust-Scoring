@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from cats.signals.silence import compute_silence
@@ -27,9 +29,13 @@ class TestCoherence:
         from cats.core.config import settings
         from cats.signals import coherence
 
-        # sentence-transformers is not installed in the test env, so the sbert
-        # backend must fall back to NER (which then degrades gracefully because
-        # the spaCy model is also absent) instead of crashing.
+        # The sbert backend must fall back to NER (which then degrades gracefully
+        # because the spaCy model is also absent) instead of crashing when
+        # sentence-transformers is unavailable. Force the absence (a None entry
+        # in sys.modules makes the import raise ImportError) rather than relying
+        # on the extra not being installed: with requirements-sbert.txt present
+        # the real model would load and the assertions below would fail.
+        monkeypatch.setitem(sys.modules, "sentence_transformers", None)
         monkeypatch.setattr(settings, "coherence_backend", "sbert")
         monkeypatch.setattr(coherence, "_sbert_model", None)
         monkeypatch.setattr(coherence, "_sbert_failed", False)
