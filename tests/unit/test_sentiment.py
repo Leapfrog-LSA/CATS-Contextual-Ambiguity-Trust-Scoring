@@ -1,3 +1,5 @@
+import sys
+
 import cats.signals.sentiment as sentiment
 from cats.core.config import settings
 from cats.signals.sentiment import sentiment_polarity
@@ -20,8 +22,12 @@ class TestTextBlobBackend:
 
 class TestBertBackendFallback:
     def test_falls_back_to_textblob_when_unavailable(self, monkeypatch):
-        # transformers/torch are not installed in the default/test env, so the
-        # bert backend must fall back to TextBlob instead of crashing.
+        # The bert backend must fall back to TextBlob instead of crashing when
+        # transformers is unavailable. Force the absence (a None entry in
+        # sys.modules makes the import raise ImportError) rather than relying on
+        # the extra not being installed: with requirements-bert.txt present the
+        # real model would load and the assertion below would fail.
+        monkeypatch.setitem(sys.modules, "transformers", None)
         monkeypatch.setattr(settings, "sentiment_backend", "bert")
         monkeypatch.setattr(sentiment, "_bert_pipeline", None)
         monkeypatch.setattr(sentiment, "_bert_failed", False)

@@ -24,13 +24,13 @@
 |---|---|
 | Transparency | Explainability endpoint; disclaimer on every explanation response |
 | Human oversight | `requires_review` flag (low bands, or insufficient evidence); contest/review endpoints |
-| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.750 → 0.762 with the domain penalty, as of the Aug 2026 gaming/volatility/silence fixes); band/silence thresholds still initial estimates |
+| Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.750 → 0.762 with the domain penalty, as of the Aug 2026 gaming/volatility/silence fixes); band thresholds still initial estimates |
 | Ordinal scoring | WP 4.3 — scores are rankings, not absolute probabilities |
 
 ## Known Limitations (WP 4.1)
 
 - **NLP accuracy ~55–62% (default backends)**: spaCy NER and TextBlob rule-based sentiment; optional BERT/Sentence-BERT backends available
-- **Thresholds unvalidated**: signal *weights* are calibrated and future-snapshot validated, but the operating thresholds (volatility spike 0.4, silence 72 h, band cutoffs 80/60/40/20) remain initial estimates — the [signal diagnosis](signal_diagnosis_2026-07.md) measured better candidates (spike 0.1–0.3, silence ≥ 96 h), pending the recalibration cycle
+- **Band thresholds unvalidated**: signal *weights* are calibrated and future-snapshot validated, and two operating thresholds were retuned in Aug 2026, each with its own recalibration + future-holdout revalidation — volatility spike 0.4 → **0.3** ([volatility_retune_2026-08.md](volatility_retune_2026-08.md)) and silence 72 h → **96 h**, the same for every source type ([silence_retune_2026-08.md](silence_retune_2026-08.md)). Still initial estimates, pending the full recalibration: the band cutoffs 80/60/40/20, and whether silence should differ by source type
 - **Ordinal only**: trust scores represent relative reliability rankings and are **not** suitable as sole basis for autonomous decisions (WP 4.3)
 - **Language**: optimised for Italian (`it_core_news_lg`); non-Italian input is detected and flagged in the response (`language` block, risk R3) but is still scored with the Italian-tuned stack
 
