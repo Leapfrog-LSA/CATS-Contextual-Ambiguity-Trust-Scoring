@@ -60,7 +60,10 @@ def _calibrated_table() -> Dict[str, Dict[str, float]]:
         data = json.loads(p.read_text(encoding="utf-8"))
         table = data.get("weights", data)
         return {g: _validate_weights({k: float(v) for k, v in w.items()}) for g, w in table.items()}
-    except (ValueError, KeyError, TypeError) as exc:
+    # AttributeError: a structurally wrong file (top level or a group that is not
+    # a mapping, e.g. ``{"news": null}``) must fall back too, not fail every
+    # evaluation (lru_cache does not cache exceptions, so it would re-raise per call).
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
         logger.error("calibrated_weights_invalid", path=str(p), error=str(exc))
         return {}
 
