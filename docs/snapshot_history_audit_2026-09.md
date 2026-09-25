@@ -133,6 +133,28 @@ re-validate cycle CLAUDE.md requires) that has not been done here.
    `collect_rss` or `merge_snapshots` itself warn on messages outside a
    plausible recency window, so this doesn't require a manual audit next
    time?
+   > **Done (25 Sep 2026).** `merge_snapshots` has an opt-in filter,
+   > `--not-before 2026-06-01 --not-after <newest snapshot date>`. It
+   > excludes and names sources left with no in-range message, and it flags
+   > sources that lose more than half their messages. See
+   > [`calibration.md`](calibration.md) → *Accumulating history across
+   > snapshots*.
+   >
+   > With the same `[2026-06-01, 2026-09-13]` window it reproduces this
+   > script's cleaned output record for record: 102 non-empty sources, and
+   > the same 8 emptied.
+   >
+   > Re-measured on the 62 snapshots up to 2026-09-25 with
+   > `--not-after 2026-09-25`:
+   > - 768 of 140 236 messages dropped (0.55%);
+   > - the same 8 sources emptied;
+   > - **100 sources with ≥ 10 clean messages**, by the same criterion that
+   >   gave 99 above;
+   > - median clean span 83 days, and 83 of those 100 span ≥ 60 days.
+   >
+   > That is the bare threshold. Fase B's exit (the 12 January 2027
+   > recalibration gate) still needs the future-holdout re-validation cycle,
+   > not only a count.
 3. **The 8 fully-dead sources are worth a human/roadmap decision**, not a
    silent drop: either their feeds get re-verified (same style as
    `docs/feed_health_2026-07.md`), or they're flagged as structurally
