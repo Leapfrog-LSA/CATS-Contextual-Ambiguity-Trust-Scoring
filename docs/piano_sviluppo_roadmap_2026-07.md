@@ -7,6 +7,10 @@
 > [validazione futura](calibration_findings_2026-07-28.md)) e la
 > [ricerca sui segnali](signal_research_2026-07.md); questo documento li
 > sintetizza e ne deriva il piano.
+>
+> **Aggiornamento:** lo stato corrente e le fasi successive sono in
+> [`piano_sviluppo_roadmap_2026-09.md`](piano_sviluppo_roadmap_2026-09.md)
+> (settembre 2026). Questo documento resta come fotografia di luglio.
 
 ---
 
