@@ -69,6 +69,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   unchanged.
 
 ### Changed
+- **Cloud setup: integration-test database steps.** `docs/cloud_setup.md` §2
+  and `CLAUDE.md` said to start Postgres and Redis and run `alembic upgrade head`.
+  But a fresh container has neither the `cats` role nor the `cats_test`
+  database, so every integration test failed with `InvalidPasswordError`, which
+  reads like a wrong password. The docs now give two idempotent commands that
+  create both, with the CI `test` job's values. They also note three more
+  things:
+  - `alembic upgrade head` needs all four test env vars exported;
+  - the tests themselves do not depend on it, because their fixture runs
+    `create_all`;
+  - re-running the integration suite within 60 s hits the Redis-backed rate
+    limiter (`429` instead of 404/422). Wait a minute or run `redis-cli flushdb`.
+
+  Verified from an empty Postgres by running the documented block verbatim,
+  twice: 367 passed, 5 skipped. Documentation only.
 - **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
   `preferred-citation` as commented `TODO [umano]` blocks, with a note to use the
   **concept** DOI (which always resolves to the latest version) rather than a

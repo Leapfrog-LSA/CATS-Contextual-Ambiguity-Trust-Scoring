@@ -108,11 +108,34 @@ migrate before `pytest tests/integration/`:
 ```bash
 service postgresql start
 service redis-server start
+# Role and database the integration tests connect to (the CI `test` job's
+# cats / cats / cats_test). A fresh container has neither; both lines do
+# nothing when they already exist.
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname = 'cats'\" | grep -q 1 || psql -qc \"CREATE ROLE cats LOGIN PASSWORD 'cats'\""
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname = 'cats_test'\" | grep -q 1 || createdb -O cats cats_test"
 alembic upgrade head
 ```
 
+Without the role, every integration test errors on `InvalidPasswordError:
+password authentication failed for user "cats"`, which looks like a wrong
+password rather than a missing user.
+
+`alembic upgrade head` checks that the migrations apply cleanly. The tests
+themselves do not depend on it: their fixture creates the tables with
+`Base.metadata.create_all`. It reads `cats.core.config.Settings`, so it needs
+all four variables above exported. With any of them unset it fails with a
+pydantic `ValidationError`, even though the tests would still run.
+
+Re-running the integration suite within a minute of the last run can make about
+a dozen tests fail with `429 Too Many Requests` instead of the expected
+404/422. This is not a regression. The API's rate limiter keeps its counter in
+Redis (`REDIS_RATE_LIMIT_MAX` = 30 requests per 60 s), and the counter survives
+between runs. Wait a minute, or clear it with `redis-cli flushdb`. CI starts
+from an empty Redis, so it never hits this.
+
 (Services started in the setup script do **not** carry over — the cache stores
-files, not running processes.)
+files, not running processes. Neither do the role and database: re-run the block
+in each new container.)
 
 ## 3. Network access
 
