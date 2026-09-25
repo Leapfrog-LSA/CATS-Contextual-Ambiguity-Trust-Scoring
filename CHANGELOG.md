@@ -93,6 +93,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   unchanged.
 
 ### Changed
+- **nginx no longer serves `/metrics` (deployment behaviour change).** The
+  app's `/metrics` is unauthenticated, and until now the bundled
+  `deploy/nginx.conf` proxied it to anyone. The restriction existed only as a
+  commented-out allow-list of private ranges. That allow-list would itself have
+  been unsafe: behind Docker's userland proxy an external client can reach
+  nginx from the bridge gateway (`172.x.0.1`), inside `172.16.0.0/12`.
+  - The location is now `deny all`, so a request through the proxy gets `403`.
+  - Prometheus should scrape `http://app:8000/metrics` on the internal compose
+    network. **If you scraped through nginx, repoint the scraper**, or allow
+    its IP explicitly as the config comment explains.
+  - Checked against a live nginx and app: `/metrics`, `/metrics?x=1`,
+    `//metrics`, `/%6Detrics`, `/./metrics` and `/v1/../metrics` all return
+    `403`; `/metrics/` only redirects to `/metrics`; `/health` still returns
+    `200`, and the app itself still serves `/metrics` directly.
+- **`docs/api.md`: request limits, rate limits and status codes documented.**
+  - A new *Limits and errors* section covers:
+    - the 2 MB body cap (`413`, set in nginx only);
+    - the schema limits: 500 messages per evaluation, 10 000 chars per
+      message, 50 items per batch, and the contest text lengths (`422`,
+      returned as an RFC 7807 problem document);
+    - both rate-limit layers (`429`);
+    - `401` / `404` / `409` / `500`.
+  - The `/evaluate` response example still showed the pre-August thresholds
+    (`volatility` 0.4, `silence` 72 h); it now shows 0.3 and 96 h, with the
+    `source_type` the silence signal actually reports.
 - **Cloud setup: integration-test database steps.** `docs/cloud_setup.md` §2
   and `CLAUDE.md` said to start Postgres and Redis and run `alembic upgrade head`.
   But a fresh container has neither the `cats` role nor the `cats_test`
