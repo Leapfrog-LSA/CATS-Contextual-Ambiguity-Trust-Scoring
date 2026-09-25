@@ -91,6 +91,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **Three unit-test modules could not be run on their own.**
+  `tests/unit/test_signals.py`, `test_sentiment.py` and `test_build_dataset.py`
+  reach `cats.core.config.Settings` at import time. They never set the four
+  variables it requires, so run alone without them exported they failed at
+  collection with a pydantic `ValidationError`. They only passed in a full run
+  because an earlier module had already set the variables. The new
+  `tests/unit/conftest.py` sets the same `setdefault` test values the other unit
+  modules use, before any unit module is imported, so every module in
+  `tests/unit/` now runs alone. Exported values (the CI `test` job's) still win,
+  and the integration suite keeps its own database URL: the file sits in
+  `tests/unit/`, not `tests/`. `CLAUDE.md` and `docs/cloud_setup.md` now
+  describe this. No production code changed.
 - **The offline weights loader crashed on a non-mapping `weights` table.**
   `cats.calibration.evaluate.load_weights_file` (used by `python -m
   cats.calibration.evaluate` and `cats.calibration.report --weights`) already

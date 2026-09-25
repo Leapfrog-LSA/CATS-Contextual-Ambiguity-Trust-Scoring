@@ -21,9 +21,12 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   black+isort.
 - **Test env vars: the trap is setting them *wrong*, not leaving them unset.**
   `cats.core.config.Settings` has no defaults for `CATS_API_KEY`, `DATABASE_URL`,
-  `REDIS_URL`, `AUDIT_ENCRYPTION_KEY`, but every test module that imports it
-  supplies its own via `os.environ.setdefault` — so with **no env vars at all**
-  `pytest` collects the full suite (225) and `tests/unit/` passes 208/208.
+  `REDIS_URL`, `AUDIT_ENCRYPTION_KEY`, but the tests supply their own via
+  `os.environ.setdefault` — `tests/unit/conftest.py` for every unit module (so
+  each one also runs on its own, e.g. `pytest tests/unit/test_signals.py`) and
+  `tests/integration/test_api.py` for the integration suite. So with **no env
+  vars at all** `pytest` collects the full suite (372) and `tests/unit/` passes
+  (350 passed, 5 skipped).
   Because it is `setdefault`, an exported variable *wins over* the test's value:
   a `DATABASE_URL` missing the `+asyncpg` driver (plain `postgresql://…`)
   overrides the test's own and fails at collection demanding `psycopg2`, which
