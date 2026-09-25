@@ -99,11 +99,13 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   italiane regionali e istituzionali con rating verificati, seguendo
   [`dataset_expansion_runbook.md`](dataset_expansion_runbook.md); `labels.jsonl`
   non si rigenera mai.
-- [ ] Spostare il filtro sui timestamp anomali dentro la pipeline di
-  calibrazione — **M**. Oggi vive solo in
+- [x] Spostare il filtro sui timestamp anomali dentro la pipeline di
+  calibrazione — **M**. Prima viveva solo in
   `research/snapshot_history_audit_2026-09.py`, e le date del 1970 o del
-  2022–2024 falsano `silence`. Solo lato dataset: se toccasse lo scoring live
-  servirebbe una ricalibrazione.
+  2022–2024 falsano `silence`. Ora è in `merge_snapshots`, con le opzioni
+  `--not-before` / `--not-after` disattivate di default. Tocca solo il dataset,
+  non lo scoring live. Con i dati al 25 settembre il filtro dà 100 fonti con
+  almeno 10 messaggi puliti (erano 99 al 13 settembre).
 - [ ] Raccogliere almeno 20 etichette umane in `data/human_labels.jsonl`
   (modulo di feedback sul punteggio, redazioni di fact-checking) — **M** —
   dipende dal lancio.

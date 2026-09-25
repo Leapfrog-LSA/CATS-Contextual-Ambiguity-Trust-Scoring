@@ -9,6 +9,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Timestamp sanity filter in `cats.calibration.merge_snapshots`.** New
+  options `--not-before` / `--not-after YYYY-MM-DD` keep only messages dated
+  within those whole UTC days, both inclusive. The same logic is available as
+  `filter_by_timestamp()` for Python callers.
+  - **Why:** the 13 Sep 2026 snapshot audit found feeds that mix old or
+    mis-dated items into their "recent" window, such as `1970-01-01` parser
+    defaults and 2022–2024 archive items. Those create multi-year fake gaps
+    that distort `silence` and `volatility`. Until now the filter existed only
+    in `research/snapshot_history_audit_2026-09.py`.
+  - **Excluded sources:** a source the filter empties is left out, because
+    the temporal split cannot place it. It is always named in the report.
+  - **Flagged sources:** a source that loses more than half its messages is
+    kept and flagged for a feed-health check.
+  - **Defaults:** the filter is off by default. Without the flags, the merge
+    output is byte-identical to before, so the shipped July calibration inputs
+    stay reproducible.
+  - **Verified:**
+    - on the 62 committed snapshots with the audit's
+      `[2026-06-01, 2026-09-13]` window, the output matches the research
+      script's cleaned records exactly (102 sources, the same 8 emptied);
+    - with `--not-after 2026-09-25` it yields 100 sources with ≥ 10 clean
+      messages (99 on 13 Sep).
+  - **Scope:** calibration dataset only. No signal, weight, threshold or
+    `ENGINE_VERSION` change.
 - **Roadmap update, September 2026** (`docs/piano_sviluppo_roadmap_2026-09.md`,
   in Italian). It covers the state at v1.7.0 (future-holdout figures, tests and
   coverage, data, open human TODOs), then three phases: closing open work, then
