@@ -112,10 +112,11 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [ ] Lancio pubblico e prime "good first issue" — **M** — umano; dopo demo e
   DOI. Il piano di lancio resta fuori da questo repo.
 - [ ] Rafforzare l'API — **M**:
-  - proteggere `/metrics`, oggi senza autenticazione, almeno con una
-    restrizione IP in nginx;
-  - test di carico su `/evaluate` e `/batch`;
-  - documentare i limiti di dimensione del payload.
+  - [x] proteggere `/metrics`: il proxy nginx ora risponde `403`, e Prometheus
+    legge le metriche direttamente da `app:8000` sulla rete interna;
+  - [ ] test di carico su `/evaluate` e `/batch`;
+  - [x] documentare i limiti di dimensione del payload, i rate limit e i codici
+    di errore (`docs/api.md` → *Limits and errors*).
 - [ ] Threat model e pen-test leggero (rischio R8) — **M** — il pen-test
   richiede un revisore esterno.
 - [ ] Bozza tecnica del piano di monitoraggio post-market (Art. 72) — **M** —

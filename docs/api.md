@@ -28,9 +28,14 @@ Compute the trust score for a source.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `source_id` | string | ✅ | Max 256 chars |
-| `messages` | array | ✅ | Min 1 message; ISO 8601 timestamps |
+| `source_id` | string | ✅ | 1–256 chars |
+| `messages` | array | ✅ | 1–500 messages |
+| `messages[].timestamp` | string | ✅ | ISO 8601 (`Z` or offset); anything else is a `422` |
+| `messages[].text` | string | ✅ | 1–10 000 chars |
+| `messages[].metadata` | object | ❌ | Free-form |
 | `context.source_type` | string | ❌ | `social` or `news`; affects weights |
+
+Size, rate and error behaviour for every endpoint: [Limits and errors](#limits-and-errors).
 
 **Response 200**
 ```json
@@ -41,8 +46,8 @@ Compute the trust score for a source.
   "requires_review": false,
   "signals": [
     { "name": "coherence", "value": 68.2, "confidence": 0.8, "metadata": {"pairs": 5} },
-    { "name": "volatility", "value": 41.0, "confidence": 0.6, "metadata": {"threshold": 0.4} },
-    { "name": "silence",    "value": 20.0, "confidence": 0.7, "metadata": {"threshold_h": 72} },
+    { "name": "volatility", "value": 41.0, "confidence": 0.6, "metadata": {"threshold": 0.3} },
+    { "name": "silence",    "value": 20.0, "confidence": 0.7, "metadata": {"threshold_h": 96.0, "source_type": "social"} },
     { "name": "gaming",     "value": 15.3, "confidence": 0.9, "metadata": {"token_count": 420} }
   ],
   "language": { "detected": "italian", "confidence": 0.85, "marker_ratio": 0.23, "latin_script_ratio": 1.0 },
@@ -82,7 +87,11 @@ transaction); each result carries its own `trace_id`.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `items` | array | ✅ | 1–50 evaluation items |
+| `items` | array | ✅ | 1–50 evaluation items, each validated like an `/evaluate` body |
+
+The whole request body must also fit the proxy's 2 MB cap (see
+[Limits and errors](#limits-and-errors)). Fifty items at the per-item maximum
+would be far larger than that, so for big histories send fewer items per call.
 
 **Response 200**
 ```json
@@ -136,6 +145,7 @@ GDPR Art. 22 — contest an automated decision.
 ```json
 { "reason": "The source was temporarily inactive due to..." }
 ```
+`reason`: 10–2000 chars.
 
 **Response 200**
 ```json
@@ -153,7 +163,7 @@ Tenant-scoped; resolving an already-resolved contest returns **409**.
 ```json
 { "status": "upheld", "response": "Re-evaluated with fresh messages; band corrected." }
 ```
-`status` must be `upheld` or `rejected`.
+`status` must be `upheld` or `rejected`; `response`: 10–4000 chars.
 
 **Response 200**
 ```json
@@ -178,7 +188,62 @@ Deep health check — returns status of API, Redis, PostgreSQL, NLP model.
 
 Prometheus exposition format (`text/plain`). Includes HTTP request
 count/latency (labelled by route template), `cats_evaluations_total` by band,
-and a `cats_trust_score` histogram. Unauthenticated, for scraping.
+and a `cats_trust_score` histogram.
+
+The app serves it **without authentication**, so the bundled nginx proxy does
+**not** serve it: a request for `/metrics` through the public entry point gets
+`403`. Scrape the app directly on the internal network instead, at
+`http://app:8000/metrics` in the bundled `docker-compose.yml`. The app port is
+exposed only to the compose network, never published on the host.
+
+Do not replace the `deny all` with an allow-list of private ranges such as
+`172.16.0.0/12`. Behind Docker's userland proxy, an external client can reach
+nginx with the bridge gateway (`172.x.0.1`) as its source address, so such a
+rule would open `/metrics` to everyone. To serve it through nginx for one
+scraper, allow that scraper's IP explicitly (see the comment in
+`deploy/nginx.conf`).
+
+---
+
+## Limits and errors
+
+These are enforced by the request schemas (`cats/api/schemas.py`), the auth
+layer (`cats/core/security.py`) and the bundled proxy (`deploy/nginx.conf`).
+
+**Request size**
+
+| Limit | Value | Where | On violation |
+|---|---|---|---|
+| Request body | 2 MB | nginx `client_max_body_size` | `413` |
+| `source_id` | 1–256 chars | schema | `422` |
+| `messages` per evaluation | 1–500 | schema | `422` |
+| `messages[].text` | 1–10 000 chars | schema | `422` |
+| `messages[].timestamp` | ISO 8601 | schema | `422` |
+| `items` per `/batch` | 1–50 | schema | `422` |
+| Contest `reason` | 10–2000 chars | schema | `422` |
+| Resolve `response` | 10–4000 chars | schema | `422` |
+
+The 2 MB body cap is set only in nginx. The app itself does not cap the body,
+which is one more reason never to publish the app port directly.
+
+**Rate limits** (both answer `429`)
+
+| Layer | Limit | Keyed by |
+|---|---|---|
+| nginx | 30 requests/min, burst 10 | client IP |
+| app (Redis sliding window) | `REDIS_RATE_LIMIT_MAX` requests per `REDIS_RATE_LIMIT_WINDOW_SECONDS` (default 30 per 60 s) | API key (hashed); failed authentications separately by client IP |
+
+**Status codes**
+
+| Code | When |
+|---|---|
+| `401` | Missing or invalid API key |
+| `404` | Unknown `trace_id` or contest, or one that belongs to another tenant |
+| `409` | Resolving a contest that is already resolved |
+| `413` | Body over 2 MB (from nginx, before the app sees it) |
+| `422` | Schema validation failed. The body is an RFC 7807 problem document, whose `detail` lists the failing fields |
+| `429` | Rate limit exceeded (nginx or app) |
+| `500` | Unexpected error. RFC 7807 body with a generic `detail`; the cause is only logged server-side |
 
 ---
 
