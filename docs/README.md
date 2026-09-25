@@ -56,6 +56,7 @@
 | Document | What it covers |
 |---|---|
 | [piano_sviluppo_roadmap_2026-07.md](piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan and 15-point phased roadmap (July 2026, in Italian) |
+| [piano_sviluppo_roadmap_2026-09.md](piano_sviluppo_roadmap_2026-09.md) | Roadmap update (September 2026, in Italian): current state at v1.7.0, three phases to the January 2027 recalibration and v2.0, main risks |
 | [zenodo_deposit_checklist.md](zenodo_deposit_checklist.md) | Human checklist for converting the whitepaper to PDF and depositing it on Zenodo with a citable DOI |
 
 The technical whitepaper and the pipeline scheme (`cats_scheme.png`) also live

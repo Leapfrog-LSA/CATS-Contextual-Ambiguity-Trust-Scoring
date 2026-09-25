@@ -16,6 +16,7 @@
   * [Signal discriminative power — investigation](docs/signal_research_2026-07.md)
   * [Signal diagnosis — ablation & leave-one-out](docs/signal_diagnosis_2026-07.md)
   * [Piano di sviluppo e roadmap — luglio 2026](docs/piano_sviluppo_roadmap_2026-07.md)
+  * [Roadmap di sviluppo — aggiornamento settembre 2026](docs/piano_sviluppo_roadmap_2026-09.md)
   * [CATS Compliance Documentation](docs/compliance.md)
   * [CATS — EU AI Act Conformity Documentation](docs/eu_ai_act/README.md)
     * [CATS — Accuracy Declaration (EU AI Act Annex IV §6 / Art. 15)](docs/eu_ai_act/accuracy_declaration.md)

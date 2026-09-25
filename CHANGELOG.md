@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Roadmap update, September 2026** (`docs/piano_sviluppo_roadmap_2026-09.md`,
+  in Italian). It covers the state at v1.7.0 (future-holdout figures, tests and
+  coverage, data, open human TODOs), then three phases: closing open work, then
+  data, first users and API hardening, then the January 2027 recalibration and
+  v2.0. It ends with the main risks. Fase 1 items already done are ticked with
+  their PRs. The launch plan stays out of the repository. The July roadmap
+  stays as the July snapshot and now points to the update; README, `SUMMARY.md`
+  and `docs/README.md` link the new file. Documentation only: no signal,
+  weight, threshold or `ENGINE_VERSION` change.
 - **Unit tests for the coherence backends and calibrated-weights loading.**
   `tests/unit/test_coherence_backends.py` drives both coherence backends with a
   fake spaCy pipeline and a fake `sentence_transformers` module — mean Jaccard of
