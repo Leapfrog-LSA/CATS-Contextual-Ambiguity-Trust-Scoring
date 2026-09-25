@@ -32,9 +32,12 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   overrides the test's own and fails at collection demanding `psycopg2`, which
   this project does not use. So either export nothing, or copy the CI `test`-job
   values verbatim — `.github/workflows/ci.yml` / `docs/cloud_setup.md`.
-- `tests/integration/` needs live Postgres + Redis (`make docker-up`; in a cloud
-  session start them with `service postgresql start` / `service redis-server start`
-  + `alembic upgrade head`).
+- `tests/integration/` needs live Postgres + Redis (`make docker-up`). In a cloud
+  session, start them with `service postgresql start` / `service redis-server start`.
+  A fresh container also lacks the `cats` role and the `cats_test` database, and
+  without them every integration test fails with `InvalidPasswordError`. Create
+  them with the idempotent commands in `docs/cloud_setup.md` §2 before
+  `alembic upgrade head`, which needs all four test env vars exported.
 - Fresh/cloud session setup: **`docs/cloud_setup.md`**.
 
 ## Signal & scoring invariants (easy to break)
