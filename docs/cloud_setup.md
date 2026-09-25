@@ -81,9 +81,11 @@ field is visible to anyone who can edit the environment, so never put real
 secrets here).
 
 Copy them **verbatim**. `cats.core.config.Settings` has no defaults for these,
-but the test modules that import it fall back to their own via
-`os.environ.setdefault`, so leaving them unset is harmless — the full suite
-still collects and `tests/unit/` still passes. `setdefault` also means an
+but the tests fall back to their own via `os.environ.setdefault`
+(`tests/unit/conftest.py` for every unit module, `tests/integration/test_api.py`
+for the integration suite), so leaving them unset is harmless — the full suite
+still collects, `tests/unit/` still passes, and any single unit module runs on
+its own. `setdefault` also means an
 exported variable *overrides* the test's, which is where the damage comes from:
 a `DATABASE_URL` without the `+asyncpg` driver (plain `postgresql://…`) sends
 SQLAlchemy looking for the synchronous `psycopg2`, which this project does not
