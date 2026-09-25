@@ -41,14 +41,21 @@ async def client():
     # /explain and /contest query. NLP is not exercised by these tests, so the
     # spaCy model is intentionally not loaded here.
     import cats.core.models  # noqa: F401  (register tables on Base.metadata)
+    import cats.core.security as security
     from cats.core.db import Base, engine
-    from cats.core.security import init_redis
 
     # pytest-asyncio gives each test its own event loop, but the engine is a
     # module-level singleton: dispose it so its pool is rebuilt on the current
     # loop, otherwise asyncpg raises "got Future attached to a different loop".
     await engine.dispose()
-    await init_redis()
+    await security.init_redis()
+    # The rate limiter's sliding windows live in Redis and outlive the run, so a
+    # re-run within the window would start with the last run's requests already
+    # counted and get 429 instead of the status under test. Start every test with
+    # empty windows. Delete only the limiter's keys (not FLUSHDB) so a REDIS_URL
+    # that points at a shared instance keeps the rest of its data.
+    async for key in security.redis_client.scan_iter(match="ratelimit:*"):
+        await security.redis_client.delete(key)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

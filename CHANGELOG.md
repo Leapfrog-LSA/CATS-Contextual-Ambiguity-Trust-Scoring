@@ -79,8 +79,9 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `alembic upgrade head` needs all four test env vars exported;
   - the tests themselves do not depend on it, because their fixture runs
     `create_all`;
-  - re-running the integration suite within 60 s hits the Redis-backed rate
-    limiter (`429` instead of 404/422). Wait a minute or run `redis-cli flushdb`.
+  - re-running the integration suite within 60 s hit the Redis-backed rate
+    limiter (`429` instead of 404/422). The test fixture now clears it; see
+    *Fixed* below.
 
   Verified from an empty Postgres by running the documented block verbatim,
   twice: 367 passed, 5 skipped. Documentation only.
@@ -106,6 +107,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **Integration tests failed on a quick re-run.** The API's rate limiter keeps
+  its sliding windows in Redis (30 requests per 60 s), and they outlive a test
+  run. The third run of `tests/integration/` inside a minute started with a full
+  window, so 12 tests got `429 Too Many Requests` instead of the 404/422 they
+  assert. The `client` fixture in `tests/integration/test_api.py` now deletes
+  the `ratelimit:*` keys before every test. It deletes only those keys, not the
+  whole Redis database, so a `REDIS_URL` pointing at a shared instance keeps its
+  other data. `docs/cloud_setup.md` is updated to match. CI was never affected,
+  because it starts from an empty Redis. Test code only; the rate limiter is
+  unchanged.
 - **Three unit-test modules could not be run on their own.**
   `tests/unit/test_signals.py`, `test_sentiment.py` and `test_build_dataset.py`
   reach `cats.core.config.Settings` at import time. They never set the four
