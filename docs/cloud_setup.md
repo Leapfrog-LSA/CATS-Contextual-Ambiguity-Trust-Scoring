@@ -126,12 +126,14 @@ themselves do not depend on it: their fixture creates the tables with
 all four variables above exported. With any of them unset it fails with a
 pydantic `ValidationError`, even though the tests would still run.
 
-Re-running the integration suite within a minute of the last run can make about
-a dozen tests fail with `429 Too Many Requests` instead of the expected
-404/422. This is not a regression. The API's rate limiter keeps its counter in
-Redis (`REDIS_RATE_LIMIT_MAX` = 30 requests per 60 s), and the counter survives
-between runs. Wait a minute, or clear it with `redis-cli flushdb`. CI starts
-from an empty Redis, so it never hits this.
+Re-running the integration suite back to back is safe. The API's rate limiter
+keeps its sliding windows in Redis (`REDIS_RATE_LIMIT_MAX` = 30 requests per
+60 s), and they survive between runs. The `client` fixture therefore deletes the
+`ratelimit:*` keys before every test; it touches nothing else in Redis. Without
+that, the third run inside a minute failed about a dozen tests with
+`429 Too Many Requests` instead of the expected 404/422. If you hit a `429`
+while calling a locally running API by hand, the same keys are the cause:
+`redis-cli --scan --pattern 'ratelimit:*' | xargs -r redis-cli del`.
 
 (Services started in the setup script do **not** carry over — the cache stores
 files, not running processes. Neither do the role and database: re-run the block
