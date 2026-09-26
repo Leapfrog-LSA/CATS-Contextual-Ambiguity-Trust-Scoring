@@ -81,9 +81,11 @@ field is visible to anyone who can edit the environment, so never put real
 secrets here).
 
 Copy them **verbatim**. `cats.core.config.Settings` has no defaults for these,
-but the test modules that import it fall back to their own via
-`os.environ.setdefault`, so leaving them unset is harmless — the full suite
-still collects and `tests/unit/` still passes. `setdefault` also means an
+but the tests fall back to their own via `os.environ.setdefault`
+(`tests/unit/conftest.py` for every unit module, `tests/integration/test_api.py`
+for the integration suite), so leaving them unset is harmless — the full suite
+still collects, `tests/unit/` still passes, and any single unit module runs on
+its own. `setdefault` also means an
 exported variable *overrides* the test's, which is where the damage comes from:
 a `DATABASE_URL` without the `+asyncpg` driver (plain `postgresql://…`) sends
 SQLAlchemy looking for the synchronous `psycopg2`, which this project does not
@@ -106,11 +108,36 @@ migrate before `pytest tests/integration/`:
 ```bash
 service postgresql start
 service redis-server start
+# Role and database the integration tests connect to (the CI `test` job's
+# cats / cats / cats_test). A fresh container has neither; both lines do
+# nothing when they already exist.
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname = 'cats'\" | grep -q 1 || psql -qc \"CREATE ROLE cats LOGIN PASSWORD 'cats'\""
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname = 'cats_test'\" | grep -q 1 || createdb -O cats cats_test"
 alembic upgrade head
 ```
 
+Without the role, every integration test errors on `InvalidPasswordError:
+password authentication failed for user "cats"`, which looks like a wrong
+password rather than a missing user.
+
+`alembic upgrade head` checks that the migrations apply cleanly. The tests
+themselves do not depend on it: their fixture creates the tables with
+`Base.metadata.create_all`. It reads `cats.core.config.Settings`, so it needs
+all four variables above exported. With any of them unset it fails with a
+pydantic `ValidationError`, even though the tests would still run.
+
+Re-running the integration suite back to back is safe. The API's rate limiter
+keeps its sliding windows in Redis (`REDIS_RATE_LIMIT_MAX` = 30 requests per
+60 s), and they survive between runs. The `client` fixture therefore deletes the
+`ratelimit:*` keys before every test; it touches nothing else in Redis. Without
+that, the third run inside a minute failed about a dozen tests with
+`429 Too Many Requests` instead of the expected 404/422. If you hit a `429`
+while calling a locally running API by hand, the same keys are the cause:
+`redis-cli --scan --pattern 'ratelimit:*' | xargs -r redis-cli del`.
+
 (Services started in the setup script do **not** carry over — the cache stores
-files, not running processes.)
+files, not running processes. Neither do the role and database: re-run the block
+in each new container.)
 
 ## 3. Network access
 

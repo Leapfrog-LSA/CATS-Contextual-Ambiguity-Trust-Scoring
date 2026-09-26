@@ -9,6 +9,54 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Timestamp sanity filter in `cats.calibration.merge_snapshots`.** New
+  options `--not-before` / `--not-after YYYY-MM-DD` keep only messages dated
+  within those whole UTC days, both inclusive. The same logic is available as
+  `filter_by_timestamp()` for Python callers.
+  - **Why:** the 13 Sep 2026 snapshot audit found feeds that mix old or
+    mis-dated items into their "recent" window, such as `1970-01-01` parser
+    defaults and 2022–2024 archive items. Those create multi-year fake gaps
+    that distort `silence` and `volatility`. Until now the filter existed only
+    in `research/snapshot_history_audit_2026-09.py`.
+  - **Excluded sources:** a source the filter empties is left out, because
+    the temporal split cannot place it. It is always named in the report.
+  - **Flagged sources:** a source that loses more than half its messages is
+    kept and flagged for a feed-health check.
+  - **Defaults:** the filter is off by default. Without the flags, the merge
+    output is byte-identical to before, so the shipped July calibration inputs
+    stay reproducible.
+  - **Verified:**
+    - on the 62 committed snapshots with the audit's
+      `[2026-06-01, 2026-09-13]` window, the output matches the research
+      script's cleaned records exactly (102 sources, the same 8 emptied);
+    - with `--not-after 2026-09-25` it yields 100 sources with ≥ 10 clean
+      messages (99 on 13 Sep).
+  - **Scope:** calibration dataset only. No signal, weight, threshold or
+    `ENGINE_VERSION` change.
+- **Roadmap update, September 2026** (`docs/piano_sviluppo_roadmap_2026-09.md`,
+  in Italian). It covers the state at v1.7.0 (future-holdout figures, tests and
+  coverage, data, open human TODOs), then three phases: closing open work, then
+  data, first users and API hardening, then the January 2027 recalibration and
+  v2.0. It ends with the main risks. Fase 1 items already done are ticked with
+  their PRs. The launch plan stays out of the repository. The July roadmap
+  stays as the July snapshot and now points to the update; README, `SUMMARY.md`
+  and `docs/README.md` link the new file. Documentation only: no signal,
+  weight, threshold or `ENGINE_VERSION` change.
+- **Unit tests for the coherence backends and calibrated-weights loading.**
+  `tests/unit/test_coherence_backends.py` drives both coherence backends with a
+  fake spaCy pipeline and a fake `sentence_transformers` module — mean Jaccard of
+  consecutive pairs, PER/ORG/GPE/LOC-only filtering, case normalisation,
+  confidence cap, cosine clamping, inference-error fallback to NER, and SBERT
+  model caching / no-retry after failure. `tests/unit/test_weights_loading.py`
+  covers `CATS_WEIGHTS_FILE`: the shipped file shape and a bare table, per-group
+  fallback to the static estimates, returned copies, and fallback on a missing,
+  malformed-JSON or non-summing file. Unit coverage: `signals/coherence.py`
+  52% → 100%, `scoring/weights.py` 64% → 98%. No production code changed.
+  **Known gap pinned, not fixed:** a structurally wrong weights file (top level
+  or a group that is not a mapping) raises `AttributeError` instead of falling
+  back to the static weights as the loader's docstring promises, so every
+  evaluation would fail; `cats/scoring/weights.py` is maintainer-gated, so the
+  test pins the current behaviour until a deliberate fix.
 - **Technical whitepaper v1.1** (`docs/CATS_WhitePaper_Tecnico_v1.1.docx`),
   the source for the Zenodo deposit. v1.0 (March 2026) is kept as the
   historical record. What changed: a new **§1.4** positioning CATS against the
@@ -62,6 +110,47 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   them by path — and are also in the data repository. `data/snapshots/*.jsonl`
   is now git-ignored, so downloaded snapshots cannot be committed back by
   accident (tracked files are unaffected).
+- **nginx no longer serves `/metrics` (deployment behaviour change).** The
+  app's `/metrics` is unauthenticated, and until now the bundled
+  `deploy/nginx.conf` proxied it to anyone. The restriction existed only as a
+  commented-out allow-list of private ranges. That allow-list would itself have
+  been unsafe: behind Docker's userland proxy an external client can reach
+  nginx from the bridge gateway (`172.x.0.1`), inside `172.16.0.0/12`.
+  - The location is now `deny all`, so a request through the proxy gets `403`.
+  - Prometheus should scrape `http://app:8000/metrics` on the internal compose
+    network. **If you scraped through nginx, repoint the scraper**, or allow
+    its IP explicitly as the config comment explains.
+  - Checked against a live nginx and app: `/metrics`, `/metrics?x=1`,
+    `//metrics`, `/%6Detrics`, `/./metrics` and `/v1/../metrics` all return
+    `403`; `/metrics/` only redirects to `/metrics`; `/health` still returns
+    `200`, and the app itself still serves `/metrics` directly.
+- **`docs/api.md`: request limits, rate limits and status codes documented.**
+  - A new *Limits and errors* section covers:
+    - the 2 MB body cap (`413`, set in nginx only);
+    - the schema limits: 500 messages per evaluation, 10 000 chars per
+      message, 50 items per batch, and the contest text lengths (`422`,
+      returned as an RFC 7807 problem document);
+    - both rate-limit layers (`429`);
+    - `401` / `404` / `409` / `500`.
+  - The `/evaluate` response example still showed the pre-August thresholds
+    (`volatility` 0.4, `silence` 72 h); it now shows 0.3 and 96 h, with the
+    `source_type` the silence signal actually reports.
+- **Cloud setup: integration-test database steps.** `docs/cloud_setup.md` §2
+  and `CLAUDE.md` said to start Postgres and Redis and run `alembic upgrade head`.
+  But a fresh container has neither the `cats` role nor the `cats_test`
+  database, so every integration test failed with `InvalidPasswordError`, which
+  reads like a wrong password. The docs now give two idempotent commands that
+  create both, with the CI `test` job's values. They also note three more
+  things:
+  - `alembic upgrade head` needs all four test env vars exported;
+  - the tests themselves do not depend on it, because their fixture runs
+    `create_all`;
+  - re-running the integration suite within 60 s hit the Redis-backed rate
+    limiter (`429` instead of 404/422). The test fixture now clears it; see
+    *Fixed* below.
+
+  Verified from an empty Postgres by running the documented block verbatim,
+  twice: 367 passed, 5 skipped. Documentation only.
 - **`CITATION.cff` prepared for the Zenodo deposit** (Task 21). Adds `doi:` and
   `preferred-citation` as commented `TODO [umano]` blocks, with a note to use the
   **concept** DOI (which always resolves to the latest version) rather than a
@@ -84,6 +173,63 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **Integration tests failed on a quick re-run.** The API's rate limiter keeps
+  its sliding windows in Redis (30 requests per 60 s), and they outlive a test
+  run. The third run of `tests/integration/` inside a minute started with a full
+  window, so 12 tests got `429 Too Many Requests` instead of the 404/422 they
+  assert. The `client` fixture in `tests/integration/test_api.py` now deletes
+  the `ratelimit:*` keys before every test. It deletes only those keys, not the
+  whole Redis database, so a `REDIS_URL` pointing at a shared instance keeps its
+  other data. `docs/cloud_setup.md` is updated to match. CI was never affected,
+  because it starts from an empty Redis. Test code only; the rate limiter is
+  unchanged.
+- **Three unit-test modules could not be run on their own.**
+  `tests/unit/test_signals.py`, `test_sentiment.py` and `test_build_dataset.py`
+  reach `cats.core.config.Settings` at import time. They never set the four
+  variables it requires, so run alone without them exported they failed at
+  collection with a pydantic `ValidationError`. They only passed in a full run
+  because an earlier module had already set the variables. The new
+  `tests/unit/conftest.py` sets the same `setdefault` test values the other unit
+  modules use, before any unit module is imported, so every module in
+  `tests/unit/` now runs alone. Exported values (the CI `test` job's) still win,
+  and the integration suite keeps its own database URL: the file sits in
+  `tests/unit/`, not `tests/`. `CLAUDE.md` and `docs/cloud_setup.md` now
+  describe this. No production code changed.
+- **The offline weights loader crashed on a non-mapping `weights` table.**
+  `cats.calibration.evaluate.load_weights_file` (used by `python -m
+  cats.calibration.evaluate` and `cats.calibration.report --weights`) already
+  fell back to the static WP 4.1 weights for a top-level list or a malformed
+  group, but `{"weights": [...]}` or `{"weights": "..."}` raised `AttributeError`.
+  It now treats such a file like one without the groups: every group gets the
+  static estimates, the same as the live loader in `cats.scoring.weights`.
+- **A structurally wrong calibrated-weights file failed every evaluation.**
+  `cats.scoring.weights._calibrated_table` promises to fall back to the static
+  WP 4.1 weights when `CATS_WEIGHTS_FILE` holds invalid contents, but it only
+  caught `ValueError`/`KeyError`/`TypeError`: a file whose top level, `weights`
+  table or a group was not a mapping (e.g. `{"weights": {"news": null}}`) raised
+  `AttributeError` — and since `lru_cache` does not cache exceptions, every
+  `get_dynamic_weights` call, i.e. every evaluation, raised again. It now falls
+  back to the static weights and logs `calibrated_weights_invalid`, like every
+  other invalid file. Error handling only: a valid weights file loads exactly as
+  before, so scores and `ENGINE_VERSION` are unchanged. The four shapes that
+  `tests/unit/test_weights_loading.py` pinned as a known gap now sit in its
+  fallback test.
+- **`docs/compliance.md` reported pre-August thresholds as current.** Its
+  limitations section still gave volatility spike 0.4 and silence 72 h as the
+  operating thresholds, with the retuned values listed as "candidates pending
+  recalibration"; both were retuned in Aug 2026 (0.3 and 96 h), each with its own
+  recalibration and future-holdout revalidation. It now states the current values,
+  links the two retune findings, and names what is still uncalibrated: the band
+  cutoffs 80/60/40/20 and any per-source-type silence threshold. The accuracy row
+  no longer calls the silence threshold an initial estimate.
+- **Two fallback tests failed whenever the optional NLP extras were installed.**
+  `test_sbert_backend_falls_back_when_unavailable` and
+  `test_falls_back_to_textblob_when_unavailable` asserted the SBERT→NER and
+  BERT→TextBlob fallbacks by relying on `sentence-transformers` / `transformers`
+  *not* being installed: with `requirements-sbert.txt` present the real models
+  loaded and both failed (reproduced: 2 failed / 317 passed). They now force the
+  absence with a `None` entry in `sys.modules`, so the import raises `ImportError`
+  in any environment: 319 passed both with and without the extras.
 - **`cats score --json` now emits parseable JSON.** structlog is unconfigured in
   the CLI and its default logger prints to *stdout*, so the spaCy-load and
   feed-discovery lines landed in front of the report — under `--json` that made

@@ -133,6 +133,37 @@ python -m cats.calibration.merge_snapshots \
     --inputs data/snapshots/*.jsonl --out labelled_sources.jsonl
 ```
 
+**Timestamp sanity filter.** Some feeds mix old or mis-dated items into their
+"recent" window: a literal `1970-01-01` parser default, a feed serving
+2022–2024 archive items. Merged into a history, they create multi-year fake
+gaps that distort `silence` and `volatility`
+([snapshot history audit](snapshot_history_audit_2026-09.md)). Use the
+filter for any new calibration dataset built from the accumulated snapshots:
+
+```bash
+python -m cats.calibration.merge_snapshots \
+    --inputs data/snapshots/*.jsonl --out labelled_sources.jsonl \
+    --not-before 2026-06-01 --not-after <date of the newest snapshot>
+```
+
+- **What it keeps:** only messages dated within those whole UTC days, both
+  ends inclusive. Once a bound is set, messages with an unparseable
+  timestamp are dropped too.
+- **The floor:** `2026-06-01` is the audit's data-driven break, not a guess.
+  January–May 2026 held only 109 messages across all sources, then June
+  jumps to 458.
+- **The ceiling:** pass it explicitly and never default to "today", so a
+  build gives the same output whenever it is re-run.
+- **The report:**
+  - A source the filter empties is **excluded and named**, because the
+    temporal split cannot place a source without a timestamp.
+  - A source that loses more than half its messages is kept but **flagged
+    for a feed-health check**.
+- **Defaults and scope:** the filter is off by default. Without the flags,
+  the output is byte-identical to before, so the shipped July calibration
+  inputs stay reproducible. It only affects the calibration dataset, never
+  live scoring.
+
 The strongest validation this enables: calibrate on the merged history up to a
 cutoff, then validate on a **later snapshot** the calibrator never saw
 (`split --cutoff <date of the last calibration snapshot>`).
