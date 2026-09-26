@@ -159,9 +159,39 @@ The app process measured about 1.1 GB RSS after start-up (spaCy
 `it_core_news_lg` loaded) and 1.35 GB at peak during the runs. CPU peaked at
 ~150% of one core: a single worker cannot use the 4 cores.
 
-## Recommendations (not implemented here)
+## Update — recommendation 1 applied (26 Sep 2026)
 
-1. **Serialise the spaCy calls.** Run `coherence` on a dedicated
+`cats/api/routes/evaluate.py` now runs `coherence` on a dedicated
+single-thread executor shared by every request (`_NLP_EXECUTOR`). The other
+three signals stay on the default pool.
+
+Same machine, same script and parameters as the concurrency table above:
+
+| Scenario | Clients | Before: req/s | After: req/s | Before: p50 | After: p50 |
+|---|--:|--:|--:|--:|--:|
+| `/evaluate` 10 msgs | 1 | 9.29 | 9.83 | 0.10 s | 0.10 s |
+| `/evaluate` 10 msgs | 4 | 1.26 | **10.45** | 3.0 s | **0.37 s** |
+| `/evaluate` 10 msgs | 16 | — | **10.28** | 10.5 s ¹ | **0.67 s** |
+| `/evaluate` 50 msgs | 1 | 2.01 | 1.92 | 0.50 s | 0.48 s |
+| `/evaluate` 50 msgs | 4 | 0.21 | **1.93** | 18.6 s | **1.9 s** |
+| `/evaluate` 50 msgs | 16 | — | **1.99** | 83.5 s ¹ | **3.7 s** |
+
+¹ From the aborted full run, where only the median was recorded.
+
+- **Throughput now stays flat as clients are added**, and latency grows about
+  linearly with the queue, which is what one serialised NLP thread should
+  give.
+- **Scores are unchanged.** Four fixed payloads (5, 30, 120 and 300
+  messages) gave byte-identical responses before and after: score, band,
+  and every signal value and confidence.
+
+Capacity is still bounded by one NLP thread per process, about 100 messages/s
+on this machine. Recommendation 2, more workers, is the way to use the other
+cores.
+
+## Recommendations
+
+1. **Done, see the update above.** Serialise the spaCy calls: run `coherence` on a dedicated
    single-thread executor in `cats/api/routes/evaluate.py`, or put a lock
    around `nlp()` in `cats/signals/coherence.py`, which is a maintainer-gated
    file.

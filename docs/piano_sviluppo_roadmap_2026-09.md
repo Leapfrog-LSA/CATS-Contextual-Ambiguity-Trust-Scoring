@@ -118,7 +118,9 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     ([`load_test_2026-09.md`](load_test_2026-09.md)). Tre cose emerse, ognuna
     da correggere con una modifica separata:
     - con più client il throughput crolla di 7–10 volte, perché spaCy viene
-      chiamato da più thread insieme;
+      chiamato da più thread insieme. **Corretto:** ora `coherence` gira su un
+      thread dedicato, e con 4 client a 10 messaggi l'API regge 10,5 richieste
+      al secondo invece di 1,3, con punteggi identici;
     - il timeout di 30 s di nginx è più corto di quanto il limite di 2 MB
       permette di elaborare;
     - un solo worker usa al massimo 1,5 core.
