@@ -1,7 +1,9 @@
 import asyncio
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
+from typing import List
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -42,11 +44,32 @@ from cats.signals.coherence import compute_coherence
 from cats.signals.domain_provenance import compute_domain_provenance
 from cats.signals.gaming import compute_gaming
 from cats.signals.silence import compute_silence
-from cats.signals.types import SignalResult
+from cats.signals.types import Message, SignalResult
 from cats.signals.volatility import compute_volatility
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+# spaCy's nlp() slows down sharply when several threads call it at once. In the
+# 2026-09 load test the same 12 coherence calls took 1.0 s sequentially, 9.5 s on
+# 4 threads and 15.5 s on 8, and throughput at 4 concurrent clients fell 7-10x
+# (docs/load_test_2026-09.md). Coherence, the only signal that runs spaCy (or the
+# optional SBERT model), therefore gets one dedicated thread shared by every
+# request, so NLP work queues instead of contending. The other signals stay on the
+# default pool. Scheduling only: the scores are unchanged.
+_NLP_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="cats-nlp")
+
+
+async def _compute_behavioural_signals(msgs: List[Message], source_type: str) -> List[SignalResult]:
+    """The four behavioural signals for one source, computed off the event loop."""
+    loop = asyncio.get_running_loop()
+    results = await asyncio.gather(
+        loop.run_in_executor(_NLP_EXECUTOR, compute_coherence, msgs),
+        loop.run_in_executor(None, compute_volatility, msgs),
+        loop.run_in_executor(None, partial(compute_silence, msgs, source_type)),
+        loop.run_in_executor(None, compute_gaming, msgs),
+    )
+    return list(results)
 
 
 async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSession) -> EvaluateResponse:
@@ -60,14 +83,7 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
     msgs = normalize_messages([m.model_dump() for m in item.messages])
     context = item.context or {}
 
-    loop = asyncio.get_running_loop()
-    raw_signals = await asyncio.gather(
-        loop.run_in_executor(None, compute_coherence, msgs),
-        loop.run_in_executor(None, compute_volatility, msgs),
-        loop.run_in_executor(None, partial(compute_silence, msgs, context.get("source_type", "social"))),
-        loop.run_in_executor(None, compute_gaming, msgs),
-    )
-    behavioural: list[SignalResult] = list(raw_signals)
+    behavioural: list[SignalResult] = await _compute_behavioural_signals(msgs, context.get("source_type", "social"))
     weights = get_dynamic_weights(context)
     score = aggregate_score(behavioural, weights)
 

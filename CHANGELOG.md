@@ -176,6 +176,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   assumed. No code, signal, weight or threshold changes.
 
 ### Fixed
+- **API throughput collapsed under concurrent requests.** `/evaluate` and
+  `/batch` ran the `coherence` signal (spaCy NER, or SBERT) on the shared
+  default thread pool. spaCy's `nlp()` slows down sharply when several threads
+  call it at once, so concurrent requests made each other slower. At 10
+  messages, 4 clients got 1.3 req/s instead of 9.3
+  (`docs/load_test_2026-09.md`).
+  - `coherence` now runs on one dedicated thread shared by all requests
+    (`_NLP_EXECUTOR` in `cats/api/routes/evaluate.py`). The other signals stay
+    parallel.
+  - **Re-measured:**
+
+    | Scenario | Before | After |
+    |---|--:|--:|
+    | 10 msgs, 4 clients | 1.26 req/s | 10.45 req/s |
+    | 10 msgs, 16 clients | — | 10.28 req/s |
+    | 50 msgs, 4 clients, median latency | 18.6 s | 1.9 s |
+    | 50 msgs, 16 clients, median latency | 83.5 s | 3.7 s |
+
+  - **Scores unchanged:** four fixed payloads gave byte-identical responses
+    before and after.
+  - **New tests** in `tests/unit/test_nlp_serialization.py`: coherence never
+    overlaps across concurrent evaluations and runs on the dedicated thread,
+    while the other signals still run in parallel.
+  - Scheduling only: no signal, weight, threshold or `ENGINE_VERSION` change.
 - **Integration tests failed on a quick re-run.** The API's rate limiter keeps
   its sliding windows in Redis (30 requests per 60 s), and they outlive a test
   run. The third run of `tests/integration/` inside a minute started with a full
