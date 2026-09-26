@@ -114,7 +114,14 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [ ] Rafforzare l'API — **M**:
   - [x] proteggere `/metrics`: il proxy nginx ora risponde `403`, e Prometheus
     legge le metriche direttamente da `app:8000` sulla rete interna;
-  - [ ] test di carico su `/evaluate` e `/batch`;
+  - [x] test di carico su `/evaluate` e `/batch`
+    ([`load_test_2026-09.md`](load_test_2026-09.md)). Tre cose emerse, ognuna
+    da correggere con una modifica separata:
+    - con più client il throughput crolla di 7–10 volte, perché spaCy viene
+      chiamato da più thread insieme;
+    - il timeout di 30 s di nginx è più corto di quanto il limite di 2 MB
+      permette di elaborare;
+    - un solo worker usa al massimo 1,5 core.
   - [x] documentare i limiti di dimensione del payload, i rate limit e i codici
     di errore (`docs/api.md` → *Limits and errors*).
 - [ ] Threat model e pen-test leggero (rischio R8) — **M** — il pen-test

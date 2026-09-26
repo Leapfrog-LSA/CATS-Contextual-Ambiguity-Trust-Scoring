@@ -9,6 +9,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **API load test** (`research/load_test_api.py`, results in
+  `docs/load_test_2026-09.md`). The script measures latency percentiles,
+  throughput and errors for `/evaluate` (10–500 messages, 1/4/16 concurrent
+  clients) and `/batch`. It runs against a live app, uses real feed texts
+  from a snapshot, and needs only `httpx`. Findings on a 4-vCPU container
+  with one uvicorn worker:
+  - **Cost per request:** about 25–40 µs per character of text, almost all of
+    it spaCy NER in `coherence`. That is about 0.1 s for 10 messages and
+    6–19 s for 500.
+  - **Throughput collapse under concurrency:** at 10 messages it falls from
+    9.3 to 1.3 req/s with 4 clients. The cause is reproduced in process:
+    spaCy calls run in parallel threads are ~9× slower than sequential ones,
+    and serialising them behind a lock restores the sequential speed.
+    BLAS/OpenMP thread settings were ruled out.
+  - **Proxy timeout:** a 1.68 MB body, under the 2 MB cap, took 36.9 s on
+    the app and got `504` through nginx at 30 s.
+  - **Resources:** about 1.1–1.35 GB RSS, and at most ~1.5 of 4 cores used.
+
+  Recommendations are listed, not applied. Measurement only: no code, signal,
+  weight or threshold change.
 - **Timestamp sanity filter in `cats.calibration.merge_snapshots`.** New
   options `--not-before` / `--not-after YYYY-MM-DD` keep only messages dated
   within those whole UTC days, both inclusive. The same logic is available as
