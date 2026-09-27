@@ -9,6 +9,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Threat model, technical draft** (`docs/threat_model_2026-09.md`), the
+  technical part of risk R8's "threat model — TODO". It is written from a read
+  of the code, not a penetration test, and is for maintainer review. The R8 row
+  and every `eu_ai_act/` file are left untouched.
+  - **Covers:** scope, trust boundaries, assets, and the controls verified in
+    code.
+  - **11 rated threats with recommendations.** The medium ones:
+    - one valid key can monopolise the single NLP thread with maximum-size
+      requests;
+    - `docker-compose.yml` publishes Postgres (`cats`/`cats`) and Redis (no
+      password) on the host;
+    - `trust_proxy_headers` defaults to on;
+    - any tenant key can resolve that tenant's contests, and no reviewer
+      identity is recorded;
+    - the retention purge covers only `audit_logs`.
+  - **Also:** SSRF and unbounded reads in feed fetching; no dependency or code
+    scanning in CI; public OpenAPI docs; docs that claim JWT authentication,
+    which the code does not have.
+
+  Documentation only: no code or configuration change.
 - **API load test** (`research/load_test_api.py`, results in
   `docs/load_test_2026-09.md`). The script measures latency percentiles,
   throughput and errors for `/evaluate` (10–500 messages, 1/4/16 concurrent

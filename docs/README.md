@@ -31,6 +31,7 @@
 | [domain_provenance_maintenance_2026-09.md](domain_provenance_maintenance_2026-09.md) | Domain-provenance list/coefficient maintenance: false-positive audit against the full 5 275-source catalogue found and fixed two precision gaps (ambiguous ccTLDs, short-brand typosquat over-triggering); 0.6 penalty coefficient re-checked, unchanged |
 | [snapshot_history_audit_2026-09.md](snapshot_history_audit_2026-09.md) | First full merge of all 50 accumulated snapshots: raw numbers look like Fase B is met (109 sources), but a data-driven sanity filter for mis-dated feed content (a CNET item defaulting to 1970, sources serving stale archives) reveals only 99 genuinely usable sources — one short of the bar |
 | [load_test_2026-09.md](load_test_2026-09.md) | API load test of `/evaluate` and `/batch`: cost per request (~25–40 µs per character of text, nearly all spaCy NER), a 7–10× throughput collapse under concurrent clients traced to spaCy running in parallel threads, nginx's 30 s timeout undercutting the 2 MB body cap, and memory/CPU footprint |
+| [threat_model_2026-09.md](threat_model_2026-09.md) | Technical threat-model draft for risk R8 (for human review, not a pen-test): trust boundaries, assets, controls verified in code, and 11 rated threats with recommendations (NLP-queue DoS, Postgres/Redis published with default credentials, trusted `X-Forwarded-For` default, contest-reviewer separation, retention gaps, SSRF in feed fetching, supply chain, docs that claim JWT) |
 
 ## Data collection
 
