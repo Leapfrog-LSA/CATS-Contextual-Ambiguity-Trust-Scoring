@@ -128,6 +128,17 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     di errore (`docs/api.md` → *Limits and errors*).
 - [ ] Threat model e pen-test leggero (rischio R8) — **M** — il pen-test
   richiede un revisore esterno.
+  - [x] Bozza tecnica del threat model:
+    [`threat_model_2026-09.md`](threat_model_2026-09.md). Contiene 11 punti.
+    Quelli di gravità media sono:
+    - una sola chiave può monopolizzare il thread NLP;
+    - Postgres e Redis sono esposti sull'host con credenziali di default;
+    - l'header `X-Forwarded-For` è considerato affidabile di default;
+    - non c'è separazione tra chi valuta e chi risolve i ricorsi;
+    - la purga copre solo l'audit log.
+
+    La bozza va rivista dal maintainer.
+  - [ ] Pen-test esterno.
 - [ ] Bozza tecnica del piano di monitoraggio post-market (Art. 72) — **M** —
   le soglie le decide un umano. Metriche candidate: distribuzione delle bande,
   quota di `requires_review`, quota di input non italiano.
