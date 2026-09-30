@@ -142,6 +142,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the destination. `--ref` pins a data-repo commit for reproducible runs.
 
 ### Changed
+- **Deployment defaults hardened (threat model T2 and T3).**
+  - **`docker-compose.yml` binds Postgres (5432) and Redis (6379) to
+    `127.0.0.1`.** Before, it published them on every interface, with
+    Postgres `cats`/`cats` and Redis without a password: on a host without a
+    firewall both were reachable from outside, bypassing nginx and the app.
+    Local development and tests still reach them from the host.
+  - **Passwords from `.env`.** `POSTGRES_PASSWORD` now comes from `.env`,
+    with the development fallback `cats`. A new `REDIS_PASSWORD`, when set,
+    makes Redis require it; the healthcheck authenticates too. Set both for a
+    real deployment and repeat them in `DATABASE_URL` / `REDIS_URL`, as the
+    new comments in `.env.example` explain.
+  - **`trust_proxy_headers` now defaults to `false`** (was `true`).
+    `docker-compose.yml` enables it for the app, next to the nginx that
+    overwrites `X-Forwarded-For`. `.env.example` still sets it to `true`.
+    **Behaviour change:** a deployment behind another proxy that relied on the
+    old default must set `TRUST_PROXY_HEADERS=true`, and only if that proxy
+    overwrites the header. Otherwise client IPs in the audit log and the
+    failed-authentication limiter fall back to the proxy's address.
 - **RSS snapshots moved out of this repository** (Task 25). New daily
   snapshots are collected in `Leapfrog-LSA/cats-snapshots`; the weekly
   `collect-rss.yml` workflow that committed them to `main` is removed here. The

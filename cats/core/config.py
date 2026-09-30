@@ -75,9 +75,12 @@ class Settings(BaseSettings):
     )
 
     # Trust X-Forwarded-For / proxy headers for client-IP extraction (rate
-    # limiting, audit). Keep enabled behind the bundled nginx; disable when the
-    # app is exposed directly, otherwise clients can spoof their IP.
-    trust_proxy_headers: bool = True
+    # limiting, audit). Off by default (threat model T3): only a proxy that
+    # overwrites the header, like the bundled nginx, makes it trustworthy, and
+    # docker-compose.yml enables it next to that nginx. Enabled without such a
+    # proxy, any client can forge the IP recorded in the audit log and evade the
+    # failed-authentication limiter.
+    trust_proxy_headers: bool = False
 
     environment: str = "production"
     log_level: str = "INFO"
