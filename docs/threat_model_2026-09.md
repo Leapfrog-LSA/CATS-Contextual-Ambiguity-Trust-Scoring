@@ -122,6 +122,14 @@ This contrasts with the app itself, which the same file deliberately only
 - take the Postgres password from `.env`;
 - set Redis `requirepass`.
 
+> **Status (30 Sep 2026): addressed in `docker-compose.yml`.**
+> - Both ports are bound to `127.0.0.1`, so local development and tests still
+>   reach them from the host, and nothing outside does.
+> - `POSTGRES_PASSWORD` comes from `.env`. The development fallback `cats` is
+>   used only when it is unset.
+> - With `REDIS_PASSWORD` set, Redis starts with `--requirepass`, and the
+>   healthcheck authenticates with the same password.
+
 ### T3 — `X-Forwarded-For` trusted by default — **M**
 
 `trust_proxy_headers` defaults to `True`. Behind the bundled nginx this is safe,
@@ -133,6 +141,10 @@ IP. That lets it:
 
 **Recommend:** default `trust_proxy_headers` to `False`, and enable it
 explicitly in the compose environment next to the nginx that justifies it.
+
+> **Status (30 Sep 2026): addressed.** The code default is now `False`.
+> `docker-compose.yml` sets `TRUST_PROXY_HEADERS: "true"` on the app service,
+> next to the nginx that overwrites the header.
 
 ### T4 — No separation between scoring clients and contest reviewers — **M**
 

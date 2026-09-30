@@ -18,6 +18,11 @@ services:
     expose:
       - "8000"
     env_file: .env
+    environment:
+      # nginx below overwrites X-Forwarded-For with the real client address, so
+      # the app may trust it here. The code default is off (threat model T3):
+      # without a proxy that rewrites the header, any client could forge it.
+      TRUST_PROXY_HEADERS: "true"
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,10 +33,15 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: cats
-      POSTGRES_PASSWORD: cats
+      # Set POSTGRES_PASSWORD in .env for any real deployment (and use the same
+      # value in DATABASE_URL). The fallback is for local development only.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cats}
       POSTGRES_DB: cats
     ports:
-      - "5432:5432"
+      # Loopback only (threat model T2): reachable from this host for local
+      # tests and tools, never from outside. The app reaches it as `postgres`
+      # on the compose network either way.
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -42,10 +52,17 @@ services:
 
   redis:
     image: redis:7-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    # With REDIS_PASSWORD set, Redis requires it (then REDIS_URL must be
+    # redis://:<password>@redis:6379/0). Unset, it runs without auth, which is
+    # acceptable only because the port is loopback-bound below.
+    command: ["sh", "-c", 'exec redis-server $${REDIS_PASSWORD:+--requirepass "$$REDIS_PASSWORD"}']
     ports:
-      - "6379:6379"
+      # Loopback only (threat model T2), as for Postgres.
+      - "127.0.0.1:6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", 'redis-cli $${REDIS_PASSWORD:+-a "$$REDIS_PASSWORD" --no-auth-warning} ping | grep -q PONG']
       interval: 5s
       timeout: 3s
       retries: 5

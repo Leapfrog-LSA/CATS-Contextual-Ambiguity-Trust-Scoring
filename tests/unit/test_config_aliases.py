@@ -43,6 +43,13 @@ def test_bare_api_keys_still_accepted(monkeypatch):
     assert s.api_keys == "keyB:tenantB"
 
 
-def test_trust_proxy_headers_default_true(monkeypatch):
+def test_trust_proxy_headers_default_false(monkeypatch):
+    # Off unless a deployment behind an overwriting proxy opts in (threat model
+    # T3); docker-compose.yml does so for the bundled nginx.
     monkeypatch.delenv("TRUST_PROXY_HEADERS", raising=False)
+    assert Settings(_env_file=None).trust_proxy_headers is False
+
+
+def test_trust_proxy_headers_can_be_enabled(monkeypatch):
+    monkeypatch.setenv("TRUST_PROXY_HEADERS", "true")
     assert Settings(_env_file=None).trust_proxy_headers is True
