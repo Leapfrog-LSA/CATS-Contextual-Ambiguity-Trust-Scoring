@@ -145,7 +145,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **RSS snapshots moved out of this repository** (Task 25). New daily
   snapshots are collected in `Leapfrog-LSA/cats-snapshots`; the weekly
   `collect-rss.yml` workflow that committed them to `main` is removed here. The
-  60 snapshots already committed (2026-07-02 → 2026-09-23) stay under
+  67 snapshots already committed (2026-07-02 → 2026-09-30) stay under
   `data/snapshots/` unchanged — calibration results and research scripts cite
   them by path — and are also in the data repository. `data/snapshots/*.jsonl`
   is now git-ignored, so downloaded snapshots cannot be committed back by

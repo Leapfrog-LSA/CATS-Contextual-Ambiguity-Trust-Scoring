@@ -72,10 +72,14 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [x] Far ricadere sui pesi statici un file di pesi strutturalmente errato,
   invece di sollevare `AttributeError` a ogni valutazione — **S** — [#155](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/155)
   (loader di produzione) e [#156](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/156) (loader offline di `cats.calibration.evaluate`).
-- [ ] Spostare la raccolta degli snapshot nel repo dati `cats-snapshots` — **M**
-  — [#151](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/151), in attesa che il maintainer crei il repo. Al cutover vanno
-  aggiornati conteggio e data di chiusura degli snapshot rimasti in
-  `data/snapshots/`.
+- [x] Spostare la raccolta degli snapshot nel repo dati `cats-snapshots` — **M**
+  — [#151](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/151), cutover del 30 settembre.
+  - **Cosa resta qui:** in `data/snapshots/` ci sono 67 snapshot, dal
+    2026-07-02 al 2026-09-30.
+  - **Download verificato:** `make snapshots-download` scarica gli stessi 67
+    file, identici byte per byte e senza conflitti.
+  - **Routine:** la routine giornaliera che faceva il commit su `main` è
+    disattivata.
 - [ ] Allineare le dichiarazioni sul TLS — **S** — decisione del maintainer.
   `compliance.md` e il rischio R8 citano "TLS 1.3 (nginx)", ma in
   `deploy/nginx.conf` il blocco HTTPS è commentato. Due strade: attivarlo con i
