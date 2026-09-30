@@ -102,8 +102,9 @@ Dated snapshots (one `labelled_sources_<YYYY-MM-DD>.jsonl` per collection
 day) are collected by a scheduled workflow in the separate data repository
 [`Leapfrog-LSA/cats-snapshots`](https://github.com/Leapfrog-LSA/cats-snapshots),
 not in this one: at ~2–4 MB a day they had become most of this repository's
-size and history. The snapshots committed here before the move — through
-**2026-09-23** — stay under `data/snapshots/` unchanged, because the published
+size and history. The 67 snapshots committed here before the move —
+2026-07-02 through **2026-09-30** — stay under `data/snapshots/` unchanged, and
+are byte-identical to the data repository's copies. They stay because the published
 calibration and research results cite them by path (the 2026-07-02/03/05
 training snapshots and the 2026-07-06 future holdout among them); nothing is
 added there any more.
