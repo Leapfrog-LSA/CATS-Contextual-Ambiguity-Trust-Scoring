@@ -8,6 +8,11 @@ Authentication: `Authorization: Bearer <API_KEY>`
 per tenant and reads (`/explain`, `/contest`, `/review`, `/stats`) only return
 that tenant's data — a trace from another tenant returns `404`.
 
+**Interactive docs:** `/docs`, `/redoc` and the OpenAPI schema
+(`/openapi.json`) are served only when `CATS_API_DOCS=true`. They are off by
+default because they map the whole API surface for any visitor. Turn them on
+for local development.
+
 ---
 
 ## POST /evaluate

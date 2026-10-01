@@ -206,6 +206,16 @@ the version.
 `openapi_url=None`), or restrict them in nginx. Keep `/health` minimal or
 internal.
 
+> **Status (1 Oct 2026): docs addressed; `/health` kept as is.**
+> - **Docs:** `/docs`, `/redoc` and `/openapi.json` are now opt-in
+>   (`CATS_API_DOCS`, off by default), and the app returns `404` for them
+>   otherwise.
+> - **`/health`:** it keeps its version field on purpose. `CLAUDE.md` makes
+>   "the API reports `cats.__version__`" part of the release contract, and
+>   load balancers and monitors need the endpoint from outside. It still
+>   returns no error details: they are logged, not sent. Restrict it in nginx
+>   if the version should not be public.
+
 ### T9 — SSRF and memory exhaustion in feed fetching (library, MCP) — **L–M**
 
 `score_feed` and the MCP tool `score_source` fetch any URL the caller gives

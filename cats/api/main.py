@@ -69,7 +69,15 @@ async def _purge_job():
         await purge_expired_audits(db)
 
 
-app = FastAPI(title="CATS API", version=cats.__version__, lifespan=lifespan)
+def docs_urls(enabled: bool) -> dict:
+    """FastAPI keyword arguments that serve or hide the API docs and schema."""
+    if enabled:
+        return {"docs_url": "/docs", "redoc_url": "/redoc", "openapi_url": "/openapi.json"}
+    return {"docs_url": None, "redoc_url": None, "openapi_url": None}
+
+
+# The docs and the OpenAPI schema are opt-in (CATS_API_DOCS, threat model T8).
+app = FastAPI(title="CATS API", version=cats.__version__, lifespan=lifespan, **docs_urls(settings.api_docs))
 
 if settings.cors_origins:
     app.add_middleware(
