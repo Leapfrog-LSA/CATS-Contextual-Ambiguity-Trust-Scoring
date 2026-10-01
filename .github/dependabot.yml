@@ -1,0 +1,33 @@
+# Dependency update PRs (threat model T10). Each PR runs the full CI, including
+# the pip-audit workflow, and is merged like any other PR.
+version: 2
+updates:
+  # requirements.txt, requirements-dev.txt and pyproject.toml. Minor and patch
+  # bumps arrive as one grouped PR; a major bump gets its own PR because it may
+  # need code changes (black reformatting, pytest plugins, spaCy models).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      python-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # The Dockerfile base image. A new Python minor (python:3.12-slim, …) is a
+  # deliberate change: align `python-version` in the workflows in the same PR
+  # and check that the spaCy model still installs, or close it.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly

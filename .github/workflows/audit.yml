@@ -1,0 +1,45 @@
+name: Dependency audit
+
+# Known-vulnerability scan of the Python dependencies (threat model T10). Runs on
+# every PR and push to main, and weekly, because new advisories appear without
+# any change to this repository.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install "pip-audit>=2.10,<3"
+      # Blocking: requirements.txt is what the Docker image installs, and it
+      # covers the library dependencies in pyproject.toml.
+      #
+      # Ignored, with the reason (remove the line once a fix is released):
+      # - GHSA-8mgp-746c-j5xp (nltk, via textblob; no fixed version yet): path
+      #   handling in NLTK's model save/load and TransitionParser APIs. CATS
+      #   only calls TextBlob(...).sentiment and never passes a path to NLTK.
+      - name: Audit runtime dependencies (blocking)
+        run: >-
+          pip-audit -r requirements.txt --progress-spinner off --desc
+          --ignore-vuln GHSA-8mgp-746c-j5xp
+      # Report only: development tools never ship in the image. Their fixes
+      # are major upgrades that Dependabot proposes as separate PRs.
+      - name: Audit development tools (report only)
+        continue-on-error: true
+        run: >-
+          pip-audit -r requirements-dev.txt --progress-spinner off --desc
+          --ignore-vuln GHSA-8mgp-746c-j5xp

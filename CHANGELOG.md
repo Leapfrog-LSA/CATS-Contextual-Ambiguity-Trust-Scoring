@@ -9,6 +9,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Dependency scanning (threat model T10).**
+  - `.github/workflows/audit.yml` runs `pip-audit` on every PR, on push to
+    `main` and weekly. A known vulnerability in `requirements.txt` fails the
+    job. The development tools are reported only.
+  - `.github/dependabot.yml` proposes updates for `pip` and GitHub Actions
+    (weekly) and for the Docker base image (monthly).
+  - `requirements.txt`: `cryptography>=50.0,<52.0` (was `>=42.0,<50.0`).
+    49.0.0 is affected by GHSA-g6cj-pr64-35w5 in PKCS#7 decryption, which
+    CATS does not use.
+  - `nltk` GHSA-8mgp-746c-j5xp, which reaches CATS through TextBlob, has no
+    fixed release. It is ignored in the workflow, with the reason written
+    there.
 - **Threat model, technical draft** (`docs/threat_model_2026-09.md`), the
   technical part of risk R8's "threat model — TODO". It is written from a read
   of the code, not a penetration test, and is for maintainer review. The R8 row
