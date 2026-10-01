@@ -33,9 +33,9 @@ jobs:
   star-history:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Render and commit star history
-        uses: narayann7/star-history-action@a68d8f9d67ca20d55b682a264e69152dcf326e9c # v1.0.5
+        uses: narayann7/star-history-action@12543ab7352b91fb7c5eb0c4fbb39772baa0c168 # v1.0.6
         with:
           repos: ${{ github.repository }}
           output-dir: assets/star-history

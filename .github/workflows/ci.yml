@@ -10,8 +10,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -53,14 +53,14 @@ jobs:
       AUDIT_ENCRYPTION_KEY: dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=
       ENVIRONMENT: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: pytest tests/ -v --cov=cats --cov-report=term-missing --cov-report=xml
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v7
         if: always()
         with:
           file: coverage.xml
@@ -69,5 +69,5 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build -t cats:test .
