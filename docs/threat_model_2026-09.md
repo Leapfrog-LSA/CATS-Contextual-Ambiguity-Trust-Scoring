@@ -244,6 +244,27 @@ publishing.
 **Recommend:** Dependabot for `pip`, GitHub Actions and Docker, plus a
 `pip-audit` job in CI.
 
+> **Status (1 Oct 2026): dependency scanning added; hashes and digest not.**
+> - **`pip-audit`** (`.github/workflows/audit.yml`) runs on every PR, on push
+>   to `main` and weekly. It fails on any known vulnerability in
+>   `requirements.txt`, which is what the image installs. The development
+>   tools are reported but do not fail the job.
+> - **First run** found four affected packages:
+>   - `cryptography` 49.0.0 (GHSA-g6cj-pr64-35w5, PKCS#7 decryption).
+>     CATS only uses AES-GCM, so it was not exposed. The floor is raised to
+>     50.0 anyway.
+>   - `nltk` 3.10.3, via TextBlob (GHSA-8mgp-746c-j5xp, path handling in
+>     model save/load). No fixed release exists yet. CATS never passes a
+>     path to NLTK, so the advisory is ignored in the workflow, with the
+>     reason written there. Remove the ignore once a fix ships.
+>   - `black` 24.10 and `pytest` 8.4 are dev tools only. Their fixes are
+>     major upgrades (black 26, pytest 9), left to Dependabot PRs.
+> - **Dependabot** (`.github/dependabot.yml`) proposes weekly updates for
+>   `pip` and GitHub Actions, and monthly updates for the Docker base image.
+> - **Not done:** hash-pinned requirements, a digest-pinned base image and
+>   code scanning (CodeQL). Dependabot alerts and security updates are
+>   repository settings that a maintainer must enable.
+
 ### T11 — Security documentation that does not match the code — **Info**
 
 These are left for their owners:
