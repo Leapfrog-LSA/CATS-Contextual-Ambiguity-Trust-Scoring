@@ -8,6 +8,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-10-01
+
+**Upgrading a deployment:** three defaults changed (details under *Changed*).
+`/docs`, `/redoc` and `/openapi.json` are off unless `CATS_API_DOCS=true`;
+`trust_proxy_headers` defaults to `false`; nginx answers `403` on `/metrics`, so
+Prometheus should scrape `app:8000` directly. Library and CLI users need no
+change. Scores are unchanged: no signal, weight or band moved (ENGINE 1.4).
+
 ### Added
 - **Dependency scanning (threat model T10).**
   - `.github/workflows/audit.yml` runs `pip-audit` on every PR, on push to
@@ -152,6 +160,37 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the command exits non-zero); manifest entries are restricted to
   `snapshots/labelled_sources_<date>.jsonl`, so a manifest cannot write outside
   the destination. `--ref` pins a data-repo commit for reproducible runs.
+- **Per-class F1 on the low tail in the eval harness**
+  (`cats.calibration.evaluate`). Alongside Spearman, concordance and band
+  agreement, the report now splits sources into `unreliable` (bands
+  `low`/`very_low`) and `reliable` and reports precision, recall and F1 for
+  each, plus their macro-F1. The split is derived from `determine_band`, so
+  it follows the shipped band cutoffs and adds no second threshold; a class
+  absent from the data reports `n/a`, never a misleading `0.0`. Rank metrics
+  average over the whole range and can stay high while the low tail is
+  missed — on the 06-Jul future holdout with the shipped calibrated weights,
+  concordance 0.750 comes with **unreliable recall 0.333** (5 of 15 flagged;
+  precision 1.000 on those 5, macro-F1 0.692). Measurement only: no signal,
+  weight, threshold or score is touched, and `ENGINE_VERSION` is unchanged.
+- **Zenodo deposit checklist for the whitepaper** (Task 21). New
+  `docs/zenodo_deposit_checklist.md`: PDF-conversion checks, a Zenodo
+  metadata field table sourced from `CITATION.cff`/`LICENSE`, the
+  GitHub↔Zenodo auto-DOI-on-release decision, and the post-publish steps
+  (DOI into `README.md`/`CITATION.cff`). The actual `.docx`→PDF conversion
+  and Zenodo deposit remain a human step — no CATS code touched.
+- **Observatory aggregate report — option (a) only** (Task 23,
+  `research/observatory_aggregate.py`). Merges `data/snapshots/*.jsonl`
+  (reusing `cats.calibration.merge_snapshots`), scores every source with
+  the unchanged production pipeline (`cats.lite.score` — zero signal logic
+  here), and writes `docs/observatory/<date>.md`: source count, band
+  distribution and per-signal median grouped by `source_type`, detected
+  language, and a best-effort ccTLD-derived country label. **Never a
+  source name, URL or domain** — `_check_no_identifiers` asserts this
+  before writing, independently exercised by
+  `tests/unit/test_observatory_aggregate.py`. Per the maintainer's explicit
+  decision, only this aggregate-only option is implemented; the two
+  named-source options from the plan are not — pending legal review, not
+  executed without separate written instruction.
 
 ### Changed
 - **API docs and OpenAPI schema are opt-in (threat model T8).** `/docs`,
@@ -241,8 +280,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   names rather than the organisational `name:` the software entry uses. Nothing is
   active yet: the file still parses to exactly the fields it had before, and the
   maintainer fills the placeholders in after depositing.
-
-### Changed
 - **README now states the SBERT requirement** instead of implying the optional
   backends are merely nicer. `data/calibrated_weights.json` was calibrated with
   `COHERENCE_BACKEND=sbert`; on the default spaCy-NER backend `coherence` is
@@ -254,6 +291,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   did not. The *See it run* block is regenerated under `COHERENCE_BACKEND=sbert`
   — verified via `sbert_loaded` and `metadata["backend"] == "sbert"`, not
   assumed. No code, signal, weight or threshold changes.
+- **CI and release workflows: GitHub Actions updated** (Dependabot,
+  [#178](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/178)).
+  `actions/checkout` and `actions/setup-python` v7, `codecov/codecov-action` v7,
+  `actions/upload-artifact` v7 and `actions/download-artifact` v8, and
+  `star-history-action` 1.0.6. The artifact actions run only in `release.yml`,
+  so this release is their first real run.
+- **Codecov upload uses `files:`.** `codecov-action` v7 no longer has the
+  `file:` input that `ci.yml` passed; it is now `files: coverage.xml`.
+- **Dependency floors raised** (Dependabot,
+  [#180](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/180)–[#183](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/pull/183)).
+  Runtime: `alembic>=1.20.0,<2.0`. Development only: `pytest-cov>=7.1.0,<8.0`,
+  `mypy>=2.3.1,<3.0`, `isort>=9.0.1,<10.0`. Lint and the unit suite pass
+  unchanged on the new tools.
+- **`SECURITY.md`: 1.8.x is the supported version** (it still listed 1.6.x).
 
 ### Fixed
 - **API throughput collapsed under concurrent requests.** `/evaluate` and
@@ -346,39 +397,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   carries the result and nothing else. No global logging state is mutated: the API
   keeps its own JSON logging config in `cats.api.main`. Stray `print()` output
   from any dependency is captured the same way.
-
-### Added
-- **Per-class F1 on the low tail in the eval harness**
-  (`cats.calibration.evaluate`). Alongside Spearman, concordance and band
-  agreement, the report now splits sources into `unreliable` (bands
-  `low`/`very_low`) and `reliable` and reports precision, recall and F1 for
-  each, plus their macro-F1. The split is derived from `determine_band`, so
-  it follows the shipped band cutoffs and adds no second threshold; a class
-  absent from the data reports `n/a`, never a misleading `0.0`. Rank metrics
-  average over the whole range and can stay high while the low tail is
-  missed — on the 06-Jul future holdout with the shipped calibrated weights,
-  concordance 0.750 comes with **unreliable recall 0.333** (5 of 15 flagged;
-  precision 1.000 on those 5, macro-F1 0.692). Measurement only: no signal,
-  weight, threshold or score is touched, and `ENGINE_VERSION` is unchanged.
-- **Zenodo deposit checklist for the whitepaper** (Task 21). New
-  `docs/zenodo_deposit_checklist.md`: PDF-conversion checks, a Zenodo
-  metadata field table sourced from `CITATION.cff`/`LICENSE`, the
-  GitHub↔Zenodo auto-DOI-on-release decision, and the post-publish steps
-  (DOI into `README.md`/`CITATION.cff`). The actual `.docx`→PDF conversion
-  and Zenodo deposit remain a human step — no CATS code touched.
-- **Observatory aggregate report — option (a) only** (Task 23,
-  `research/observatory_aggregate.py`). Merges `data/snapshots/*.jsonl`
-  (reusing `cats.calibration.merge_snapshots`), scores every source with
-  the unchanged production pipeline (`cats.lite.score` — zero signal logic
-  here), and writes `docs/observatory/<date>.md`: source count, band
-  distribution and per-signal median grouped by `source_type`, detected
-  language, and a best-effort ccTLD-derived country label. **Never a
-  source name, URL or domain** — `_check_no_identifiers` asserts this
-  before writing, independently exercised by
-  `tests/unit/test_observatory_aggregate.py`. Per the maintainer's explicit
-  decision, only this aggregate-only option is implemented; the two
-  named-source options from the plan are not — pending legal review, not
-  executed without separate written instruction.
 
 ## [1.7.0] — 2026-09-16
 
