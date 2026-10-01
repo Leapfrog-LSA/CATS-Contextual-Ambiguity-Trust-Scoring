@@ -142,6 +142,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the destination. `--ref` pins a data-repo commit for reproducible runs.
 
 ### Changed
+- **API docs and OpenAPI schema are opt-in (threat model T8).** `/docs`,
+  `/redoc` and `/openapi.json` were served by default, and the public nginx
+  proxied them, which mapped the whole API surface for any visitor.
+  - They are now served only when `CATS_API_DOCS=true` (bare `API_DOCS` also
+    accepted); otherwise the app returns `404`.
+  - **Behaviour change:** set `CATS_API_DOCS=true` in local development to
+    get them back. `.env.example` sets `false`.
+  - `/health` is unchanged, including the version it reports.
+  - New tests in `tests/unit/test_api_docs.py` cover:
+    - off by default, and both setting spellings;
+    - the app follows the setting;
+    - `404` when disabled and `200` when enabled for all three paths;
+    - the enabled schema lists the scoring routes.
 - **Deployment defaults hardened (threat model T2 and T3).**
   - **`docker-compose.yml` binds Postgres (5432) and Redis (6379) to
     `127.0.0.1`.** Before, it published them on every interface, with

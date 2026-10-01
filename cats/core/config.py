@@ -82,6 +82,16 @@ class Settings(BaseSettings):
     # failed-authentication limiter.
     trust_proxy_headers: bool = False
 
+    # Serve the interactive API docs (/docs, /redoc) and the OpenAPI schema
+    # (/openapi.json). Off by default (threat model T8): they map the whole
+    # attack surface for any visitor, and the public nginx proxies every path.
+    # Turn on for local development. Documented as CATS_API_DOCS; the bare
+    # API_DOCS spelling is also accepted.
+    api_docs: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("CATS_API_DOCS", "API_DOCS"),
+    )
+
     environment: str = "production"
     log_level: str = "INFO"
 
