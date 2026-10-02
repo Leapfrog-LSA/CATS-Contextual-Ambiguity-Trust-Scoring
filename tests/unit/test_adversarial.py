@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
+import cats.signals.domain_provenance as dp
 from cats.lite import score
 from cats.scoring.engine import apply_domain_penalty
 from cats.signals.domain_provenance import compute_domain_provenance
@@ -115,7 +116,11 @@ class TestR4AdversarialEvasion:
         assert clone["explanation"]["domain_penalty"]["penalty_applied"] == 27.0
         assert _BAND_ORDER.index(clone["band"]) < _BAND_ORDER.index(base["band"])
 
-    def test_domain_penalty_is_clamped_and_asymmetric(self):
+    def test_domain_penalty_is_clamped_and_asymmetric(self, monkeypatch):
+        # Pin "no popularity table" so the result does not depend on whether
+        # data/tranco_top1m.csv happens to exist locally (it adds +15 when present).
+        monkeypatch.setattr(dp, "_popularity_table", None)
+        monkeypatch.setattr(dp, "_popularity_load_attempted", True)
         flagged = compute_domain_provenance("bild.pics")  # suspicious TLD (+40) + brand on foreign TLD (+25)
         assert flagged.value == 65.0
         assert apply_domain_penalty(10.0, flagged) == 0.0  # clamped at zero, never negative

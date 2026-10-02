@@ -30,7 +30,9 @@ subdomains, regional open-data portals, niche outlets — a 25-source sample,
 red flag — it would mislabel real institutional sources. Used only as
 corroboration, it cannot introduce a new false positive on a domain that was
 otherwise clean; it can only sharpen confidence on a domain already flagged.
-The same unranked check also gates `AMBIGUOUS_CCTLDS` below.
+The same unranked check also gates `AMBIGUOUS_CCTLDS` below, and its mirror
+(`_is_ranked`) exempts an established domain from the suspicious-TLD flag
+unless it imitates a brand (2026-10, `docs/domain_provenance_maintenance_2026-10.md`).
 
 **Status: wired in as an asymmetric penalty (ENGINE 1.4), not a weighted
 signal.** `cats.scoring.engine.apply_domain_penalty` subtracts
@@ -158,6 +160,16 @@ def _is_unranked(host: str) -> bool:
     return host not in table
 
 
+def _is_ranked(host: str) -> bool:
+    """True when the popularity table loaded AND ranks ``host``.
+
+    The mirror of :func:`_is_unranked`: an unavailable table answers False here
+    too, so missing data never exempts a domain.
+    """
+    table = _load_popularity_table()
+    return table is not None and host in table
+
+
 def _levenshtein(a: str, b: str) -> int:
     """Edit distance, short-circuited when lengths differ by more than 3."""
     if abs(len(a) - len(b)) > 3:
@@ -208,7 +220,7 @@ def compute_domain_provenance(url: str) -> DomainProvenanceResult:
 
     tld = host.rsplit(".", 1)[-1]
     free_host = any(host == h or host.endswith("." + h) for h in FREE_HOSTS)
-    suspicious_tld = tld in SUSPICIOUS_TLDS
+    on_suspicious_tld = tld in SUSPICIOUS_TLDS
     nearest_brand, best = min(((b, _levenshtein(host, b)) for b in MAJOR_BRANDS), key=lambda t: t[1], default=("", 9))
     # A fixed distance<=2 window over-triggers on short brands (an audit of
     # data/Fonti_OSINT.csv's 5 275-source catalogue, 2026-09-07, found "ansa.it"
@@ -224,12 +236,23 @@ def compute_domain_provenance(url: str) -> DomainProvenanceResult:
     typosquat = 1 <= best <= _max_typosquat_distance and host not in MAJOR_BRANDS
 
     brand_on_bad_tld = False
-    if suspicious_tld:
+    if on_suspicious_tld:
         for b in MAJOR_BRANDS:
             bname = b.rsplit(".", 1)[0]
             if len(bname) >= 4 and bname in host and not host.endswith(b):
                 brand_on_bad_tld = True
                 break
+
+    # An established domain on a "suspicious" TLD is exempt from that flag
+    # (2026-10 maintenance, docs/domain_provenance_maintenance_2026-10.md): open.online
+    # (Tranco #40 089, labelled 85 in data/labels.jsonl) lost 24 points to it. Of the
+    # 35 suspicious-TLD clones in data/disinfo_sources.csv none is Tranco-ranked,
+    # while 3 of the 4 legitimate catalogue sources on those TLDs are. Exemption
+    # needs a positive rank in a loaded table (missing table => flag as before) and
+    # never applies when the domain also imitates a brand, which stays a red flag
+    # however popular the domain is.
+    established = _is_ranked(host) and not (typosquat or brand_on_bad_tld)
+    suspicious_tld = on_suspicious_tld and not established
 
     # See AMBIGUOUS_CCTLDS: a real national ccTLD fires only when the domain is
     # also Tranco-unranked, never on TLD alone.
