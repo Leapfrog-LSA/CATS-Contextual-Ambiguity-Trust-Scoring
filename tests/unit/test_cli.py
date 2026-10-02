@@ -275,7 +275,7 @@ def test_compare_ranks_by_score_and_lists_failures(monkeypatch, capsys):
         "https://gone.example": FeedNotFoundError("no RSS/Atom feed found for https://gone.example"),
         "https://mid.example": _scored(64.7),
     }
-    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
 
     exit_code = main(["compare", *table])
 
@@ -298,7 +298,7 @@ def test_compare_json_has_ranks_and_errors(monkeypatch, capsys):
         "https://b.example": _scored(70.0),
         "http://127.0.0.1/": UnsafeURLError("refused 'http://127.0.0.1/'"),
     }
-    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
 
     exit_code = main(["compare", *table, "--json"])
 
@@ -313,7 +313,7 @@ def test_compare_flags_review_domain_and_missing_model(monkeypatch, capsys):
         "https://a.example": _scored(55.0, band="medium", review=True, degraded=["coherence"]),
         "https://b.example": _scored(40.2, band="medium", domain=40.0),
     }
-    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
 
     main(["compare", *table])
 
@@ -329,7 +329,7 @@ def test_compare_reads_urls_from_file_and_dedupes(monkeypatch, tmp_path, capsys)
         calls.append(url)
         return _scored(60.0)
 
-    monkeypatch.setattr("cats.cli.score_feed", fake)
+    monkeypatch.setattr("cats.lite.score_feed", fake)
     url_file = tmp_path / "sources.txt"
     url_file.write_text("# my sources\nhttps://a.example\n\nhttps://b.example  # trailing comment\nhttps://a.example\n")
 
@@ -349,7 +349,7 @@ def test_compare_exit_3_when_nothing_scored(monkeypatch, capsys):
         "https://a.example": FeedFetchError("could not reach https://a.example"),
         "https://b.example": FeedNotFoundError("no RSS/Atom feed found for https://b.example"),
     }
-    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
 
     assert main(["compare", *table]) == 3
     assert "Not scored (2):" in capsys.readouterr().out

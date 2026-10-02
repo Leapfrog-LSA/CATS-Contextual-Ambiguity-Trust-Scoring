@@ -223,3 +223,32 @@ def test_measured_coherence_is_not_degraded(monkeypatch):
     result = score(_MESSAGES, source_type="news", load_nlp=False)
     assert result["degraded_signals"] == []
     assert "degraded_warning" not in result["explanation"]
+
+
+def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
+    from cats.lite import COMPARE_NOTE, FeedNotFoundError, compare_feeds
+
+    def fake_score_feed(url, **kwargs):
+        if url == "https://gone.example":
+            raise FeedNotFoundError("no RSS/Atom feed found for https://gone.example")
+        value = {"https://a.example": 40.0, "https://b.example": 70.0}[url]
+        return {
+            "trust_score": value,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0, "domain_provenance": 0.0},
+            "degraded_signals": [],
+            "evidence": {"messages": 5, "min_messages": 3, "sufficient": True},
+            "explanation": {"primary_driver": "silence"},
+            "source": {"messages": 5},
+        }
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://a.example", "https://gone.example", "https://b.example", "https://a.example"])
+
+    assert [(r["rank"], r["url"]) for r in out["ranked"]] == [(1, "https://b.example"), (2, "https://a.example")]
+    assert out["ranked"][0]["review_reason"] is None
+    assert out["errors"] == [
+        {"url": "https://gone.example", "error": "no RSS/Atom feed found for https://gone.example"}
+    ]
+    assert out["note"] == COMPARE_NOTE

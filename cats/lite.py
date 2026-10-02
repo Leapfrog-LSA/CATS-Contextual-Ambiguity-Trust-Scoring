@@ -268,6 +268,78 @@ def score_feed(
     return result
 
 
+COMPARE_NOTE = (
+    "Ordinal ranking of publishing behaviour, not of truthfulness. Compare only sources scored "
+    "together, with the same source_type and install. A high rank is not a verdict."
+)
+
+
+def review_reason(result: Dict) -> Optional[str]:
+    """Why ``result`` (from :func:`score`/:func:`score_feed`) requires human review, or ``None``."""
+    if not result["requires_human_review"]:
+        return None
+    evidence = result["evidence"]
+    if not evidence["sufficient"]:
+        return f"insufficient evidence ({evidence['messages']} < {evidence['min_messages']} messages)"
+    degraded = result.get("degraded_signals") or []
+    if degraded:
+        return f"signal(s) not measured: {', '.join(degraded)}"
+    if result["band"] in ("low", "very_low"):
+        return f"band {result['band']}"
+    return "low-confidence signal(s)"
+
+
+def compare_feeds(
+    urls: List[str],
+    source_type: str = "default",
+    *,
+    max_messages: int = 200,
+    **score_kwargs,
+) -> Dict:
+    """Score several sources with :func:`score_feed` and rank them by trust score.
+
+    ``urls`` are de-duplicated, keeping order. A source that fails (no feed,
+    unreachable, :class:`UnsafeURLError`, no usable messages) goes to
+    ``errors`` with its message instead of aborting the comparison.
+
+    Returns ``{source_type, ranked, errors, note}``. Each ``ranked`` row is
+    compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``,
+    raw ``signals``, ``messages``, ``requires_human_review``,
+    ``review_reason``, ``degraded_signals``, ``domain_red_flag``. The scores
+    are ordinal and comparable only within one call (see ``note``).
+    """
+    rows: List[Dict] = []
+    errors: List[Dict] = []
+    for url in dict.fromkeys(urls):
+        try:
+            result = score_feed(url, source_type=source_type, max_messages=max_messages, **score_kwargs)
+        except ValueError as exc:  # FeedNotFound/FeedFetch/UnsafeURL errors and empty feeds
+            errors.append({"url": url, "error": str(exc)})
+            continue
+        explanation = result.get("explanation") or {}
+        rows.append(
+            {
+                "url": url,
+                "trust_score": result["trust_score"],
+                "band": result["band"],
+                "primary_driver": explanation.get("primary_driver"),
+                "signals": result["signals"],
+                "messages": result["source"]["messages"],
+                "requires_human_review": result["requires_human_review"],
+                "review_reason": review_reason(result),
+                "degraded_signals": result.get("degraded_signals") or [],
+                "domain_red_flag": result["signals"].get("domain_provenance", 0) > 0,
+            }
+        )
+    rows.sort(key=lambda r: r["trust_score"], reverse=True)
+    return {
+        "source_type": source_type,
+        "ranked": [{"rank": i, **row} for i, row in enumerate(rows, 1)],
+        "errors": errors,
+        "note": COMPARE_NOTE,
+    }
+
+
 def init_nlp(model_name: Optional[str] = None) -> bool:
     """Load the spaCy NER model once (idempotent); returns True on success.
 
