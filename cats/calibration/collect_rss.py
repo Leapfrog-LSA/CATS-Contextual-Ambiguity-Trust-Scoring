@@ -73,6 +73,7 @@ import httpx
 import structlog
 
 from cats.calibration.merge_snapshots import merge_records
+from cats.core.url_guard import UnsafeURLError, check_url
 
 logger = structlog.get_logger()
 
@@ -81,6 +82,7 @@ DEFAULT_MAX_MESSAGES = 200
 DEFAULT_TIMEOUT = 15.0
 DEFAULT_WORKERS = 8
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
+MAX_REDIRECTS = 5
 DEFAULT_USER_AGENT = "CATS-calibration-collector/1.0 (+https://github.com/Leapfrog-LSA)"
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -172,49 +174,120 @@ def parse_feed(xml_text: str) -> List[dict]:
 
 
 # ── Fetching ────────────────────────────────────────────────────────────────
-def _fetch_via_curl(url: str, client: httpx.Client, max_bytes: int) -> Optional[str]:
+def _fetch_via_curl(url: str, client: httpx.Client, max_bytes: int, allow_private: bool = False) -> Optional[str]:
     """Retry a 403 via ``curl``, whose client fingerprint some WAFs let through.
 
+    Redirects are followed one hop at a time, each target going through
+    :func:`check_url` before curl requests it (threat model T9) — curl's own
+    ``-L`` would follow them unchecked.
+
     Never raises: returns ``None`` on any failure (curl missing, non-zero exit,
-    empty body, oversize) so the caller falls back to the original httpx error
-    instead of a new, less informative one.
+    empty body, oversize, refused redirect, too many redirects) so the caller
+    falls back to the original httpx error instead of a new, less informative
+    one.
     """
     curl = shutil.which("curl")
     if curl is None:
         return None
     timeout_s = client.timeout.read or DEFAULT_TIMEOUT
-    try:
-        proc = subprocess.run(
-            # --fail: without it, curl exits 0 on a 4xx/5xx and prints the error
-            # page as if it were the body — indistinguishable from a real feed.
-            [curl, "-sL", "--fail", "-A", client.headers.get("user-agent", ""), "--max-time", str(int(timeout_s)), url],
-            capture_output=True,
-            timeout=timeout_s + 5,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if proc.returncode != 0 or not proc.stdout or len(proc.stdout) > max_bytes:
-        return None
-    return proc.stdout.decode("utf-8", errors="replace")
+    current = url
+    for _ in range(MAX_REDIRECTS + 1):
+        try:
+            check_url(current, allow_private=allow_private)
+        except UnsafeURLError as exc:
+            logger.warning("collect_rss_curl_redirect_refused", url=current, reason=str(exc))
+            return None
+        try:
+            proc = subprocess.run(
+                # --fail: without it, curl exits 0 on a 4xx/5xx and prints the
+                # error page as if it were the body. --max-filesize stops a
+                # declared-oversize body early; the length check below covers
+                # one that does not declare its size. The status and redirect
+                # target go to stderr so they never mix with the body.
+                [
+                    curl,
+                    "-s",
+                    "--fail",
+                    "--proto",
+                    "=http,https",
+                    "--max-filesize",
+                    str(max_bytes),
+                    "-A",
+                    client.headers.get("user-agent", ""),
+                    "--max-time",
+                    str(int(timeout_s)),
+                    "-w",
+                    "%{stderr}%{http_code} %{redirect_url}",
+                    current,
+                ],
+                capture_output=True,
+                timeout=timeout_s + 5,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        if proc.returncode != 0:
+            return None
+        status, _, location = proc.stderr.decode("utf-8", errors="replace").strip().partition(" ")
+        if status.startswith("3") and location:
+            current = location
+            continue
+        if not proc.stdout or len(proc.stdout) > max_bytes:
+            return None
+        return proc.stdout.decode("utf-8", errors="replace")
+    return None
 
 
-def fetch_feed(url: str, client: httpx.Client, max_bytes: int = DEFAULT_MAX_BYTES) -> str:
-    """GET one feed and return its body; ``ValueError`` on HTTP error or oversize body."""
+def _get_capped(url: str, client: httpx.Client, max_bytes: int, allow_private: bool) -> str:
+    """GET ``url`` following redirects by hand, checking every hop, reading at most ``max_bytes``.
+
+    Redirects are followed here rather than by the client so that each target
+    goes through :func:`check_url` (threat model T9). The body is streamed and
+    the read stops as soon as it passes ``max_bytes``, so an endless or huge
+    response is never held in memory whole.
+    """
+    current = url
+    for _ in range(MAX_REDIRECTS + 1):
+        check_url(current, allow_private=allow_private)
+        with client.stream("GET", current, follow_redirects=False) as resp:
+            if resp.is_redirect:
+                current = str(resp.url.join(resp.headers["location"]))
+                continue
+            resp.raise_for_status()
+            chunks: List[bytes] = []
+            total = 0
+            for chunk in resp.iter_bytes():
+                total += len(chunk)
+                if total > max_bytes:
+                    raise ValueError(f"feed exceeds {max_bytes} bytes")
+                chunks.append(chunk)
+            # Same decoding as httpx's ``Response.text``: header charset, else
+            # the client's default (utf-8), undecodable bytes replaced.
+            return b"".join(chunks).decode(resp.encoding or "utf-8", errors="replace")
+    raise ValueError(f"fetch failed: more than {MAX_REDIRECTS} redirects from {url}")
+
+
+def fetch_feed(url: str, client: httpx.Client, max_bytes: int = DEFAULT_MAX_BYTES, allow_private: bool = False) -> str:
+    """GET one feed and return its body.
+
+    Raises :class:`~cats.core.url_guard.UnsafeURLError` (a ``ValueError``) if
+    the URL or any redirect hop targets a non-public address, and
+    ``ValueError`` on an HTTP error, an oversize body or too many redirects.
+    ``allow_private=True`` lifts the address check for deliberate local use.
+    """
     try:
-        resp = client.get(url)
-        resp.raise_for_status()
+        return _get_capped(url, client, max_bytes, allow_private)
+    except UnsafeURLError:
+        raise
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 403:
-            fallback = _fetch_via_curl(url, client, max_bytes)
+            # The 403 came from the last hop, which check_url already passed.
+            fallback = _fetch_via_curl(str(exc.request.url), client, max_bytes, allow_private)
             if fallback is not None:
                 logger.info("collect_rss_curl_fallback_used", url=url)
                 return fallback
         raise ValueError(f"fetch failed: {exc}") from exc
     except httpx.HTTPError as exc:
         raise ValueError(f"fetch failed: {exc}") from exc
-    if len(resp.content) > max_bytes:
-        raise ValueError(f"feed exceeds {max_bytes} bytes")
-    return resp.text
 
 
 # ── Attaching messages to the registry ──────────────────────────────────────
@@ -343,7 +416,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     with httpx.Client(
         timeout=args.timeout,
-        follow_redirects=True,
+        follow_redirects=False,  # fetch_feed follows redirects itself, checking each hop (T9)
         headers={"User-Agent": args.user_agent},
     ) as client:
 

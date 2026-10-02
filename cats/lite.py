@@ -56,6 +56,9 @@ import httpx  # noqa: E402
 import structlog  # noqa: E402
 
 from cats.calibration.collect_rss import DEFAULT_USER_AGENT, fetch_feed, parse_feed  # noqa: E402
+
+# UnsafeURLError is re-exported: score_feed raises it and callers catch it from here.
+from cats.core.url_guard import UnsafeURLError  # noqa: E402,F401
 from cats.pipeline.language import detect_language  # noqa: E402
 from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
@@ -137,15 +140,25 @@ def _reachable(exc: ValueError) -> bool:
     return not isinstance(cause, httpx.HTTPError)
 
 
-def _resolve_feed(url: str, client: httpx.Client) -> Tuple[str, List[dict], str]:
-    """Find a scorable feed for ``url``: direct fetch, then HTML autodiscovery, then well-known paths."""
+def _resolve_feed(url: str, client: httpx.Client, allow_private: bool = False) -> Tuple[str, List[dict], str]:
+    """Find a scorable feed for ``url``: direct fetch, then HTML autodiscovery, then well-known paths.
+
+    An unsafe ``url`` (non-public host, or a redirect to one) raises
+    :class:`UnsafeURLError`. An unsafe ``<link>`` found on the page is skipped,
+    so a hostile page cannot steer the fetch inward.
+    """
     saw_reachable = False
     html_body: Optional[str] = None
 
-    def _attempt(candidate: str, *, keep_html: bool) -> Optional[List[dict]]:
+    def _attempt(candidate: str, *, keep_html: bool, strict: bool = False) -> Optional[List[dict]]:
         nonlocal saw_reachable, html_body
         try:
-            body = fetch_feed(candidate, client)
+            body = fetch_feed(candidate, client, allow_private=allow_private)
+        except UnsafeURLError as exc:
+            if strict:
+                raise
+            logger.warning("feed_candidate_refused", url=candidate, reason=str(exc))
+            return None
         except ValueError as exc:
             if _reachable(exc):
                 saw_reachable = True
@@ -159,7 +172,7 @@ def _resolve_feed(url: str, client: httpx.Client) -> Tuple[str, List[dict], str]
             return None
         return messages or None
 
-    messages = _attempt(url, keep_html=True)
+    messages = _attempt(url, keep_html=True, strict=True)
     if messages:
         return url, messages, "direct"
 
@@ -190,6 +203,7 @@ def score_feed(
     max_messages: int = 200,
     timeout: float = 20.0,
     client: Optional[httpx.Client] = None,
+    allow_private: bool = False,
     **score_kwargs,
 ) -> Dict:
     """Score a source straight from its RSS/Atom feed: fetch, discover, then :func:`score`.
@@ -202,8 +216,12 @@ def score_feed(
 
     Raises :class:`FeedNotFoundError` if the host answers but no feed is
     found, or :class:`FeedFetchError` if the host (and every candidate path)
-    is unreachable. :func:`score` still raises ``ValueError`` if the feed
-    yields zero usable messages after normalisation.
+    is unreachable. Raises :class:`UnsafeURLError` if ``url`` is not http(s)
+    or it (or a redirect from it) resolves to a non-public address — loopback,
+    private networks, link-local/cloud metadata (threat model T9);
+    ``allow_private=True`` lifts the address check for deliberate local use.
+    :func:`score` still raises ``ValueError`` if the feed yields zero usable
+    messages after normalisation.
 
     The result adds a ``source`` block (``url``, ``feed_url``, ``messages``,
     ``first_timestamp``, ``last_timestamp``, ``discovery``) to ``score()``'s
@@ -216,10 +234,13 @@ def score_feed(
 
     owns_client = client is None
     active_client = client or httpx.Client(
-        timeout=timeout, follow_redirects=True, headers={"User-Agent": DEFAULT_USER_AGENT}
+        # fetch_feed follows redirects itself, checking each hop (T9)
+        timeout=timeout,
+        follow_redirects=False,
+        headers={"User-Agent": DEFAULT_USER_AGENT},
     )
     try:
-        feed_url, messages, discovery = _resolve_feed(url, active_client)
+        feed_url, messages, discovery = _resolve_feed(url, active_client, allow_private=allow_private)
     finally:
         if owns_client:
             active_client.close()
