@@ -5,7 +5,7 @@ import structlog
 
 from cats import __version__
 from cats.cli import main
-from cats.lite import FeedFetchError, FeedNotFoundError
+from cats.lite import FeedFetchError, FeedNotFoundError, UnsafeURLError
 
 _RESULT = {
     "trust_score": 67.3,
@@ -246,3 +246,110 @@ def test_human_output_is_not_interleaved_with_log_lines(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert captured.out.startswith("Source")
     assert "feed_fetched" not in captured.out
+
+
+def _scored(score_value, band="medium_high", review=False, degraded=None, domain=0.0):
+    result = json.loads(json.dumps(_RESULT))
+    result["trust_score"] = score_value
+    result["band"] = band
+    result["requires_human_review"] = review
+    result["degraded_signals"] = degraded or []
+    result["signals"]["domain_provenance"] = domain
+    return result
+
+
+def _fake_score_feed(table):
+    def fake(url, **kwargs):
+        outcome = table[url]
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    return fake
+
+
+def test_compare_ranks_by_score_and_lists_failures(monkeypatch, capsys):
+    table = {
+        "https://low.example": _scored(41.3, band="medium"),
+        "https://high.example": _scored(78.2),
+        "https://gone.example": FeedNotFoundError("no RSS/Atom feed found for https://gone.example"),
+        "https://mid.example": _scored(64.7),
+    }
+    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+
+    exit_code = main(["compare", *table])
+
+    out = capsys.readouterr().out
+    assert exit_code == 0
+    ranked = [line for line in out.splitlines() if line.lstrip()[:1].isdigit()]
+    assert [line.split()[1] for line in ranked] == [
+        "https://high.example",
+        "https://mid.example",
+        "https://low.example",
+    ]
+    assert "Not scored (1):" in out
+    assert "https://gone.example: no RSS/Atom feed found" in out
+    assert "not of truthfulness" in out
+
+
+def test_compare_json_has_ranks_and_errors(monkeypatch, capsys):
+    table = {
+        "https://a.example": _scored(50.0, band="medium"),
+        "https://b.example": _scored(70.0),
+        "http://127.0.0.1/": UnsafeURLError("refused 'http://127.0.0.1/'"),
+    }
+    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+
+    exit_code = main(["compare", *table, "--json"])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert [(r["rank"], r["url"]) for r in payload["ranked"]] == [(1, "https://b.example"), (2, "https://a.example")]
+    assert payload["errors"] == [{"url": "http://127.0.0.1/", "error": "refused 'http://127.0.0.1/'"}]
+
+
+def test_compare_flags_review_domain_and_missing_model(monkeypatch, capsys):
+    table = {
+        "https://a.example": _scored(55.0, band="medium", review=True, degraded=["coherence"]),
+        "https://b.example": _scored(40.2, band="medium", domain=40.0),
+    }
+    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table])
+
+    out = capsys.readouterr().out
+    assert "yes" in out and "domain" in out
+    assert "python -m spacy download it_core_news_lg" in out
+
+
+def test_compare_reads_urls_from_file_and_dedupes(monkeypatch, tmp_path, capsys):
+    calls = []
+
+    def fake(url, **kwargs):
+        calls.append(url)
+        return _scored(60.0)
+
+    monkeypatch.setattr("cats.cli.score_feed", fake)
+    url_file = tmp_path / "sources.txt"
+    url_file.write_text("# my sources\nhttps://a.example\n\nhttps://b.example  # trailing comment\nhttps://a.example\n")
+
+    exit_code = main(["compare", "--file", str(url_file)])
+
+    assert exit_code == 0
+    assert calls == ["https://a.example", "https://b.example"]
+
+
+def test_compare_needs_two_urls(capsys):
+    assert main(["compare", "https://only.example"]) == 2
+    assert "at least two URLs" in capsys.readouterr().err
+
+
+def test_compare_exit_3_when_nothing_scored(monkeypatch, capsys):
+    table = {
+        "https://a.example": FeedFetchError("could not reach https://a.example"),
+        "https://b.example": FeedNotFoundError("no RSS/Atom feed found for https://b.example"),
+    }
+    monkeypatch.setattr("cats.cli.score_feed", _fake_score_feed(table))
+
+    assert main(["compare", *table]) == 3
+    assert "Not scored (2):" in capsys.readouterr().out

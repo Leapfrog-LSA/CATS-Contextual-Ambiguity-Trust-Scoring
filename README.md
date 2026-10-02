@@ -40,6 +40,18 @@ a warning and forces human review. If feed autodiscovery fails on a site
 (`no RSS/Atom feed found`), pass the feed URL itself, e.g.
 `cats score https://www.repubblica.it/rss/homepage/rss2.0.xml`.
 
+To rank several sources side by side (failures are listed, not fatal):
+
+```bash
+cats compare ansa.it ilpost.it https://www.repubblica.it/rss/homepage/rss2.0.xml --source-type news
+cats compare --file sources.txt --json      # one URL per line, '#' for comments
+```
+
+The table shows score, band, main driver, the four raw signals, message count
+and review flags. Compare only sources scored together, with the same
+`--source-type` and install: a high rank describes publishing behaviour, not
+truthfulness.
+
 ### The coherence backend matters
 
 `data/calibrated_weights.json` was calibrated with the **SBERT** coherence
