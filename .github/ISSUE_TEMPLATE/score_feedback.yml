@@ -36,7 +36,7 @@ body:
     attributes:
       label: CATS version
       description: Output of `cats --version`, `cats.__version__`, or the API's `/health` response.
-      placeholder: cats-scoring 1.8.0
+      placeholder: cats-scoring 1.9.0
     validations:
       required: true
 

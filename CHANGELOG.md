@@ -8,24 +8,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Fixed
-- **Established outlets on "suspicious" TLDs are no longer penalised.**
-  `open.online`, a legitimate outlet labelled 85 in `data/labels.jsonl`, lost
-  24 points because `.online` is in `SUSPICIOUS_TLDS`. A domain is now exempt
-  from the `suspicious_tld` flag when the Tranco table is loaded and ranks it,
-  unless it also imitates a brand (`typosquat`, `brand_on_bad_tld`).
-  - Without the table, behaviour is unchanged, so a default install still
-    flags Open. Shipping the table depends on the Tranco licence (open roadmap
-    item).
-  - Audit with the 2026-10-02 Tranco list:
-    - 0 of the 35 suspicious-TLD clones in `data/disinfo_sources.csv` are ranked;
-    - catalogue false positives fall from 26 to 23 of 5 053;
-    - clone recall is unchanged (60 of 113);
-    - the future holdout is identical (concordance 0.762).
-  - Details: `docs/domain_provenance_maintenance_2026-10.md`. Scoring code
-    path otherwise unchanged; `DOMAIN_PENALTY_WEIGHT` stays 0.6.
-  - `tests/unit/test_adversarial.py`: one test assumed the Tranco file was
-    absent; it now pins that state.
+## [1.9.0] — 2026-10-02
+
+Adds source comparison (`cats compare`, MCP `compare_sources`) and fixes the
+domain-provenance false positive on established outlets with "suspicious" TLDs
+(e.g. `open.online`) when the Tranco table is present. No change to signals,
+weights or bands (ENGINE 1.4); deployments need no configuration change.
 
 ### Added
 - **MCP tool `compare_sources`.** An LLM client can now rank 2 to 10 sources
@@ -48,6 +36,25 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     errors. A missing spaCy model is warned about once, under the table.
   - Every output carries the note that the ranking describes publishing
     behaviour, not truthfulness, and holds only within one run.
+
+### Fixed
+- **Established outlets on "suspicious" TLDs are no longer penalised.**
+  `open.online`, a legitimate outlet labelled 85 in `data/labels.jsonl`, lost
+  24 points because `.online` is in `SUSPICIOUS_TLDS`. A domain is now exempt
+  from the `suspicious_tld` flag when the Tranco table is loaded and ranks it,
+  unless it also imitates a brand (`typosquat`, `brand_on_bad_tld`).
+  - Without the table, behaviour is unchanged, so a default install still
+    flags Open. Shipping the table depends on the Tranco licence (open roadmap
+    item).
+  - Audit with the 2026-10-02 Tranco list:
+    - 0 of the 35 suspicious-TLD clones in `data/disinfo_sources.csv` are ranked;
+    - catalogue false positives fall from 26 to 23 of 5 053;
+    - clone recall is unchanged (60 of 113);
+    - the future holdout is identical (concordance 0.762).
+  - Details: `docs/domain_provenance_maintenance_2026-10.md`. Scoring code
+    path otherwise unchanged; `DOMAIN_PENALTY_WEIGHT` stays 0.6.
+  - `tests/unit/test_adversarial.py`: one test assumed the Tranco file was
+    absent; it now pins that state.
 
 ## [1.8.0] — 2026-10-02
 
