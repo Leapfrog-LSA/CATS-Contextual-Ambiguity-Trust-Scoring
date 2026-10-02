@@ -28,6 +28,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     absent; it now pins that state.
 
 ### Added
+- **MCP tool `compare_sources`.** An LLM client can now rank 2 to 10 sources
+  in one call instead of calling `score_source` repeatedly. It returns
+  compact `ranked` rows, `errors` for sources that could not be scored, a
+  `note` and the usual `disclaimer`. More than 10 URLs, or fewer than 2
+  distinct ones, are refused, because each source costs a fetch plus NLP.
+  The logic moved into the library as `cats.lite.compare_feeds`, together
+  with `review_reason` and `COMPARE_NOTE`, so `cats compare` and the MCP tool
+  share one implementation. `docs/mcp.md` documents the tool.
 - **`cats compare`: rank several sources side by side.** Takes URLs as
   arguments and/or `--file` (one per line, `#` comments, duplicates dropped),
   scores each with `score_feed`, and prints a table sorted by score: band, main

@@ -70,6 +70,19 @@ Scores a source from an already-collected list of
 isn't a public feed. `url`, if given, enables the domain-provenance penalty.
 Returns `score()`'s result plus a `disclaimer`.
 
+### `compare_sources(urls, source_type="default")`
+
+Scores 2 to 10 sources from their URLs (duplicates dropped) and ranks them
+by trust score, with the same pipeline as `cats compare`. Returns `ranked`:
+compact rows with `rank`, `url`, `trust_score`, `band`, `primary_driver`,
+raw `signals`, `messages`, `requires_human_review`, `review_reason`,
+`degraded_signals` and `domain_red_flag`. It also returns `errors`, the
+sources that could not be scored, with the reason; they never stop the
+comparison. A `note` and a `disclaimer` complete the response. More than 10
+URLs, or fewer than 2 distinct ones, is refused: each source costs a feed
+fetch plus NLP. The ranking describes publishing behaviour, not
+truthfulness, and holds only within one call.
+
 ### `explain_bands()`
 
 Static reference: the trust-score band table (`high` down to `very_low`,
@@ -80,6 +93,7 @@ scoring is performed.
 
 Same as everywhere else in CATS: scores are ordinal rankings, not calibrated
 probabilities (every tool response carries a `disclaimer` field saying so);
-the default NLP stack is Italian-optimised; `score_source` needs network
-access to fetch the source's feed. See [architecture.md](architecture.md)
+the default NLP stack is Italian-optimised; `score_source` and
+`compare_sources` need network access to fetch the sources' feeds, and refuse
+URLs that resolve to non-public addresses (threat model T9). See [architecture.md](architecture.md)
 and the top-level [README](../README.md) for the full picture.

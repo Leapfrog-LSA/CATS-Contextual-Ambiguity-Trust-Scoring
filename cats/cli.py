@@ -14,13 +14,18 @@ import sys
 from typing import List, Optional
 
 from cats import __version__
-from cats.lite import FeedFetchError, FeedNotFoundError, UnsafeURLError, score, score_feed
+from cats.lite import (
+    COMPARE_NOTE,
+    FeedFetchError,
+    FeedNotFoundError,
+    UnsafeURLError,
+    compare_feeds,
+    review_reason,
+    score,
+    score_feed,
+)
 
 _NOTE = "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
-_COMPARE_NOTE = (
-    "Ordinal ranking of publishing behaviour, not of truthfulness. Compare only sources scored "
-    "together, with the same --source-type and install. A high rank is not a verdict."
-)
 _SIGNALS = ("coherence", "volatility", "silence", "gaming")
 
 
@@ -40,15 +45,7 @@ def _load_weights(path: str) -> dict:
 
 
 def _review_reason(result: dict) -> str:
-    evidence = result["evidence"]
-    if not evidence["sufficient"]:
-        return f"insufficient evidence ({evidence['messages']} < {evidence['min_messages']} messages)"
-    degraded = result.get("degraded_signals") or []
-    if degraded:
-        return f"signal(s) not measured: {', '.join(degraded)}"
-    if result["band"] in ("low", "very_low"):
-        return f"band {result['band']}"
-    return "low-confidence signal(s)"
+    return review_reason(result) or "low-confidence signal(s)"
 
 
 def _format_human(result: dict, url: Optional[str]) -> str:
@@ -172,23 +169,6 @@ def _load_url_list(path: str) -> List[str]:
     return urls
 
 
-def _compare_row(url: str, result: dict) -> dict:
-    explanation = result.get("explanation") or {}
-    source = result.get("source") or {}
-    return {
-        "url": url,
-        "trust_score": result["trust_score"],
-        "band": result["band"],
-        "primary_driver": explanation.get("primary_driver"),
-        "signals": result["signals"],
-        "messages": source.get("messages", result["evidence"]["messages"]),
-        "requires_human_review": result["requires_human_review"],
-        "review_reason": _review_reason(result) if result["requires_human_review"] else None,
-        "degraded_signals": result.get("degraded_signals") or [],
-        "domain_red_flag": result["signals"].get("domain_provenance", 0) > 0,
-    }
-
-
 def _format_compare(rows: List[dict], errors: List[dict]) -> str:
     def cell(value: object) -> str:
         return "-" if value is None else str(value)
@@ -233,7 +213,7 @@ def _format_compare(rows: List[dict], errors: List[dict]) -> str:
         for err in errors:
             lines.append(f"  {err['url']}: {err['error']}")
     lines.append("")
-    lines.append(f"Note  Signals are raw values (silence, volatility, gaming: higher = less reliable). {_COMPARE_NOTE}")
+    lines.append(f"Note  Signals are raw values (silence, volatility, gaming: higher = less reliable). {COMPARE_NOTE}")
     return "\n".join(lines)
 
 
@@ -258,36 +238,21 @@ def _run_compare(args: argparse.Namespace) -> int:
             print(f"error: could not read --weights file: {exc}", file=sys.stderr)
             return 2
 
-    rows: List[dict] = []
-    errors: List[dict] = []
     # Library output goes to stderr, as in `cats score`, so stdout stays clean.
     with contextlib.redirect_stdout(sys.stderr):
-        for url in urls:
-            try:
-                result = score_feed(
-                    url,
-                    source_type=args.source_type,
-                    max_messages=args.max_messages,
-                    weights=weights,
-                    load_nlp=not args.no_nlp,
-                )
-            except ValueError as exc:  # feed not found/unreachable, unsafe URL, no usable messages
-                errors.append({"url": url, "error": str(exc)})
-                continue
-            rows.append(_compare_row(url, result))
+        payload = compare_feeds(
+            urls,
+            source_type=args.source_type,
+            max_messages=args.max_messages,
+            weights=weights,
+            load_nlp=not args.no_nlp,
+        )
 
-    rows.sort(key=lambda r: r["trust_score"], reverse=True)
     if args.json:
-        payload = {
-            "source_type": args.source_type,
-            "ranked": [{"rank": i, **row} for i, row in enumerate(rows, 1)],
-            "errors": errors,
-            "note": _COMPARE_NOTE,
-        }
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:
-        print(_format_compare(rows, errors))
-    return 0 if rows else 3
+        print(_format_compare(payload["ranked"], payload["errors"]))
+    return 0 if payload["ranked"] else 3
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -13,12 +13,17 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
+from cats.lite import compare_feeds as _compare_feeds
 from cats.lite import score as _score
 from cats.lite import score_feed as _score_feed
 
 # WP 4.3: scores are ordinal rankings, not calibrated probabilities. Attached
 # to every tool response so an LLM client surfaces it, not just the docstrings.
 _DISCLAIMER = "Ordinal score, not a probability (WP 4.3)."
+
+# Each source costs a feed fetch plus NLP over its messages; an LLM client can
+# be prompted into long lists, so one call is capped (cf. threat model T1).
+MAX_COMPARE_SOURCES = 10
 
 _BANDS = [
     {
@@ -72,6 +77,33 @@ def score_messages(messages: List[dict], source_type: str = "default", url: Opti
     return result
 
 
+def compare_sources(urls: List[str], source_type: str = "default") -> Dict:
+    """Score several OSINT sources from their URLs and rank them side by side.
+
+    Use this instead of calling ``score_source`` repeatedly when the user wants
+    to compare or prioritise a list of sources (2 to 10 URLs per call).
+    Duplicates are dropped. ``source_type`` (``"news"`` or ``"default"``)
+    applies to every source; compare news outlets with ``"news"``.
+
+    Returns ``ranked`` (highest trust score first; each row has ``rank``,
+    ``url``, ``trust_score``, ``band``, ``primary_driver``, raw ``signals``,
+    ``messages``, ``requires_human_review``, ``review_reason``,
+    ``degraded_signals``, ``domain_red_flag``), ``errors`` (sources that could
+    not be scored, with the reason; they do not stop the comparison), a
+    ``note`` and a ``disclaimer``. The ranking describes publishing behaviour,
+    not truthfulness, and holds only within this call: tell the user so rather
+    than presenting the top source as "true".
+    """
+    unique = list(dict.fromkeys(urls))
+    if len(unique) < 2:
+        raise ValueError("compare_sources needs at least two distinct URLs")
+    if len(unique) > MAX_COMPARE_SOURCES:
+        raise ValueError(f"compare_sources accepts at most {MAX_COMPARE_SOURCES} URLs per call, got {len(unique)}")
+    result = _compare_feeds(unique, source_type=source_type)
+    result["disclaimer"] = _DISCLAIMER
+    return result
+
+
 def explain_bands() -> Dict:
     """Return the CATS trust-score band table and the ordinal-score disclaimer.
 
@@ -83,12 +115,13 @@ def explain_bands() -> Dict:
 
 
 def _create_server():
-    """Build the FastMCP server with all three tools registered. Requires ``mcp``."""
+    """Build the FastMCP server with all four tools registered. Requires ``mcp``."""
     from mcp.server.fastmcp import FastMCP
 
     server = FastMCP("cats-scoring")
     server.tool()(score_source)
     server.tool()(score_messages)
+    server.tool()(compare_sources)
     server.tool()(explain_bands)
     return server
 

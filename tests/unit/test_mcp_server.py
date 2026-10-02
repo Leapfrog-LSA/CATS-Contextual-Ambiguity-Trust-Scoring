@@ -2,7 +2,16 @@ import sys
 
 import pytest
 
-from cats.mcp_server import _BANDS, _DISCLAIMER, explain_bands, main, score_messages, score_source
+from cats.mcp_server import (
+    _BANDS,
+    _DISCLAIMER,
+    MAX_COMPARE_SOURCES,
+    compare_sources,
+    explain_bands,
+    main,
+    score_messages,
+    score_source,
+)
 
 _MESSAGES = [
     {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
@@ -88,13 +97,43 @@ def test_main_without_mcp_extra_raises_clear_error(monkeypatch):
         main()
 
 
-def test_server_registers_three_tools():
+def test_server_registers_four_tools():
     pytest.importorskip("mcp")
     from cats.mcp_server import _create_server
 
     server = _create_server()
     tools = server._tool_manager.list_tools()
 
-    assert {t.name for t in tools} == {"score_source", "score_messages", "explain_bands"}
+    assert {t.name for t in tools} == {"score_source", "score_messages", "compare_sources", "explain_bands"}
     for tool in tools:
         assert tool.description  # docstrings written for an LLM client
+
+
+def test_compare_sources_wraps_compare_feeds_and_adds_disclaimer(monkeypatch):
+    captured = {}
+
+    def _fake_compare(urls, source_type="default", **kwargs):
+        captured["urls"] = urls
+        captured["source_type"] = source_type
+        return {"source_type": source_type, "ranked": [], "errors": [], "note": "n"}
+
+    monkeypatch.setattr("cats.mcp_server._compare_feeds", _fake_compare)
+
+    result = compare_sources(["https://a.it", "https://b.it", "https://a.it"], source_type="news")
+
+    assert captured == {"urls": ["https://a.it", "https://b.it"], "source_type": "news"}
+    assert result["disclaimer"] == _DISCLAIMER
+
+
+@pytest.mark.parametrize(
+    "urls",
+    [
+        ["https://a.it"],
+        ["https://a.it", "https://a.it"],
+        [f"https://s{i}.it" for i in range(MAX_COMPARE_SOURCES + 1)],
+    ],
+)
+def test_compare_sources_rejects_too_few_or_too_many(monkeypatch, urls):
+    monkeypatch.setattr("cats.mcp_server._compare_feeds", lambda *a, **k: pytest.fail("must not score"))
+    with pytest.raises(ValueError):
+        compare_sources(urls)
