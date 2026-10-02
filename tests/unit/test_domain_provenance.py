@@ -200,3 +200,37 @@ class TestDegradation:
         ]:
             r = compute_domain_provenance(url)
             assert 0.0 <= r.value <= 100.0
+
+
+class TestEstablishedDomainOnSuspiciousTld:
+    """2026-10 maintenance: a Tranco-ranked domain is exempt from the
+    suspicious-TLD flag unless it also imitates a brand."""
+
+    def test_ranked_legitimate_outlet_scores_zero(self, monkeypatch):
+        # open.online: real Italian outlet, Tranco #40 089, labelled 85.
+        _mock_popularity_table(monkeypatch, {"open.online": 40089})
+        r = compute_domain_provenance("https://www.open.online")
+        assert r.suspicious_tld is False
+        assert r.value == 0.0
+        assert r.metadata["reasons"] == []
+
+    def test_unranked_domain_on_suspicious_tld_is_still_flagged(self, monkeypatch):
+        _mock_popularity_table(monkeypatch, {"open.online": 40089})
+        r = compute_domain_provenance("https://notizie-vere.online")
+        assert r.suspicious_tld is True
+        assert r.value == 55.0  # 40 suspicious_tld + 15 low-popularity corroboration
+
+    def test_ranked_brand_imitation_is_never_exempt(self, monkeypatch):
+        # Popularity must not launder impersonation: a ranked clone keeps both flags.
+        _mock_popularity_table(monkeypatch, {"spiegel.ltd": 392949})
+        r = compute_domain_provenance("https://spiegel.ltd")
+        assert r.suspicious_tld is True
+        assert r.brand_on_bad_tld is True
+        assert r.value == 65.0
+
+    def test_missing_table_keeps_the_flag(self, monkeypatch):
+        # No table => no evidence of popularity => behaviour unchanged.
+        _mock_popularity_table(monkeypatch, None)
+        r = compute_domain_provenance("https://www.open.online")
+        assert r.suspicious_tld is True
+        assert r.value == 40.0
