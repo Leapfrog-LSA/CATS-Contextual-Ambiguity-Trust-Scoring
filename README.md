@@ -30,8 +30,15 @@ Note       Ordinal score, not a probability. Cross-validate key claims. See docs
 
 ```bash
 pip install cats-scoring
+python -m spacy download it_core_news_lg   # Italian NLP model (large download), needed by `coherence`
 cats score <url>                       # any source URL — feed autodiscovery included
 ```
+
+Without the spaCy model `coherence` is not measured: it enters the score as a
+neutral 50, which can move the score by up to ~20 points. `cats score` then prints
+a warning and forces human review. If feed autodiscovery fails on a site
+(`no RSS/Atom feed found`), pass the feed URL itself, e.g.
+`cats score https://www.repubblica.it/rss/homepage/rss2.0.xml`.
 
 ### The coherence backend matters
 
@@ -85,13 +92,15 @@ On top of the four behavioural signals, an asymmetric **domain-provenance penalt
 
 | Score  | Band          | Recommended action            |
 | ------ | ------------- | ------------------------------ |
-| 80–100 | `high`        | Usable for OSINT               |
+| 80–100 | `high`        | Lower review priority; still cross-check key claims |
 | 60–79  | `medium_high` | Cross-validate key claims      |
 | 40–59  | `medium`      | Human review recommended       |
 | 20–39  | `low`         | Human review required          |
 | 0–19   | `very_low`    | Do not use without validation  |
 
 > ⚠️ Scores are **ordinal rankings** of source reliability, not absolute probabilities.
+> A high band means consistent publishing *behaviour*, not truthful content: a
+> source that publishes disinformation on a steady schedule can still score high.
 
 ***
 

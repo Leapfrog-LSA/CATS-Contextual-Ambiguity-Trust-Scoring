@@ -8,6 +8,42 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **A missing spaCy model no longer passes silently.** Without
+  `it_core_news_lg`, `coherence` returns a neutral 50 at zero confidence, and
+  that value still enters the weighted mean at full weight (~0.40 for news). On
+  ansa.it the score moved from 58.0 to 75.5 and the band from `medium` to
+  `medium_high`, and nothing said so: the review flag only looked at
+  low-confidence signals below a score of 50. The README's 30-second install
+  never mentioned the model, so this was the default first-run experience.
+  - New `degraded_signals()` in `cats.scoring.engine` names signals whose
+    fallback reason means "not measured" (`nlp_unavailable`; too little input
+    stays with the evidence check).
+  - `requires_human_review` is now `True` whenever a signal was not measured.
+    This applies to the library, the CLI, the MCP server and the API's
+    `requires_review`.
+  - `cats.lite.score` / `score_feed` return `degraded_signals` (a list, empty
+    when everything was measured) and add `explanation.degraded_warning` with
+    the install command.
+  - `cats score` prints `Review required: signal(s) not measured: coherence`
+    and a warning line with the fix.
+  - **Scores are unchanged**: the neutral value still counts, as before.
+    Dropping it from the mean would change scoring semantics and need
+    recalibration.
+
+### Changed
+- **README "Try it in 30 seconds" installs the Italian spaCy model**
+  (`python -m spacy download it_core_news_lg`). It also explains what happens
+  without it, and that a feed URL can be passed directly when autodiscovery
+  fails (e.g. repubblica.it).
+- **The `high` band no longer reads "Usable for OSINT".** It now reads "Lower
+  review priority; still cross-check key claims" in the README, `docs/api.md`
+  and the MCP `explain_bands` tool. The README adds that a high band means
+  consistent publishing behaviour, not truthful content. A source that
+  publishes disinformation on a steady schedule can score high: the roadmap
+  already records that 2 of 3 unreliable sources escape, and an Italian
+  NewsGuard spot-check (15 sources, single feed snapshot) showed the same.
+
 ## [1.8.0] — 2026-10-01
 
 **Upgrading a deployment:** three defaults changed (details under *Changed*).

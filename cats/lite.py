@@ -61,6 +61,7 @@ from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
     aggregate_score,
     apply_domain_penalty,
+    degraded_signals,
     determine_band,
     evidence_summary,
     requires_human_review,
@@ -78,6 +79,12 @@ from cats.signals.volatility import compute_volatility  # noqa: E402
 logger = structlog.get_logger()
 
 _nlp_attempted = False
+
+_DEGRADED_WARNING = (
+    "Some signals were not measured and entered the score at a neutral value, so the score "
+    "and band are not comparable with a full install. For coherence, install the Italian "
+    "spaCy model: python -m spacy download it_core_news_lg"
+)
 
 _WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml")
 
@@ -277,11 +284,14 @@ def score(
     ``url``: optional source URL/domain. When given, the domain-provenance
     penalty is applied (impersonation/clone red-flags only lower the score).
 
-    Returns ``{trust_score, band, requires_human_review, signals, language,
-    evidence, explanation}``. ``language`` flags non-Italian input (the NLP
-    stack is Italian-optimised — risk R3); ``evidence`` reports the message
-    count vs ``CATS_MIN_EVIDENCE_MESSAGES`` (risk R5) — an insufficient
-    history forces ``requires_human_review`` but never changes the score.
+    Returns ``{trust_score, band, requires_human_review, signals,
+    degraded_signals, language, evidence, explanation}``. ``language`` flags
+    non-Italian input (the NLP stack is Italian-optimised — risk R3);
+    ``evidence`` reports the message count vs ``CATS_MIN_EVIDENCE_MESSAGES``
+    (risk R5) — an insufficient history forces ``requires_human_review`` but
+    never changes the score. ``degraded_signals`` names signals that were not
+    measured (e.g. ``coherence`` without the spaCy model): they enter the score
+    at their neutral value, so a non-empty list also forces review.
     """
     if load_nlp:
         init_nlp()
@@ -314,6 +324,7 @@ def score(
             value, band, signals, sufficient_evidence=bool(evidence["sufficient"])
         ),
         "signals": {s.name: round(s.value, 2) for s in signals},
+        "degraded_signals": degraded_signals(signals),
         "language": language.as_dict(),
         "evidence": evidence,
     }
@@ -324,5 +335,7 @@ def score(
                 "Input does not look Italian: the default NLP stack is "
                 "Italian-optimised, so signal quality is degraded (WP 4.1 / risk R3)."
             )
+        if result["degraded_signals"]:
+            explanation["degraded_warning"] = _DEGRADED_WARNING
         result["explanation"] = explanation
     return result

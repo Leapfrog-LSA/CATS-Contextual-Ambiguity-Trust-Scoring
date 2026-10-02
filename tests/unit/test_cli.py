@@ -78,6 +78,28 @@ def test_score_review_required_line(monkeypatch, capsys):
     assert "Review required: band low" in captured.out
 
 
+def test_score_unmeasured_coherence_warning(monkeypatch, capsys):
+    result = dict(_RESULT)
+    result["requires_human_review"] = True
+    result["degraded_signals"] = ["coherence"]
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    exit_code = main(["score", "https://esempio.it"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Review required: signal(s) not measured: coherence" in captured.out
+    assert "python -m spacy download it_core_news_lg" in captured.out
+
+
+def test_score_measured_coherence_has_no_warning(monkeypatch, capsys):
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: dict(_RESULT))
+
+    main(["score", "https://esempio.it"])
+
+    assert "NOT measured" not in capsys.readouterr().out
+
+
 def test_score_clean_domain_no_red_flags_line(monkeypatch, capsys):
     result = dict(_RESULT)
     result["signals"] = dict(_RESULT["signals"])

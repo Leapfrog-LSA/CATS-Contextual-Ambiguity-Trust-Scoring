@@ -6,6 +6,11 @@ from cats.signals.types import SignalResult
 # summarised by evidence_summary for visibility (risk R5).
 LOW_EVIDENCE_CONFIDENCE = 0.3
 
+# Signal fallback reasons meaning "not measured at all" (a missing model), as
+# opposed to "measured on too little input" (`insufficient_messages`, which the
+# evidence check already covers).
+DEGRADED_REASONS = frozenset({"nlp_unavailable"})
+
 # The four behavioural signals do not share a common polarity (architecture.md →
 # Signal Polarity & Scoring): coherence is "higher = more reliable", the other
 # three are "higher = LESS reliable". Aggregation inverts the negative-polarity
@@ -95,6 +100,18 @@ def evidence_summary(signals: List[SignalResult], n_messages: int, min_messages:
     }
 
 
+def degraded_signals(signals: List[SignalResult]) -> List[str]:
+    """Names of signals that could not be measured and fell back to a placeholder.
+
+    Such a signal (e.g. ``coherence`` without the spaCy model) still enters the
+    weighted mean at full weight with its neutral value, so it can shift the
+    score by many points while looking like a measurement. The score is NOT
+    changed here (that would change scoring semantics); callers surface the list
+    and ``requires_human_review`` forces review.
+    """
+    return [s.name for s in signals if (s.metadata or {}).get("reason") in DEGRADED_REASONS]
+
+
 def requires_human_review(
     score: float,
     band: str,
@@ -102,6 +119,8 @@ def requires_human_review(
     sufficient_evidence: bool = True,
 ) -> bool:
     if not sufficient_evidence:
+        return True
+    if degraded_signals(signals):
         return True
     if band in {"low", "very_low"}:
         return True

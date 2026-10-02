@@ -2,6 +2,8 @@ import httpx
 import pytest
 
 from cats.lite import FeedFetchError, FeedNotFoundError, score, score_feed
+from cats.signals import coherence
+from cats.signals.types import CoherenceResult
 
 _MESSAGES = [
     {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
@@ -204,3 +206,20 @@ def test_score_feed_applies_domain_penalty_to_source_url(monkeypatch):
         result = score_feed("https://spiegel.ltd/rss", client=client, load_nlp=False, source_type="news")
 
     assert "domain_provenance" in result["signals"]
+
+
+def test_missing_nlp_model_is_reported_and_forces_review(monkeypatch):
+    monkeypatch.setattr(coherence, "nlp", None)
+    result = score(_MESSAGES, source_type="news", load_nlp=False)
+    assert result["degraded_signals"] == ["coherence"]
+    assert result["signals"]["coherence"] == 50.0
+    assert result["requires_human_review"] is True
+    assert "it_core_news_lg" in result["explanation"]["degraded_warning"]
+
+
+def test_measured_coherence_is_not_degraded(monkeypatch):
+    measured = CoherenceResult(name="coherence", value=40.0, confidence=1.0, metadata={"backend": "ner"})
+    monkeypatch.setattr("cats.lite.compute_coherence", lambda msgs: measured)
+    result = score(_MESSAGES, source_type="news", load_nlp=False)
+    assert result["degraded_signals"] == []
+    assert "degraded_warning" not in result["explanation"]
