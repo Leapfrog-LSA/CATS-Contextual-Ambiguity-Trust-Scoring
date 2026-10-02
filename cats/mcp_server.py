@@ -21,7 +21,11 @@ from cats.lite import score_feed as _score_feed
 _DISCLAIMER = "Ordinal score, not a probability (WP 4.3)."
 
 _BANDS = [
-    {"score_range": "80-100", "band": "high", "recommended_action": "Usable for OSINT"},
+    {
+        "score_range": "80-100",
+        "band": "high",
+        "recommended_action": "Lower review priority; still cross-check key claims",
+    },
     {"score_range": "60-79", "band": "medium_high", "recommended_action": "Cross-validate key claims"},
     {"score_range": "40-59", "band": "medium", "recommended_action": "Human review recommended"},
     {"score_range": "20-39", "band": "low", "recommended_action": "Human review required"},

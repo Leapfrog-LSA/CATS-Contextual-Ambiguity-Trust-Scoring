@@ -256,7 +256,7 @@ which is one more reason never to publish the app port directly.
 
 | Score | Band | Recommended action |
 |---|---|---|
-| 80–100 | `high` | Usable for OSINT |
+| 80–100 | `high` | Lower review priority; still cross-check key claims |
 | 60–79  | `medium_high` | Cross-validate key claims |
 | 40–59  | `medium` | Human review recommended |
 | 20–39  | `low` | Human review required |

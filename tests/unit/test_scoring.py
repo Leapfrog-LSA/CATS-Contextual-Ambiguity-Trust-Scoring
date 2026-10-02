@@ -4,6 +4,7 @@ from cats.scoring.engine import (
     DOMAIN_PENALTY_WEIGHT,
     aggregate_score,
     apply_domain_penalty,
+    degraded_signals,
     determine_band,
     requires_human_review,
 )
@@ -82,6 +83,22 @@ class TestRequiresHumanReview:
     def test_high_score_no_review(self):
         signals = [_signal("coherence", 85, confidence=0.8)]
         assert requires_human_review(85, "high", signals) is False
+
+    def test_unmeasured_signal_forces_review_even_at_high_score(self):
+        unmeasured = SignalResult(name="coherence", value=50.0, confidence=0.0, metadata={"reason": "nlp_unavailable"})
+        signals = [unmeasured, _signal("silence", 5, confidence=0.9)]
+        assert requires_human_review(85, "high", signals) is True
+
+
+class TestDegradedSignals:
+    def test_names_signals_that_were_not_measured(self):
+        unmeasured = SignalResult(name="coherence", value=50.0, confidence=0.0, metadata={"reason": "nlp_unavailable"})
+        assert degraded_signals([unmeasured, _signal("gaming", 10)]) == ["coherence"]
+
+    def test_too_little_input_is_not_degraded(self):
+        # insufficient_messages is covered by the evidence check, not this flag
+        short = SignalResult(name="silence", value=0.0, confidence=0.0, metadata={"reason": "insufficient_messages"})
+        assert degraded_signals([short, _signal("coherence", 70)]) == []
 
 
 class TestWeights:

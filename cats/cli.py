@@ -38,6 +38,9 @@ def _review_reason(result: dict) -> str:
     evidence = result["evidence"]
     if not evidence["sufficient"]:
         return f"insufficient evidence ({evidence['messages']} < {evidence['min_messages']} messages)"
+    degraded = result.get("degraded_signals") or []
+    if degraded:
+        return f"signal(s) not measured: {', '.join(degraded)}"
     if result["band"] in ("low", "very_low"):
         return f"band {result['band']}"
     return "low-confidence signal(s)"
@@ -81,6 +84,11 @@ def _format_human(result: dict, url: Optional[str]) -> str:
 
     if result["requires_human_review"]:
         lines.append(f"Review required: {_review_reason(result)}")
+    if "coherence" in (result.get("degraded_signals") or []):
+        lines.append(
+            "Warning    coherence was NOT measured (Italian spaCy model not loaded) and counts as a neutral 50: "
+            "the score is not comparable with a full install. Fix: python -m spacy download it_core_news_lg"
+        )
     if language["detected"] == "other":
         lines.append("Warning    Input does not look Italian: the default NLP stack is Italian-optimised (WP 4.1).")
     if result["signals"].get("domain_provenance", 0) > 0:
