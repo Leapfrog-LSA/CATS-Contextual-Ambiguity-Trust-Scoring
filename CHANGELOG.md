@@ -8,6 +8,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **`cats compare`: rank several sources side by side.** Takes URLs as
+  arguments and/or `--file` (one per line, `#` comments, duplicates dropped),
+  scores each with `score_feed`, and prints a table sorted by score: band, main
+  driver, the four raw signals, message count, and review/domain flags.
+  - A source that fails (no feed, unreachable, unsafe URL, no usable messages)
+    is listed under "Not scored" with its reason instead of aborting the run.
+  - `--json` gives `{ranked, errors, note}`; `--source-type`, `--max-messages`,
+    `--weights` and `--no-nlp` work as in `cats score`.
+  - Exit code 0 if at least one source was scored, 3 if none, 2 on usage
+    errors. A missing spaCy model is warned about once, under the table.
+  - Every output carries the note that the ranking describes publishing
+    behaviour, not truthfulness, and holds only within one run.
+
 ## [1.8.0] — 2026-10-02
 
 **Upgrading a deployment:** three defaults changed (details under *Changed*).

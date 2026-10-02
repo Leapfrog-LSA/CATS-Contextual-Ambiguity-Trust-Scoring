@@ -1,4 +1,4 @@
-"""Command-line interface: ``cats score <url>``.
+"""Command-line interface: ``cats score <url>`` and ``cats compare <url> <url> ...``.
 
 A thin wrapper over :func:`cats.lite.score`/:func:`cats.lite.score_feed` — no
 signal logic lives here; this module only parses arguments, calls the
@@ -17,6 +17,11 @@ from cats import __version__
 from cats.lite import FeedFetchError, FeedNotFoundError, UnsafeURLError, score, score_feed
 
 _NOTE = "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
+_COMPARE_NOTE = (
+    "Ordinal ranking of publishing behaviour, not of truthfulness. Compare only sources scored "
+    "together, with the same --source-type and install. A high rank is not a verdict."
+)
+_SIGNALS = ("coherence", "volatility", "silence", "gaming")
 
 
 def _load_messages(path: str) -> List[dict]:
@@ -157,6 +162,134 @@ def _run_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_url_list(path: str) -> List[str]:
+    urls = []
+    with open(path, "r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.split("#", 1)[0].strip()
+            if line:
+                urls.append(line)
+    return urls
+
+
+def _compare_row(url: str, result: dict) -> dict:
+    explanation = result.get("explanation") or {}
+    source = result.get("source") or {}
+    return {
+        "url": url,
+        "trust_score": result["trust_score"],
+        "band": result["band"],
+        "primary_driver": explanation.get("primary_driver"),
+        "signals": result["signals"],
+        "messages": source.get("messages", result["evidence"]["messages"]),
+        "requires_human_review": result["requires_human_review"],
+        "review_reason": _review_reason(result) if result["requires_human_review"] else None,
+        "degraded_signals": result.get("degraded_signals") or [],
+        "domain_red_flag": result["signals"].get("domain_provenance", 0) > 0,
+    }
+
+
+def _format_compare(rows: List[dict], errors: List[dict]) -> str:
+    def cell(value: object) -> str:
+        return "-" if value is None else str(value)
+
+    header = ["#", "Source", "Score", "Band", "Driver", *(name[:5] for name in _SIGNALS), "Msgs", "Review"]
+    table = [header]
+    for rank, row in enumerate(rows, 1):
+        flags = []
+        if row["requires_human_review"]:
+            flags.append("yes")
+        if row["domain_red_flag"]:
+            flags.append("domain")
+        table.append(
+            [
+                str(rank),
+                row["url"],
+                f"{row['trust_score']:.2f}",
+                row["band"],
+                cell(row["primary_driver"]),
+                *(cell(row["signals"].get(name)) for name in _SIGNALS),
+                str(row["messages"]),
+                ", ".join(flags) or "-",
+            ]
+        )
+    widths = [max(len(r[i]) for r in table) for i in range(len(header))]
+    numeric = {0, 2, *range(5, 5 + len(_SIGNALS)), 5 + len(_SIGNALS)}
+    lines = [
+        "  ".join(c.rjust(widths[i]) if i in numeric else c.ljust(widths[i]) for i, c in enumerate(r)).rstrip()
+        for r in table
+    ]
+    lines.insert(1, "  ".join("-" * w for w in widths))
+
+    if any("coherence" in row["degraded_signals"] for row in rows):
+        lines.append("")
+        lines.append(
+            "Warning  coherence was NOT measured (Italian spaCy model not loaded) and counts as a neutral 50. "
+            "Fix: python -m spacy download it_core_news_lg"
+        )
+    if errors:
+        lines.append("")
+        lines.append(f"Not scored ({len(errors)}):")
+        for err in errors:
+            lines.append(f"  {err['url']}: {err['error']}")
+    lines.append("")
+    lines.append(f"Note  Signals are raw values (silence, volatility, gaming: higher = less reliable). {_COMPARE_NOTE}")
+    return "\n".join(lines)
+
+
+def _run_compare(args: argparse.Namespace) -> int:
+    urls = list(args.urls)
+    if args.file:
+        try:
+            urls.extend(_load_url_list(args.file))
+        except OSError as exc:
+            print(f"error: could not read --file: {exc}", file=sys.stderr)
+            return 2
+    urls = list(dict.fromkeys(urls))  # de-duplicate, keep order
+    if len(urls) < 2:
+        print("error: compare needs at least two URLs (arguments and/or --file)", file=sys.stderr)
+        return 2
+
+    weights = None
+    if args.weights:
+        try:
+            weights = _load_weights(args.weights)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"error: could not read --weights file: {exc}", file=sys.stderr)
+            return 2
+
+    rows: List[dict] = []
+    errors: List[dict] = []
+    # Library output goes to stderr, as in `cats score`, so stdout stays clean.
+    with contextlib.redirect_stdout(sys.stderr):
+        for url in urls:
+            try:
+                result = score_feed(
+                    url,
+                    source_type=args.source_type,
+                    max_messages=args.max_messages,
+                    weights=weights,
+                    load_nlp=not args.no_nlp,
+                )
+            except ValueError as exc:  # feed not found/unreachable, unsafe URL, no usable messages
+                errors.append({"url": url, "error": str(exc)})
+                continue
+            rows.append(_compare_row(url, result))
+
+    rows.sort(key=lambda r: r["trust_score"], reverse=True)
+    if args.json:
+        payload = {
+            "source_type": args.source_type,
+            "ranked": [{"rank": i, **row} for i, row in enumerate(rows, 1)],
+            "errors": errors,
+            "note": _COMPARE_NOTE,
+        }
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(_format_compare(rows, errors))
+    return 0 if rows else 3
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cats", description="CATS trust-intelligence scoring CLI.")
     parser.add_argument("--version", action="version", version=f"cats-scoring {__version__}")
@@ -170,6 +303,17 @@ def _build_parser() -> argparse.ArgumentParser:
     score_parser.add_argument("--max-messages", type=int, default=200, help="Feed mode only: keep the latest N.")
     score_parser.add_argument("--weights", help="Path to a JSON file of signal-name -> weight overrides.")
     score_parser.add_argument("--no-nlp", action="store_true", help="Skip loading the spaCy NER model.")
+
+    compare_parser = subparsers.add_parser(
+        "compare", help="Score several sources and rank them side by side (failures are listed, not fatal)."
+    )
+    compare_parser.add_argument("urls", nargs="*", help="Source or feed URLs to compare.")
+    compare_parser.add_argument("--file", help="Text file with one URL per line ('#' starts a comment).")
+    compare_parser.add_argument("--source-type", default="default", choices=["news", "default"])
+    compare_parser.add_argument("--json", action="store_true", help="Print ranked results and errors as JSON.")
+    compare_parser.add_argument("--max-messages", type=int, default=200, help="Keep the latest N messages per feed.")
+    compare_parser.add_argument("--weights", help="Path to a JSON file of signal-name -> weight overrides.")
+    compare_parser.add_argument("--no-nlp", action="store_true", help="Skip loading the spaCy NER model.")
 
     return parser
 
@@ -187,6 +331,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.command is None:
         parser.print_help(sys.stderr)
         return 2
+    if args.command == "compare":
+        return _run_compare(args)
     if not args.url and not args.messages:
         print("error: provide a URL or --messages FILE", file=sys.stderr)
         return 2
