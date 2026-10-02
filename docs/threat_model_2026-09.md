@@ -234,6 +234,24 @@ huge or endless response is held in memory.
 - resolve the host and refuse private ranges, re-checking after every redirect;
 - stream the body and stop at the cap.
 
+> **Status (2 Oct 2026): addressed.** New `cats/core/url_guard.py`:
+> `check_url` allows only http(s) and resolves the host, refusing the URL
+> unless every address is globally routable (loopback, private, link-local and
+> metadata, CGNAT, IPv4-mapped forms included). `fetch_feed` now follows
+> redirects itself and checks every hop before requesting it. The `curl`
+> fallback no longer uses `-L`: it follows redirects one checked hop at a
+> time. The body is streamed and the read stops past `max_bytes`.
+> `score_feed` and the MCP `score_source` refuse an unsafe URL with
+> `UnsafeURLError` (CLI exit 3); an unsafe `<link>` found on a page is
+> skipped. `allow_private=True` (library only) lifts the address check for
+> deliberate local use.
+> - **Residual risk:** DNS rebinding. The host is resolved by the check and
+>   again by the HTTP client, so a host that answers differently between the
+>   two lookups is not stopped. Closing it needs connection-level IP pinning.
+> - **Also not covered:** a host that does not resolve locally (e.g. behind a
+>   proxy that resolves names itself) passes the check and fails or succeeds
+>   at fetch time as before.
+
 ### T10 — Supply chain — **L**
 
 CI runs no dependency scanning (no Dependabot, no `pip-audit`) and no code

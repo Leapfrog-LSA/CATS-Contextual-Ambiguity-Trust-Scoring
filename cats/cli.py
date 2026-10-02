@@ -14,7 +14,7 @@ import sys
 from typing import List, Optional
 
 from cats import __version__
-from cats.lite import FeedFetchError, FeedNotFoundError, score, score_feed
+from cats.lite import FeedFetchError, FeedNotFoundError, UnsafeURLError, score, score_feed
 
 _NOTE = "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
 
@@ -143,7 +143,7 @@ def _run_score(args: argparse.Namespace) -> int:
                     weights=weights,
                     load_nlp=not args.no_nlp,
                 )
-    except (FeedNotFoundError, FeedFetchError) as exc:
+    except (FeedNotFoundError, FeedFetchError, UnsafeURLError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 3
     except ValueError as exc:
