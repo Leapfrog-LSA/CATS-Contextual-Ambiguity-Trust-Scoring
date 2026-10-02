@@ -8,35 +8,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Security
-- **Feed fetching refuses internal addresses (threat model T9).** `score_feed`,
-  the MCP tool `score_source` and the RSS collector fetched any URL they were
-  given, followed redirects unchecked and read the whole body before checking
-  its size. Through the MCP server the URL comes from an LLM, so a
-  prompt-injected URL could reach loopback, private networks or a cloud
-  metadata endpoint.
-  - New `cats/core/url_guard.py` (standard library only). `check_url`
-    accepts only http(s), resolves the host and refuses the URL unless every
-    address is globally routable.
-  - `fetch_feed` follows redirects itself (at most 5) and checks each hop
-    before requesting it. The httpx clients in `cats.lite` and the collector
-    no longer auto-follow.
-  - The `curl` fallback for WAF 403s no longer uses `-L`. It follows
-    redirects one checked hop at a time, adds `--proto =http,https` and
-    `--max-filesize`, and reads status and redirect target from stderr.
-  - The body is streamed and the read stops once it passes `max_bytes`.
-  - `score_feed` raises `UnsafeURLError` (a `ValueError`, re-exported from
-    `cats.lite`) for an unsafe URL or redirect, and `cats score` exits 3. An
-    unsafe `<link rel="alternate">` on a page is skipped, not fetched.
-    `score_feed(..., allow_private=True)` lifts the address check for
-    deliberate local use.
-  - Residual risk, documented in the threat model: DNS rebinding between the
-    check and the fetch.
-  - Checked against the live registry: a full collector run with old and new
-    code gave the same sources, except one 429 rate limit that the old code
-    also hit on retry. Human Rights Watch, which needs the curl fallback plus
-    a redirect, still collects (20 messages).
-
 ## [1.8.0] — 2026-10-02
 
 **Upgrading a deployment:** three defaults changed (details under *Changed*).
@@ -45,7 +16,9 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Prometheus should scrape `app:8000` directly. Library and CLI users need no
 change, but should install the Italian spaCy model
 (`python -m spacy download it_core_news_lg`): without it results now list
-`coherence` in `degraded_signals` and require human review. Scores are
+`coherence` in `degraded_signals` and require human review. `score_feed`
+and the MCP `score_source` now refuse URLs that resolve to non-public
+addresses (`UnsafeURLError`, CLI exit 3; see *Security*). Scores are
 unchanged: no signal, weight or band moved (ENGINE 1.4).
 
 ### Added
@@ -461,6 +434,35 @@ unchanged: no signal, weight or band moved (ENGINE 1.4).
   - **Scores are unchanged**: the neutral value still counts, as before.
     Dropping it from the mean would change scoring semantics and need
     recalibration.
+
+### Security
+- **Feed fetching refuses internal addresses (threat model T9).** `score_feed`,
+  the MCP tool `score_source` and the RSS collector fetched any URL they were
+  given, followed redirects unchecked and read the whole body before checking
+  its size. Through the MCP server the URL comes from an LLM, so a
+  prompt-injected URL could reach loopback, private networks or a cloud
+  metadata endpoint.
+  - New `cats/core/url_guard.py` (standard library only). `check_url`
+    accepts only http(s), resolves the host and refuses the URL unless every
+    address is globally routable.
+  - `fetch_feed` follows redirects itself (at most 5) and checks each hop
+    before requesting it. The httpx clients in `cats.lite` and the collector
+    no longer auto-follow.
+  - The `curl` fallback for WAF 403s no longer uses `-L`. It follows
+    redirects one checked hop at a time, adds `--proto =http,https` and
+    `--max-filesize`, and reads status and redirect target from stderr.
+  - The body is streamed and the read stops once it passes `max_bytes`.
+  - `score_feed` raises `UnsafeURLError` (a `ValueError`, re-exported from
+    `cats.lite`) for an unsafe URL or redirect, and `cats score` exits 3. An
+    unsafe `<link rel="alternate">` on a page is skipped, not fetched.
+    `score_feed(..., allow_private=True)` lifts the address check for
+    deliberate local use.
+  - Residual risk, documented in the threat model: DNS rebinding between the
+    check and the fetch.
+  - Checked against the live registry: a full collector run with old and new
+    code gave the same sources, except one 429 rate limit that the old code
+    also hit on retry. Human Rights Watch, which needs the curl fallback plus
+    a redirect, still collects (20 messages).
 
 ## [1.7.0] — 2026-09-16
 
