@@ -3,4 +3,4 @@
 # the default install. Enable with:
 #   pip install -r requirements-sbert.txt
 # Without these, the coherence backend transparently falls back to spaCy NER.
-sentence-transformers>=2.7,<4.0
+sentence-transformers>=2.7,<7.0
