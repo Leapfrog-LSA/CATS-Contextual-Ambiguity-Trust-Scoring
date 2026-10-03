@@ -8,6 +8,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **Docker image runs Python 3.14** (`python:3.14-slim`, was `3.11-slim`).
+  Checked before merging: the 103 sources of
+  `data/snapshots/labelled_sources_2026-09-30.jsonl`, scored with the
+  calibrated weights in a 3.11 and a 3.14 image, give identical scores, bands
+  and per-signal values, and the 3.14 API reports `/health` healthy.
+- **CI tests on Python 3.11 and 3.14.** The `test` job is a matrix: 3.11 is
+  the `requires-python` floor, 3.14 is what the image runs. Before this, the
+  image's Python was never tested. Coverage is still uploaded from 3.11 only.
+  `pyproject.toml` lists 3.14 among its classifiers.
+- **`sbert` extra allows `sentence-transformers` up to 6.x** (`<7.0`, was
+  `<4.0`). The calibrated weights assume the SBERT coherence backend, which CI
+  does not install, so it was checked by hand: on the same 103 sources,
+  coherence under 3.4.1 (transformers 4.57) and 6.1.0 (transformers 5.18) is
+  bit-identical.
+
 ## [1.9.0] — 2026-10-02
 
 Adds source comparison (`cats compare`, MCP `compare_sources`) and fixes the
