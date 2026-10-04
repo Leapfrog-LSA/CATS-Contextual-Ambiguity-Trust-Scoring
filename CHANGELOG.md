@@ -8,6 +8,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **`alembic upgrade head` now works inside the Docker image.** The image
+  copies `cats/` to `/app` without installing it, and the `alembic` command
+  does not put the working directory on `sys.path`, so `alembic/env.py`
+  failed with "No module named 'cats'" (only `python -m alembic` worked).
+  `alembic.ini` now sets `prepend_sys_path = .`. Checked on a fresh database:
+  the image applies migrations 001 → 003. The CI `docker` job now renders the
+  migrations inside the built image (`alembic upgrade head --sql`, no
+  database), so this cannot silently regress.
+
 ### Changed
 - **Docker image runs Python 3.14** (`python:3.14-slim`, was `3.11-slim`).
   Checked before merging: the 103 sources of
