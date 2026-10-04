@@ -23,6 +23,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   does not install, so it was checked by hand: on the same 103 sources,
   coherence under 3.4.1 (transformers 4.57) and 6.1.0 (transformers 5.18) is
   bit-identical.
+- **Stale status docs refreshed to v1.9.0.** The September roadmap
+  (`docs/piano_sviluppo_roadmap_2026-09.md`) gains a 4 October section on what
+  1.8.0 and 1.9.0 shipped, current test and coverage numbers, and the open
+  items found in a repo audit (alembic inside the image, T7, branch cleanup,
+  threat-model items awaiting a decision). `CLAUDE.md` test counts (470
+  collected, 449 unit passed) and the README roadmap line (it still said v1.6)
+  are updated.
 
 ## [1.9.0] — 2026-10-02
 
