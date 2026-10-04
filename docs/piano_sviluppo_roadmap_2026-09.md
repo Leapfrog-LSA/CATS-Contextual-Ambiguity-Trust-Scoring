@@ -119,8 +119,9 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [ ] Correggere la descrizione del repo su GitHub, che dice ancora "GDPR & EU
   AI Act compliant" — **S** — umano.
 - [ ] Verificare che `technical@cats-system.org` riceva davvero — **S** — umano.
-- [ ] Far funzionare `alembic upgrade head` dentro l'immagine Docker (oggi
-  fallisce con "No module named 'cats'"; `python -m alembic` funziona) — **S**.
+- [x] Far funzionare `alembic upgrade head` dentro l'immagine Docker (falliva
+  con "No module named 'cats'") — **S** — `prepend_sys_path` in `alembic.ini`,
+  più un controllo nel job `docker` della CI.
 - [ ] Controllo della robustezza della chiave API all'avvio (threat model T7)
   — **S**.
 - [ ] Pulizia del repo — **S** — umano: cancellare i rami già uniti o

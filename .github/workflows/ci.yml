@@ -76,3 +76,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: docker build -t cats:test .
+      # The image copies cats/ without installing it, so alembic's env.py must
+      # find it through prepend_sys_path in alembic.ini. Offline mode (--sql)
+      # imports env.py and renders every migration without a database.
+      - name: Migrations load inside the image
+        run: >-
+          docker run --rm
+          -e CATS_API_KEY=test-api-key
+          -e DATABASE_URL=postgresql+asyncpg://cats:cats@localhost:5432/cats_test
+          -e REDIS_URL=redis://localhost:6379/0
+          -e AUDIT_ENCRYPTION_KEY=dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=
+          cats:test alembic upgrade head --sql > /dev/null
