@@ -1,8 +1,9 @@
 # CATS — Roadmap di sviluppo (aggiornamento settembre 2026)
 
 > Aggiornamento della [roadmap di luglio](piano_sviluppo_roadmap_2026-07.md)
-> allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026). Le voci già
-> chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
+> allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026), **rivisto il
+> 4 ottobre 2026 alla v1.9.0** (stesso ENGINE 1.4: nessun segnale, peso o
+> banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
 > accanto a ciascuno; i punteggi CATS restano **ordinali**, non probabilità
 > calibrate (WP 4.1/4.3).
 
@@ -38,15 +39,18 @@ segnali.
 - **Protezioni attive:** avviso sulla lingua (rischio R3), soglia minima di
   evidenza (R5), suite di test avversariali.
 - **Qualità:**
-  - 350 test unitari verdi (5 saltati) e 17 di integrazione; copertura
-    unitaria 86%, con `signals/coherence.py` al 100% e `scoring/weights.py` al
-    98%;
-  - la CI esegue `lint`, `test` e `docker` su ogni PR verso `main`;
+  - 449 test unitari verdi (4 saltati) e 17 di integrazione; copertura
+    unitaria 88%, con `signals/coherence.py` al 100% e `scoring/weights.py` al
+    98% (al 4 ottobre);
+  - la CI esegue `lint`, `test` (su Python 3.11 e 3.14), `docker` e
+    `pip-audit` su ogni PR verso `main`; Dependabot apre le PR di
+    aggiornamento ogni lunedì;
   - la pubblicazione su PyPI parte alla creazione di una GitHub Release.
 - **Dati:**
   - circa 100 fonti etichettate (rating MBFC più registro delle fonti di
     disinformazione);
-  - 62 snapshot in `data/snapshots/` al 25 settembre, uno al giorno;
+  - 67 snapshot in `data/snapshots/`, dal 2 luglio al 30 settembre; dal 30
+    settembre la raccolta giornaliera continua nel repo dati `cats-snapshots`;
   - **99 fonti utilizzabili** dopo il filtro sui timestamp, una sotto la soglia
     di 100 ([`snapshot_history_audit_2026-09.md`](snapshot_history_audit_2026-09.md));
   - **0 etichette umane** in `data/human_labels.jsonl`.
@@ -58,6 +62,26 @@ Dalla roadmap di luglio sono chiusi la Fase A, i punti 6–9 e i punti 10–11
 (scartati). Restano aperti il 5 (dataset ≥ 100 fonti), il 12 (manutenzione
 della penalità di dominio, in parte), il 13–14 (ricalibrazione e v2.0) e il 15
 (TODO legali).
+
+## Aggiornamento del 4 ottobre: cosa è uscito con v1.8.0 e v1.9.0
+
+Tutto su PyPI (`cats-scoring` 1.9.0); dettagli in [`CHANGELOG.md`](../CHANGELOG.md).
+
+- **Nuove funzioni:** `cats compare` (classifica più fonti in una tabella) e
+  lo strumento MCP `compare_sources` (da 2 a 10 fonti per chiamata).
+- **Onestà del risultato:** se manca il modello spaCy, `coherence` non viene
+  più conteggiata in silenzio: compare in `degraded_signals` e il risultato
+  richiede revisione umana.
+- **Sicurezza (threat model):** chiusi T2 e T3 (default di deployment), T8
+  (documentazione API disattivata di default), T9 (il fetch dei feed rifiuta
+  indirizzi interni, anche dopo i redirect) e in parte T10 (`pip-audit` e
+  Dependabot; mancano hash delle dipendenze e digest dell'immagine).
+- **Penalità di dominio:** le testate affermate su TLD "sospetti" (es.
+  `open.online`) non sono più penalizzate quando la tabella Tranco è presente
+  ([`domain_provenance_maintenance_2026-10.md`](domain_provenance_maintenance_2026-10.md)).
+- **Piattaforma:** immagine Docker su Python 3.14 e `sentence-transformers`
+  ammesso fino alla 6.x. Entrambi verificati prima del merge: punteggi
+  identici sulle 103 fonti dello snapshot del 30 settembre.
 
 ## Fase 1 — breve termine (0–4 settimane): chiudere il lavoro aperto
 
@@ -95,6 +119,13 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [ ] Correggere la descrizione del repo su GitHub, che dice ancora "GDPR & EU
   AI Act compliant" — **S** — umano.
 - [ ] Verificare che `technical@cats-system.org` riceva davvero — **S** — umano.
+- [ ] Far funzionare `alembic upgrade head` dentro l'immagine Docker (oggi
+  fallisce con "No module named 'cats'"; `python -m alembic` funziona) — **S**.
+- [ ] Controllo della robustezza della chiave API all'avvio (threat model T7)
+  — **S**.
+- [ ] Pulizia del repo — **S** — umano: cancellare i rami già uniti o
+  abbandonati, attivare la cancellazione automatica dei rami dopo il merge e
+  gli avvisi Dependabot; facoltativo, riallineare il tag `v1.9.0` a `main`.
 
 ## Fase 2 — medio termine (1–3 mesi, ottobre–dicembre 2026): dati, primi utenti, API più solida
 
@@ -142,6 +173,12 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     - la purga copre solo l'audit log.
 
     La bozza va rivista dal maintainer.
+  - [x] Chiusi al 4 ottobre: T2, T3, T8, T9; T10 in parte (vedi sopra).
+  - [ ] Aperti, con una decisione del maintainer prima del codice: T1 (limiti
+    di testo e concorrenza per chiave), T4 (ruolo di revisore per i ricorsi),
+    T5 (conservazione dei dati per tutte le tabelle, IP in chiaro), T6
+    (cifratura dell'audit legata alla riga, rotazione delle chiavi), T11
+    (dichiarazioni sul TLS, vedi Fase 1).
   - [ ] Pen-test esterno.
 - [ ] Bozza tecnica del piano di monitoraggio post-market (Art. 72) — **M** —
   le soglie le decide un umano. Metriche candidate: distribuzione delle bande,
