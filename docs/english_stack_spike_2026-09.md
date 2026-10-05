@@ -1,4 +1,4 @@
-# English NLP stack — research spike, November 2026
+# English NLP stack — research spike, September 2026
 
 **Task 27** (roadmap): does an English-tuned NLP stack beat the shipped
 Italian-optimised one on the future holdout's English-language sources?

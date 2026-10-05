@@ -12,7 +12,7 @@ shipped**: this script imports and reconfigures `cats.signals.coherence`'s
 model (loads `en_core_web_lg` into its module-global instead of the Italian
 model) and reimplements volatility's algorithm locally with a different
 polarity function; it never edits `cats/signals/*`. No weight change either
-way — see `docs/english_stack_spike_2026-11.md` for the write-up.
+way — see `docs/english_stack_spike_2026-09.md` for the write-up.
 
 Caveat up front: ``cats.pipeline.language.detect_language`` only
 distinguishes "italian" from "other"/"unknown" (see its docstring) — it does

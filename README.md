@@ -81,6 +81,16 @@ print(result["trust_score"], result["band"])
 print(result["explanation"]["primary_driver"])
 ```
 
+Or from an LLM client such as Claude, through the MCP server
+(`score_source`, `score_messages`, `compare_sources`, `explain_bands`):
+
+```bash
+pip install "cats-scoring[mcp]"
+claude mcp add cats -- cats-mcp
+```
+
+Setup and tool reference: [docs/mcp.md](docs/mcp.md).
+
 Try it in the browser instead: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/blob/main/examples/cats_lite_demo.ipynb)
 
 ## A real use case
@@ -142,6 +152,7 @@ Beyond the zero-infrastructure library, CATS also ships a full multi-tenant Fast
 | [docs/README.md](docs/README.md)             | Full documentation index, organised by topic       |
 | [docs/architecture.md](docs/architecture.md) | Signal algorithms, weight matrix, security design  |
 | [docs/api.md](docs/api.md)                   | Full REST API reference                            |
+| [docs/mcp.md](docs/mcp.md)                   | MCP server for LLM clients: setup and tools        |
 | [docs/calibration.md](docs/calibration.md)   | Empirical weight calibration (genetic search)      |
 | [docs/compliance.md](docs/compliance.md)     | GDPR + EU AI Act compliance                        |
 

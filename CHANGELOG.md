@@ -40,6 +40,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   threat-model items awaiting a decision). `CLAUDE.md` test counts (470
   collected, 449 unit passed) and the README roadmap line (it still said v1.6)
   are updated.
+- **Docs alignment pass.**
+  - README: shows how to use CATS from an LLM client through the MCP server,
+    and lists `docs/mcp.md` in the documentation table.
+  - Colab notebook: installs `cats-scoring` from PyPI instead of `main`, and
+    its caveats quote the current future-holdout numbers (53 sources,
+    concordance 0.750, or 0.762 with the domain penalty, measured with SBERT).
+    It used to say "50 sources, concordance 0.78", from July. It also says that
+    without the spaCy model `coherence` is flagged and forces human review.
+  - `SUMMARY.md` (the GitBook table of contents) lists every document. It
+    had stopped at July and missed 22 documents under `docs/`, including
+    `docs/mcp.md` and the threat model.
+  - `docs/compliance.md`: the accuracy roadmap gains a v1.7–v1.9 row (no
+    scoring change).
+  - `docs/english_stack_spike_2026-11.md` → `docs/english_stack_spike_2026-09.md`:
+    the spike ran in September (#134), and the file was named and titled with
+    the month it had been planned for. References are updated.
 
 ## [1.9.0] — 2026-10-02
 
@@ -602,7 +618,7 @@ unchanged: no signal, weight or band moved (ENGINE 1.4).
   (`data/snapshots_merged_clean_2026-09.jsonl`, regenerate via the script)
   for a future Fase D recalibration attempt.
 - **English NLP stack research spike — not shipped** (Task 27,
-  `research/english_stack_spike.py`, `docs/english_stack_spike_2026-11.md`).
+  `research/english_stack_spike.py`, `docs/english_stack_spike_2026-09.md`).
   Compares the shipped Italian-optimised stack (`it_core_news_lg` NER
   coherence, TextBlob + Italian negation correction for volatility) against
   `en_core_web_lg` + plain TextBlob on the future holdout's English-marker
