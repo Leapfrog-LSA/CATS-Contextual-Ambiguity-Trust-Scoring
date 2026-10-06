@@ -2,8 +2,8 @@
 
 > Aggiornamento della [roadmap di luglio](piano_sviluppo_roadmap_2026-07.md)
 > allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026), **rivisto il
-> 4 ottobre 2026 alla v1.9.0** (stesso ENGINE 1.4: nessun segnale, peso o
-> banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
+> 4 ottobre 2026 alla v1.9.0 e il 6 ottobre alla v1.9.1** (stesso ENGINE 1.4:
+> nessun segnale, peso o banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
 > accanto a ciascuno; i punteggi CATS restano **ordinali**, non probabilità
 > calibrate (WP 4.1/4.3).
 
@@ -39,9 +39,9 @@ segnali.
 - **Protezioni attive:** avviso sulla lingua (rischio R3), soglia minima di
   evidenza (R5), suite di test avversariali.
 - **Qualità:**
-  - 449 test unitari verdi (4 saltati) e 17 di integrazione; copertura
-    unitaria 88%, con `signals/coherence.py` al 100% e `scoring/weights.py` al
-    98% (al 4 ottobre);
+  - 455 test unitari verdi (4 saltati) e 17 di integrazione; copertura
+    unitaria 88% (al 4 ottobre), con `signals/coherence.py` al 100% e
+    `scoring/weights.py` al 98%;
   - la CI esegue `lint`, `test` (su Python 3.11 e 3.14), `docker` e
     `pip-audit` su ogni PR verso `main`; Dependabot apre le PR di
     aggiornamento ogni lunedì;
@@ -63,9 +63,10 @@ Dalla roadmap di luglio sono chiusi la Fase A, i punti 6–9 e i punti 10–11
 della penalità di dominio, in parte), il 13–14 (ricalibrazione e v2.0) e il 15
 (TODO legali).
 
-## Aggiornamento del 4 ottobre: cosa è uscito con v1.8.0 e v1.9.0
+## Aggiornamento di ottobre: cosa è uscito con v1.8.0, v1.9.0 e v1.9.1
 
-Tutto su PyPI (`cats-scoring` 1.9.0); dettagli in [`CHANGELOG.md`](../CHANGELOG.md).
+Tutto su PyPI (`cats-scoring` 1.9.1, 6 ottobre); dettagli in
+[`CHANGELOG.md`](../CHANGELOG.md).
 
 - **Nuove funzioni:** `cats compare` (classifica più fonti in una tabella) e
   lo strumento MCP `compare_sources` (da 2 a 10 fonti per chiamata).
@@ -79,9 +80,16 @@ Tutto su PyPI (`cats-scoring` 1.9.0); dettagli in [`CHANGELOG.md`](../CHANGELOG.
 - **Penalità di dominio:** le testate affermate su TLD "sospetti" (es.
   `open.online`) non sono più penalizzate quando la tabella Tranco è presente
   ([`domain_provenance_maintenance_2026-10.md`](domain_provenance_maintenance_2026-10.md)).
-- **Piattaforma:** immagine Docker su Python 3.14 e `sentence-transformers`
-  ammesso fino alla 6.x. Entrambi verificati prima del merge: punteggi
-  identici sulle 103 fonti dello snapshot del 30 settembre.
+- **v1.9.1 (6 ottobre), manutenzione e sicurezza, punteggi identici alla
+  1.9.0:**
+  - **T7:** in produzione l'API non parte con chiavi API sotto i 32 caratteri.
+  - **MCP:** i log del server non finiscono più nel canale del protocollo, e
+    il server funziona anche con mcp 2.x. La CI ora avvia davvero il server.
+  - **Piattaforma:** immagine Docker su Python 3.14, CI su 3.11 e 3.14, e
+    alembic funzionante dentro l'immagine.
+  - **Dipendenze:** redis 8, transformers 5, sentence-transformers 6, mcp 2.
+    Gli aggiornamenti che la CI non prova sono stati verificati a mano, con
+    risultati identici.
 
 ## Fase 1 — breve termine (0–4 settimane): chiudere il lavoro aperto
 
