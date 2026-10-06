@@ -128,7 +128,9 @@ def _server_class() -> Any:
 
         return MCPServer
     except ImportError:
-        from mcp.server.fastmcp import FastMCP
+        # mcp 2.x keeps an mcp.server.fastmcp stub without FastMCP, so type-check
+        # against 2.x flags this 1.x-only import; at runtime 2.x never reaches it.
+        from mcp.server.fastmcp import FastMCP  # type: ignore[attr-defined]
 
         return FastMCP
 
