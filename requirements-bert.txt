@@ -2,5 +2,5 @@
 # Heavy (pulls in torch); kept out of the default install. Enable with:
 #   pip install -r requirements-bert.txt
 # Without these, the sentiment backend transparently falls back to TextBlob.
-transformers>=4.40,<5.0
+transformers>=4.40,<6.0
 torch>=2.2,<3.0

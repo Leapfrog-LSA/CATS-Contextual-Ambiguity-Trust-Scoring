@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 sbert = ["sentence-transformers>=2.7,<7.0"]
-bert = ["transformers>=4.40,<5.0", "torch>=2.2,<3.0"]
+bert = ["transformers>=4.40,<6.0", "torch>=2.2,<3.0"]
 mcp = ["mcp>=1.0,<2.0"]
 
 [project.scripts]
