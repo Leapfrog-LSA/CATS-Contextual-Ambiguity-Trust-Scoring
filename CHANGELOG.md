@@ -8,6 +8,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.1] — 2026-10-06
+
+Security and maintenance release.
+- **Behaviour change for API deployments:** the API now refuses to start with
+  a short API key (T7). Details in the note below.
+- **MCP:** the server no longer writes logs into the protocol stream, and it
+  works with mcp 2.x.
+- **Platform and dependencies:** the Docker image runs Python 3.14, and the
+  dependency bounds are raised. Each bump that CI does not exercise was checked
+  by hand.
+
+No change to signals, weights or bands (ENGINE 1.4): scores are identical to
+1.9.0.
+
 **Upgrading a deployment:** API keys must now be at least 32 characters. With
 `ENVIRONMENT=production`, the default, the API refuses to start otherwise (see
 *Security*). Check `CATS_API_KEY`, `CATS_API_KEY_PREV` and `CATS_API_KEYS`
@@ -98,6 +112,16 @@ before upgrading. Library, CLI and MCP users are not affected.
   - `docs/english_stack_spike_2026-11.md` → `docs/english_stack_spike_2026-09.md`:
     the spike ran in September (#134), and the file was named and titled with
     the month it had been planned for. References are updated.
+- **Dependency bounds raised** (Dependabot):
+  - `redis>=8.1.0,<9.0` (was `<6.0`, #198). The integration tests use Redis
+    for rate limiting and pass against 8.x.
+  - `asyncpg>=0.31.0` (#199).
+  - `pre-commit>=4.6.2,<5.0` (#201).
+  - The `bert` extra allows `transformers` 5.x (`<6.0`, #200). CI does not
+    install it, so it was checked by hand. With `SENTIMENT_BACKEND=bert`, the
+    model really loads under 4.57.6 and 5.18.0, with no TextBlob fallback.
+    Polarity on 2,518 snapshot texts and volatility on 103 sources are
+    identical under both.
 
 ## [1.9.0] — 2026-10-02
 
