@@ -8,6 +8,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **Status docs point at 1.9.1.** The September roadmap's October section now
+  covers v1.9.1 (T7, the MCP fixes, Python 3.14, dependency bumps). Before,
+  it listed the Docker and sentence-transformers changes as part of 1.8/1.9,
+  but they shipped in 1.9.1. `docs/README.md` and the `CLAUDE.md` test counts
+  are updated: 476 collected, and 455 unit tests passed with 4 skipped.
+
 ## [1.9.1] — 2026-10-06
 
 Security and maintenance release.
