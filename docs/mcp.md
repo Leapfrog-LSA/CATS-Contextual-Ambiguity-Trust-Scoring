@@ -12,9 +12,10 @@ signal logic lives here.
 pip install "cats-scoring[mcp]"
 ```
 
-The `mcp` package (`mcp>=1.0,<2.0`) is an optional extra, not a core
+The `mcp` package (`mcp>=1.0,<3.0`) is an optional extra, not a core
 dependency — importing `cats.mcp_server` never requires it, only running the
-server does.
+server does. Both mcp 1.x (`FastMCP`) and 2.x (`MCPServer`) are supported; CI
+tests the newest release in that range.
 
 ## Run
 
@@ -22,7 +23,9 @@ server does.
 cats-mcp
 ```
 
-Runs over stdio. If the `mcp` extra is not installed, `cats-mcp` exits with a
+Runs over stdio. Stdout carries only MCP messages: the library's logs (a
+missing spaCy model, each fetched feed) go to stderr, which MCP clients show
+as server logs. If the `mcp` extra is not installed, `cats-mcp` exits with a
 clear message telling you to install it — it never crashes with a raw
 `ImportError`.
 

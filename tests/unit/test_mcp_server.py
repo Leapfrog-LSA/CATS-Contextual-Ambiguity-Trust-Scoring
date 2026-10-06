@@ -97,16 +97,94 @@ def test_main_without_mcp_extra_raises_clear_error(monkeypatch):
         main()
 
 
-def test_server_registers_four_tools():
+def _mcp_stdio_session(requests, timeout=120):
+    """Run ``python -m cats.mcp_server`` and exchange JSON-RPC lines over stdio.
+
+    Returns (responses by id, every stdout line). Talks raw JSON-RPC rather than
+    through the mcp client API, so the same test runs against mcp 1.x and 2.x.
+    """
+    import json
+    import subprocess
+
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "cats.mcp_server"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    lines, responses = [], {}
+    try:
+        for request in requests:
+            proc.stdin.write(json.dumps(request) + "\n")
+            proc.stdin.flush()
+            if "id" not in request:
+                continue
+            while request["id"] not in responses:
+                line = proc.stdout.readline()
+                assert line, "server closed stdout"
+                lines.append(line)
+                message = json.loads(line)  # anything that is not JSON-RPC fails here
+                if "id" in message:
+                    responses[message["id"]] = message
+    finally:
+        proc.kill()
+        proc.wait(timeout=timeout)
+    return responses, lines
+
+
+def test_stdio_session_lists_and_calls_tools_with_a_clean_stdout():
     pytest.importorskip("mcp")
-    from cats.mcp_server import _create_server
+    import json
 
-    server = _create_server()
-    tools = server._tool_manager.list_tools()
+    responses, lines = _mcp_stdio_session(
+        [
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {"name": "t", "version": "0"},
+                },
+            },
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+            {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "explain_bands", "arguments": {}}},
+            # Scoring logs (spaCy model loaded or missing): those lines must go to stderr.
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "score_messages", "arguments": {"messages": _MESSAGES, "source_type": "news"}},
+            },
+        ]
+    )
 
-    assert {t.name for t in tools} == {"score_source", "score_messages", "compare_sources", "explain_bands"}
-    for tool in tools:
-        assert tool.description  # docstrings written for an LLM client
+    assert all(json.loads(line).get("jsonrpc") == "2.0" for line in lines)
+    tools = responses[2]["result"]["tools"]
+    assert {t["name"] for t in tools} == {"score_source", "score_messages", "compare_sources", "explain_bands"}
+    assert all(t["description"] for t in tools)  # docstrings written for an LLM client
+    bands = json.loads(responses[3]["result"]["content"][0]["text"])
+    assert bands["disclaimer"] == _DISCLAIMER
+    scored = json.loads(responses[4]["result"]["content"][0]["text"])
+    assert not responses[4]["result"].get("isError")
+    assert scored["disclaimer"] == _DISCLAIMER
+    assert 0 <= scored["trust_score"] <= 100
+
+
+def test_main_names_an_unsupported_mcp_version(monkeypatch):
+    # mcp is importable but exposes neither server class (a future major).
+    import types
+
+    fake = types.ModuleType("mcp")
+    monkeypatch.setitem(sys.modules, "mcp", fake)
+    for name in ("mcp.server", "mcp.server.mcpserver", "mcp.server.fastmcp"):
+        monkeypatch.setitem(sys.modules, name, None)
+
+    with pytest.raises(SystemExit, match="neither MCPServer"):
+        main()
 
 
 def test_compare_sources_wraps_compare_feeds_and_adds_disclaimer(monkeypatch):

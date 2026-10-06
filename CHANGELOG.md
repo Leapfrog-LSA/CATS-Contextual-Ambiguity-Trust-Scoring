@@ -29,6 +29,28 @@ before upgrading. Library, CLI and MCP users are not affected.
     two-slot `CATS_API_KEY_PREV` procedure and per-tenant keys.
 
 ### Fixed
+- **The MCP server no longer writes logs into the protocol stream.**
+  - **The bug:** structlog's default logger prints to stdout, and the stdio
+    transport uses stdout for JSON-RPC. A log line such as
+    `coherence_nlp_unavailable` (no spaCy model) or `score_feed_completed`
+    (every `score_source` call) therefore landed in the middle of the MCP
+    stream. The MCP spec forbids this, and a strict client can drop the
+    connection. Reproduced with mcp 1.30 in a raw stdio session.
+  - **The fix:** `cats-mcp` now sends structlog to stderr before it starts
+    serving.
+- **`cats-mcp` works with mcp 2.x.** mcp 2.0 renamed `FastMCP` to `MCPServer`
+  (`mcp.server.mcpserver`). With mcp 2.x installed, the server failed at import
+  and reported that `mcp` was missing. It now uses `MCPServer` when present and
+  falls back to `FastMCP`. If an installed `mcp` has neither, the error names
+  the version problem instead. The `mcp` extra now allows `<3.0` (was `<2.0`,
+  superseding Dependabot #197).
+- **CI now tests the MCP server.** `requirements-dev.txt` installs `mcp`, so
+  the server test no longer skips. The test that read FastMCP's private tool
+  registry is replaced by a real stdio session. It initializes, lists the four
+  tools, calls `explain_bands` and `score_messages`, and requires every stdout
+  line to be JSON-RPC. It passes on mcp 1.30 and 2.3, and it fails on the
+  previous code with both: log lines on stdout with 1.x, a server that never
+  starts with 2.x.
 - **`alembic upgrade head` now works inside the Docker image.** The image
   copies `cats/` to `/app` without installing it, and the `alembic` command
   does not put the working directory on `sys.path`, so `alembic/env.py`
