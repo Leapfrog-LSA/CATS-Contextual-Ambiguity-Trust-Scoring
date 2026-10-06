@@ -122,8 +122,9 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
 - [x] Far funzionare `alembic upgrade head` dentro l'immagine Docker (falliva
   con "No module named 'cats'") — **S** — `prepend_sys_path` in `alembic.ini`,
   più un controllo nel job `docker` della CI.
-- [ ] Controllo della robustezza della chiave API all'avvio (threat model T7)
-  — **S**.
+- [x] Controllo della robustezza della chiave API all'avvio (threat model T7)
+  — **S** — in produzione l'API non parte con chiavi sotto i 32 caratteri;
+  procedura di rotazione in `docs/api.md`.
 - [ ] Pulizia del repo — **S** — umano: cancellare i rami già uniti o
   abbandonati, attivare la cancellazione automatica dei rami dopo il merge e
   gli avvisi Dependabot; facoltativo, riallineare il tag `v1.9.0` a `main`.
@@ -174,7 +175,8 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     - la purga copre solo l'audit log.
 
     La bozza va rivista dal maintainer.
-  - [x] Chiusi al 4 ottobre: T2, T3, T8, T9; T10 in parte (vedi sopra).
+  - [x] Chiusi al 4 ottobre: T2, T3, T8, T9; T10 in parte (vedi sopra). T7
+    chiuso il 6 ottobre.
   - [ ] Aperti, con una decisione del maintainer prima del codice: T1 (limiti
     di testo e concorrenza per chiave), T4 (ruolo di revisore per i ricorsi),
     T5 (conservazione dei dati per tutte le tabelle, IP in chiaro), T6

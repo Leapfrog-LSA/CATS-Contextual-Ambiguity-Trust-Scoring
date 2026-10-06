@@ -1,13 +1,16 @@
 import os
 
+import pytest
+
 os.environ.setdefault("CATS_API_KEY", "test-key")
 os.environ.setdefault("CATS_API_KEY_PREV", "old-key")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("AUDIT_ENCRYPTION_KEY", "dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleTAwMzI=")
 
+from cats.core import security  # noqa: E402
 from cats.core.config import settings  # noqa: E402
-from cats.core.security import resolve_tenant, verify_api_key  # noqa: E402
+from cats.core.security import check_api_key_strength, resolve_tenant, verify_api_key, weak_api_keys  # noqa: E402
 
 
 class TestVerifyApiKey:
@@ -179,3 +182,45 @@ class TestClientIpTrust:
 
         monkeypatch.setattr(settings, "trust_proxy_headers", False)
         assert get_client_ip(self._req("1.2.3.4")) == "10.0.0.9"
+
+
+class TestApiKeyStrength:
+    """Threat model T7: short keys refuse start-up in production, warn elsewhere."""
+
+    STRONG = "k" * 32
+
+    def _keys(self, monkeypatch, current, prev=None, api_keys=None, env="production"):
+        monkeypatch.setattr(settings, "cats_api_key", current)
+        monkeypatch.setattr(settings, "cats_api_key_prev", prev)
+        monkeypatch.setattr(settings, "api_keys", api_keys)
+        monkeypatch.setattr(settings, "environment", env)
+
+    def test_strong_keys_pass(self, monkeypatch):
+        self._keys(monkeypatch, self.STRONG, prev=self.STRONG, api_keys=f"{self.STRONG}:acme")
+        assert weak_api_keys() == []
+        check_api_key_strength()  # does not raise
+
+    def test_every_short_key_is_named_never_its_value(self, monkeypatch):
+        self._keys(monkeypatch, "short-current", prev="short-prev", api_keys=f"tiny:acme,{self.STRONG}:big")
+        weak = weak_api_keys()
+        assert weak == ["CATS_API_KEY", "CATS_API_KEY_PREV", "CATS_API_KEYS (tenant acme)"]
+        assert not any(secret in label for label in weak for secret in ("short-current", "short-prev", "tiny"))
+
+    def test_boundary_is_32_characters(self, monkeypatch):
+        self._keys(monkeypatch, "k" * 31)
+        assert weak_api_keys() == ["CATS_API_KEY"]
+        self._keys(monkeypatch, "k" * 32)
+        assert weak_api_keys() == []
+
+    def test_production_refuses_to_start(self, monkeypatch):
+        self._keys(monkeypatch, "change-me-strong-random-key")  # the .env.example placeholder
+        with pytest.raises(RuntimeError, match="CATS_API_KEY shorter than 32") as exc:
+            check_api_key_strength()
+        assert "change-me-strong-random-key" not in str(exc.value)
+
+    def test_other_environments_only_warn(self, monkeypatch):
+        warnings = []
+        monkeypatch.setattr(security.logger, "warning", lambda event, **kw: warnings.append((event, kw)))
+        self._keys(monkeypatch, "test-key", env="test")
+        security.check_api_key_strength()  # does not raise
+        assert warnings == [("api_key_weak", {"keys": ["CATS_API_KEY"], "min_length": 32, "env": "test"})]

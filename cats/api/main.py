@@ -16,7 +16,7 @@ from cats.audit.logger import purge_expired_audits
 from cats.core.config import settings
 from cats.core.db import AsyncSessionLocal
 from cats.core.metrics import HTTP_LATENCY, HTTP_REQUESTS
-from cats.core.security import init_redis
+from cats.core.security import check_api_key_strength, init_redis
 from cats.signals.coherence import init_nlp
 
 # N-06: JSON structured logging. Use structlog-native processors + a filtering
@@ -52,6 +52,7 @@ def init_nlp_or_degrade() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.environment)
+    check_api_key_strength()  # T7: before any connection is opened
     await init_redis()  # S-03
     init_nlp_or_degrade()
 

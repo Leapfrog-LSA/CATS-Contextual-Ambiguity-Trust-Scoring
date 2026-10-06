@@ -196,6 +196,17 @@ secrets with one rotation slot (`CATS_API_KEY_PREV`).
 - refuse to start with keys under, say, 32 characters;
 - document the rotation procedure.
 
+> **Status (6 Oct 2026): addressed.** At startup, `check_api_key_strength`
+> (`cats/core/security.py`) checks `CATS_API_KEY`, `CATS_API_KEY_PREV` and every
+> `CATS_API_KEYS` entry against a 32-character minimum.
+> - With `ENVIRONMENT=production` (the default) a short key stops the API from
+>   starting. The error names the variable or tenant, never the key.
+> - Other environments log `api_key_weak` and start, so development and the
+>   test suites keep short keys.
+>
+> The rotation procedure is in `docs/api.md`. Not done: an entropy check (a long
+> but guessable key passes) and automatic rotation.
+
 ### T8 — OpenAPI docs and health details are public by default — **L**
 
 FastAPI serves `/docs`, `/redoc` and `/openapi.json` by default, and nginx

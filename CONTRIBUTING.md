@@ -7,7 +7,8 @@ Thank you for your interest in contributing!
 ```bash
 git clone https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring.git
 cd CATS-Contextual-Ambiguity-Trust-Scoring
-cp .env.example .env          # edit as needed
+cp .env.example .env          # edit as needed; set ENVIRONMENT=development to run the API
+                              # with the placeholder key (production needs a 32+ char key)
 make dev-install              # install deps + pre-commit hooks
 make nlp-download             # download spaCy model
 make docker-up                # start Postgres + Redis

@@ -8,6 +8,24 @@ Authentication: `Authorization: Bearer <API_KEY>`
 per tenant and reads (`/explain`, `/contest`, `/review`, `/stats`) only return
 that tenant's data — a trace from another tenant returns `404`.
 
+**API keys:** every configured key (`CATS_API_KEY`, `CATS_API_KEY_PREV`, each
+`CATS_API_KEYS` entry) must be at least 32 characters. With
+`ENVIRONMENT=production`, the default, the API refuses to start otherwise and
+names the offending variable, never the key. Other environments only log
+`api_key_weak`. Generate a key with
+`python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+
+**Rotating the main key** without downtime:
+
+1. Generate a new key.
+2. Set `CATS_API_KEY_PREV` to the current key and `CATS_API_KEY` to the new
+   one, then restart. Both keys are accepted.
+3. Move every client to the new key.
+4. Clear `CATS_API_KEY_PREV` and restart. The old key stops working.
+
+A tenant key in `CATS_API_KEYS` has no second slot. To rotate it, add the new
+key for the same tenant, move the client, then remove the old pair.
+
 **Interactive docs:** `/docs`, `/redoc` and the OpenAPI schema
 (`/openapi.json`) are served only when `CATS_API_DOCS=true`. They are off by
 default because they map the whole API surface for any visitor. Turn them on
