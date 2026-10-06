@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 from datetime import datetime, timezone
-from typing import Awaitable, Optional, cast
+from typing import Awaitable, List, Optional, cast
 
 import redis.asyncio as aioredis
 import structlog
@@ -95,6 +95,47 @@ def verify_api_key(api_key: str) -> bool:
         candidates.append(settings.cats_api_key_prev)
     candidates.extend(_key_tenant_map().keys())
     return any(hmac.compare_digest(api_key, c) for c in candidates)
+
+
+# Threat model T7: a short key leaves the per-IP failed-auth limiter as the only
+# barrier against guessing. 32 characters is what `secrets.token_urlsafe(24)`
+# produces; the documented generator (`token_urlsafe(32)`) gives 43.
+MIN_API_KEY_LENGTH = 32
+
+
+def weak_api_keys(min_length: int = MIN_API_KEY_LENGTH) -> List[str]:
+    """Where a configured API key is shorter than ``min_length``.
+
+    Returns labels such as ``"CATS_API_KEY"`` or ``"CATS_API_KEYS (tenant
+    acme)"``, never the key itself, so the result is safe to log.
+    """
+    weak = []
+    if len(settings.cats_api_key) < min_length:
+        weak.append("CATS_API_KEY")
+    if settings.cats_api_key_prev and len(settings.cats_api_key_prev) < min_length:
+        weak.append("CATS_API_KEY_PREV")
+    for key, tenant in _key_tenant_map().items():
+        if len(key) < min_length:
+            weak.append(f"CATS_API_KEYS (tenant {tenant})")
+    return weak
+
+
+def check_api_key_strength() -> None:
+    """Refuse to start in production with a short API key (threat model T7).
+
+    Outside ``ENVIRONMENT=production`` (the default) a short key only logs a
+    warning, so local development and the test suites keep their short keys.
+    """
+    weak = weak_api_keys()
+    if not weak:
+        return
+    if settings.environment == "production":
+        raise RuntimeError(
+            f"Refusing to start: {', '.join(weak)} shorter than {MIN_API_KEY_LENGTH} characters. "
+            'Generate a key with `python -c "import secrets; print(secrets.token_urlsafe(32))"`, '
+            "or set ENVIRONMENT=development for local use."
+        )
+    logger.warning("api_key_weak", keys=weak, min_length=MIN_API_KEY_LENGTH, env=settings.environment)
 
 
 def resolve_tenant(api_key: str) -> str:

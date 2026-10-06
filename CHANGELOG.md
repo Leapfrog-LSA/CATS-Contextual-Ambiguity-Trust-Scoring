@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Upgrading a deployment:** API keys must now be at least 32 characters. With
+`ENVIRONMENT=production`, the default, the API refuses to start otherwise (see
+*Security*). Check `CATS_API_KEY`, `CATS_API_KEY_PREV` and `CATS_API_KEYS`
+before upgrading. Library, CLI and MCP users are not affected.
+
+### Security
+- **The API refuses to start with a short API key (threat model T7).**
+  - **What is checked:** at startup, `check_api_key_strength` checks
+    `CATS_API_KEY`, `CATS_API_KEY_PREV` and every `CATS_API_KEYS` entry against
+    a 32-character minimum. Before, a short key left the per-IP failed-auth
+    limiter as the only barrier.
+  - **Production:** with `ENVIRONMENT=production`, the default, startup fails.
+    The error names the variable or tenant, never the key, and says how to
+    generate one.
+  - **Other environments:** they log `api_key_weak` and start, so development
+    and the test suites keep their short keys.
+  - **`.env.example`:** its placeholder is deliberately too short.
+  - **Rotation:** `docs/api.md` documents key rotation, both the
+    two-slot `CATS_API_KEY_PREV` procedure and per-tenant keys.
+
 ### Fixed
 - **`alembic upgrade head` now works inside the Docker image.** The image
   copies `cats/` to `/app` without installing it, and the `alembic` command
