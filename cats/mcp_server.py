@@ -11,7 +11,10 @@ Run with ``cats-mcp`` (stdio transport), or point an MCP-aware client at
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+import sys
+from typing import Any, Dict, List, Optional
+
+import structlog
 
 from cats.lite import compare_feeds as _compare_feeds
 from cats.lite import score as _score
@@ -114,11 +117,25 @@ def explain_bands() -> Dict:
     return {"bands": _BANDS, "disclaimer": _DISCLAIMER}
 
 
-def _create_server():
-    """Build the FastMCP server with all four tools registered. Requires ``mcp``."""
-    from mcp.server.fastmcp import FastMCP
+def _server_class() -> Any:
+    """The MCP server class: ``MCPServer`` in mcp 2.x, ``FastMCP`` in 1.x.
 
-    server = FastMCP("cats-scoring")
+    Both take a server name, register tools with ``.tool()`` and serve stdio
+    with ``.run()``. Raises ``ImportError`` when neither is importable.
+    """
+    try:
+        from mcp.server.mcpserver import MCPServer
+
+        return MCPServer
+    except ImportError:
+        from mcp.server.fastmcp import FastMCP
+
+        return FastMCP
+
+
+def _create_server():
+    """Build the MCP server with all four tools registered. Requires ``mcp``."""
+    server = _server_class()("cats-scoring")
     server.tool()(score_source)
     server.tool()(score_messages)
     server.tool()(compare_sources)
@@ -126,15 +143,34 @@ def _create_server():
     return server
 
 
+def _log_to_stderr() -> None:
+    """Send structlog output to stderr for the life of the server process.
+
+    The stdio transport owns stdout: anything else written there corrupts the
+    JSON-RPC stream, which the MCP spec forbids. structlog's default logger
+    prints to stdout, and the library logs on ordinary paths (a missing spaCy
+    model, every fetched feed).
+    """
+    structlog.configure(logger_factory=structlog.PrintLoggerFactory(file=sys.stderr))
+
+
 def main() -> None:
     try:
-        from mcp.server.fastmcp import FastMCP  # noqa: F401
+        _server_class()
     except ImportError as exc:
+        try:
+            import mcp  # noqa: F401
+        except ImportError:
+            raise SystemExit(
+                "The 'mcp' package is required to run the CATS MCP server.\n"
+                "Install it with: pip install cats-scoring[mcp]"
+            ) from exc
         raise SystemExit(
-            "The 'mcp' package is required to run the CATS MCP server.\n"
-            "Install it with: pip install cats-scoring[mcp]"
+            "The installed 'mcp' package has neither MCPServer (mcp 2.x) nor FastMCP (mcp 1.x).\n"
+            'Install a supported version with: pip install "cats-scoring[mcp]"'
         ) from exc
 
+    _log_to_stderr()
     _create_server().run()
 
 
