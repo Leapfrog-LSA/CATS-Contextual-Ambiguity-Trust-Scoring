@@ -11,8 +11,8 @@ authors:
   - name: "Leapfrog-LSA"
 repository-code: "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring"
 license: MIT
-version: 1.9.0
-date-released: 2026-10-02
+version: 1.9.1
+date-released: 2026-10-06
 # TODO [umano]: paste the Zenodo concept DOI here after the first deposit.
 # Use the CONCEPT DOI (the one that always resolves to the latest version),
 # not the version-specific DOI, so the citation survives future releases.
