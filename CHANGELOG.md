@@ -26,6 +26,9 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     around.
   - ITV News, Le Parisien, Sixth Tone, The Hill Tech and Berlingske Business
     are flagged with reasons and not changed.
+  - Maintainer decisions recorded in the round-14 section, so later rounds do
+    not re-propose them: Corriere stays stale (no exception to the DTD
+    guard), and The Hill Tech stays as is (no overlapping feed).
 
 ## [1.9.1] — 2026-10-06
 
