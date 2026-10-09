@@ -660,6 +660,18 @@ anything was written.
 
 **After, 125 feeds: ok 94, stale 9, blocked 14, not-xml 6, dead 2.**
 
+**Maintainer decisions (2026-10-09)**: future rounds should not re-propose
+these unless the facts below change.
+
+- **Il Corriere della Sera: left stale.** The collector's `<!DOCTYPE` rejection
+  (XXE guard) stays a blanket rule, with no exception for one feed. The source
+  collects nothing new until Corriere serves a parseable feed without a DTD.
+  Re-check only the legacy `xml2.corriereobjects.it` sections for freshness.
+- **The Hill Tech: left as is** (`not-xml`, collects nothing). The live
+  `policy/technology/feed/` duplicates about half of The Hill's registered
+  feed, and keeping the two source_ids independent matters more than adding
+  this one. Revisit only if a tech-only feed with no overlap appears.
+
 ## Recommendation
 
 After round 13 the registry has an honest accounting of reachability,
