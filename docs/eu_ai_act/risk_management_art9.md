@@ -28,7 +28,7 @@ Likelihood/impact: Low / Medium / High. Pre-seeded — extend and quantify.
 | R5 | **Small-sample instability** (few messages) yields unstable scores | Medium | Medium | Per-signal confidence values; `CATS_MIN_EVIDENCE_MESSAGES` (default 3): sub-minimum evaluations report `evidence.sufficient=false` and force `requires_review` | The raw score itself stays unpenalised below the floor (changing it requires the recalibration cycle); a span-based (not just count-based) threshold is open |
 | R6 | **Uncalibrated band thresholds** misassign bands | Medium | Medium | Calibration tunes weights | Thresholds remain estimates (WP 4.1) — validate |
 | R7 | **Bias** against source types / regions / languages | Medium | High | source-type aware thresholds | Bias examination — see `data_governance_art10.md` |
-| R8 | **Security / data exposure** | Low | High | TLS 1.3, API-key+JWT auth, rate limiting, AES-256 audit, tenant isolation, non-root | Pen-test / threat model — TODO |
+| R8 | **Security / data exposure** | Low | High | TLS 1.3, Bearer API-key auth (no JWT), rate limiting, AES-256 audit, tenant isolation, non-root | Pen-test / threat model — TODO |
 | R9 | **Misuse in unintended high-stakes context** (e.g. law enforcement) without safeguards | TODO | High | Intended-use limits documented | Gate by classification + contractual use limits |
 
 ## 3. Risk treatment (Art. 9(5))

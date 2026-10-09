@@ -127,8 +127,8 @@ Summarised here; full system in [`risk_management_art9.md`](risk_management_art9
 
 **Cybersecurity.**
 - TLS 1.3 (nginx), Bearer API-key auth with constant-time comparison
-  (`hmac.compare_digest`), RS256 JWT support, sliding-window rate limiting
-  (Redis Lua), non-root containers, security headers.
+  (`hmac.compare_digest`); there is no JWT or other token auth. Sliding-window
+  rate limiting (Redis Lua), non-root containers, security headers.
 - AES-256-GCM encrypted audit log; row-level multi-tenant isolation bound to
   the API key server-side (`cats/core/security.py`).
 - Vulnerability reporting: [`../../SECURITY.md`](../../SECURITY.md).

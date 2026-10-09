@@ -167,8 +167,12 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
       thread dedicato, e con 4 client a 10 messaggi l'API regge 10,5 richieste
       al secondo invece di 1,3, con punteggi identici;
     - il timeout di 30 s di nginx è più corto di quanto il limite di 2 MB
-      permette di elaborare;
-    - un solo worker usa al massimo 1,5 core.
+      permette di elaborare. **Corretto:** ora è 120 s; una richiesta da
+      1,96 MB passa (200 in 32 s) invece di ricevere 504;
+    - un solo worker usa al massimo 1,5 core. **Corretto:** il numero di
+      worker si imposta con `WEB_CONCURRENCY` (2 in `docker-compose.yml`) e
+      `/metrics` somma tutti i worker. Con 4 client, 2 worker raddoppiano il
+      throughput.
   - [x] documentare i limiti di dimensione del payload, i rate limit e i codici
     di errore (`docs/api.md` → *Limits and errors*).
 - [ ] Threat model e pen-test leggero (rischio R8) — **M** — il pen-test
@@ -189,7 +193,8 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     di testo e concorrenza per chiave), T4 (ruolo di revisore per i ricorsi),
     T5 (conservazione dei dati per tutte le tabelle, IP in chiaro), T6
     (cifratura dell'audit legata alla riga, rotazione delle chiavi), T11
-    (dichiarazioni sul TLS, vedi Fase 1).
+    (dichiarazioni sul TLS, vedi Fase 1; la dichiarazione sul JWT è corretta
+    il 9 ottobre).
   - [ ] Pen-test esterno.
 - [ ] Bozza tecnica del piano di monitoraggio post-market (Art. 72) — **M** —
   le soglie le decide un umano. Metriche candidate: distribuzione delle bande,

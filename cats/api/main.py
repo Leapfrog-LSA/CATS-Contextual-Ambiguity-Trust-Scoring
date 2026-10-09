@@ -8,14 +8,14 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST
 
 import cats
 from cats.api.routes.evaluate import router as evaluate_router
 from cats.audit.logger import purge_expired_audits
 from cats.core.config import settings
 from cats.core.db import AsyncSessionLocal
-from cats.core.metrics import HTTP_LATENCY, HTTP_REQUESTS
+from cats.core.metrics import HTTP_LATENCY, HTTP_REQUESTS, render_latest
 from cats.core.security import check_api_key_strength, init_redis
 from cats.signals.coherence import init_nlp
 
@@ -168,4 +168,4 @@ async def health():
 
 @app.get("/metrics")
 async def metrics():
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    return Response(render_latest(), media_type=CONTENT_TYPE_LATEST)

@@ -213,6 +213,11 @@ Prometheus exposition format (`text/plain`). Includes HTTP request
 count/latency (labelled by route template), `cats_evaluations_total` by band,
 and a `cats_trust_score` histogram.
 
+With several uvicorn workers, every scrape returns the sum over all of them.
+The Docker image sets `PROMETHEUS_MULTIPROC_DIR`, which switches
+prometheus_client to its multiprocess mode. In that mode the default
+`process_*` and `python_*` metrics are not exported.
+
 The app serves it **without authentication**, so the bundled nginx proxy does
 **not** serve it: a request for `/metrics` through the public entry point gets
 `403`. Scrape the app directly on the internal network instead, at
@@ -249,6 +254,11 @@ layer (`cats/core/security.py`) and the bundled proxy (`deploy/nginx.conf`).
 The 2 MB body cap is set only in nginx. The app itself does not cap the body,
 which is one more reason never to publish the app port directly.
 
+nginx waits up to **120 s** for the app's answer (`proxy_read_timeout`), then
+returns `504`. That covers one request at the body cap, about 2 M characters
+or 50–80 s of NLP work ([`load_test_2026-09.md`](load_test_2026-09.md)). A
+large request queued behind others on the same worker can still exceed it.
+
 **Rate limits** (both answer `429`)
 
 | Layer | Limit | Keyed by |
@@ -267,6 +277,7 @@ which is one more reason never to publish the app port directly.
 | `422` | Schema validation failed. The body is an RFC 7807 problem document, whose `detail` lists the failing fields |
 | `429` | Rate limit exceeded (nginx or app) |
 | `500` | Unexpected error. RFC 7807 body with a generic `detail`; the cause is only logged server-side |
+| `504` | The app did not answer within nginx's 120 s `proxy_read_timeout` |
 
 ---
 

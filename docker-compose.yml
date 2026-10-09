@@ -23,6 +23,10 @@ services:
       # the app may trust it here. The code default is off (threat model T3):
       # without a proxy that rewrites the header, any client could forge it.
       TRUST_PROXY_HEADERS: "true"
+      # uvicorn worker processes (default 1 in the image). Each one loads the
+      # spaCy model, ~1.1 GB of RAM, and adds about one NLP thread of capacity
+      # (docs/load_test_2026-09.md). Set WEB_CONCURRENCY in .env to resize.
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
     depends_on:
       postgres:
         condition: service_healthy

@@ -25,8 +25,8 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   `os.environ.setdefault` — `tests/unit/conftest.py` for every unit module (so
   each one also runs on its own, e.g. `pytest tests/unit/test_signals.py`) and
   `tests/integration/test_api.py` for the integration suite. So with **no env
-  vars at all** `pytest` collects the full suite (476) and `tests/unit/` passes
-  (455 passed, 4 skipped: three need `gradio`, one is a deliberate schema skip).
+  vars at all** `pytest` collects the full suite (478) and `tests/unit/` passes
+  (457 passed, 4 skipped: three need `gradio`, one is a deliberate schema skip).
   Because it is `setdefault`, an exported variable *wins over* the test's value:
   a `DATABASE_URL` missing the `+asyncpg` driver (plain `postgresql://…`)
   overrides the test's own and fails at collection demanding `psycopg2`, which
