@@ -77,7 +77,7 @@
 {"source_id": "444.hu", "source_type": "news", "label": 70.0, "url": "https://444.hu", "rss": "https://444.hu/rss"}
 {"source_id": "B92", "source_type": "news", "label": 50.0, "url": "https://www.b92.net", "rss": "https://www.b92.net/rss/latest"}
 {"source_id": "BBC Science & Environment", "source_type": "news", "label": 70.0, "url": "https://www.bbc.com/news/science_and_environment", "rss": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"}
-{"source_id": "Berlingske", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk", "rss": null}
+{"source_id": "Berlingske", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk", "rss": "https://www.berlingske.dk/content/rss"}
 {"source_id": "Berlingske Business", "source_type": "news", "label": 70.0, "url": "https://www.berlingske.dk/business", "rss": "https://www.berlingske.dk/service/rss"}
 {"source_id": "Göteborgs-Posten", "source_type": "news", "label": 70.0, "url": "https://www.gp.se", "rss": "https://www.gp.se/rss"}
 {"source_id": "Index.hr", "source_type": "news", "label": 85.0, "url": "https://www.index.hr", "rss": "https://www.index.hr/rss"}
@@ -125,7 +125,7 @@
 {"source_id": "Hindu Business Line", "source_type": "news", "label": 50.0, "url": "https://www.thehindubusinessline.com", "rss": "https://www.thehindubusinessline.com/feeder/default.rss"}
 {"source_id": "Jakarta Globe", "source_type": "news", "label": 70.0, "url": "https://jakartaglobe.id", "rss": null}
 {"source_id": "Manila Bulletin", "source_type": "news", "label": 50.0, "url": "https://mb.com.ph", "rss": "https://mb.com.ph/rss/index.xml"}
-{"source_id": "NHK News Web Easy", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/news/easy", "rss": "https://www3.nhk.or.jp/rss/news/cat0.xml"}
+{"source_id": "NHK News Web Easy", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/news/easy", "rss": "https://news.web.nhk/n-data/conf/na/rss/cat0.xml"}
 {"source_id": "NHK World Japan", "source_type": "news", "label": 85.0, "url": "https://www3.nhk.or.jp/nhkworld", "rss": null}
 {"source_id": "Radio New Zealand Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international/pacific-news", "rss": null}
 {"source_id": "RNZ Pacific", "source_type": "news", "label": 85.0, "url": "https://www.rnz.co.nz/international", "rss": "https://www.rnz.co.nz/rss/pacific.xml"}

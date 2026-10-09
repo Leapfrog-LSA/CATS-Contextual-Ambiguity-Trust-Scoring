@@ -12,13 +12,13 @@ high-reliability source) had never been collected because its registered feed
 
 ## Result
 
-| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 as shipped (2026-08-21, 113 feeds) | Round 12 corrected (2026-08-22, 113 feeds) | Round 13 (2026-08-25, 113 feeds) |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | 84 | 78 | **79** |
-| stale | — | — | — | — | — | — | — | 11 | 12 | **13** |
-| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | 2 | 2 | **2** |
-| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | 1 | 6 | **7** |
-| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | 15 | 15 | **12** |
+| Status | At audit (126 feeds) | After round 1–3 | Before round 4 (2026-07-22) | After round 4 | After round 5 (2026-07-23, 115 feeds) | After round 10 (2026-08-05, 114 feeds) | Round 11 (2026-08-21, 114 feeds) | Round 12 as shipped (2026-08-21, 113 feeds) | Round 12 corrected (2026-08-22, 113 feeds) | Round 13 (2026-08-25, 113 feeds) | Round 14 (2026-10-09, 125 feeds) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| ok | 64 | 91 | 90 | 97 | 97 | 98 | 95 | 84 | 78 | 79 | **94** |
+| stale | — | — | — | — | — | — | — | 11 | 12 | 13 | **9** |
+| dead | 35 | 9 | 10 | 8 | 2 | 2 | 2 | 2 | 2 | 2 | **2** |
+| not-xml | 10 | 10 | 10 | 5 | 0 | 0 | 2 | 1 | 6 | 7 | **6** |
+| blocked | 17 | 16 | 16 | 16 | 16 | 14 | 15 | 15 | 15 | 12 | **14** |
 
 Round 12's `ok` count is not a regression from round 11's 95 — it is the same
 95 feeds split honestly for the first time. `stale` is a new classification
@@ -603,6 +603,62 @@ some overlap is possible if a source starts publishing thin history, so the
 next merged-snapshot count is the number that matters, not this arithmetic
 sum) — past the ≥100-source roadmap target for the first time, pending
 confirmation from an actual collection.
+
+## Round 14 (2026-10-09) — 2 fixes; Corriere della Sera stale again
+
+Prompted by a one-off "radar" test: the outlets r/Italia linked to in a week
+were run through `cats compare`, and several big Italian sites failed feed
+autodiscovery. Most of those (Avvenire, Il Messaggero, RaiNews, Sky TG24,
+Fanpage) are **not in the label registry** — they are catalogued without an
+MBFC rating — so their failures do not touch snapshot collection. The audit
+was re-run on the registry itself instead.
+
+**At audit, 124 feeds: ok 92, stale 10, blocked 14, not-xml 6, dead 2.** Every
+candidate below was checked with this script's own `classify()` (that is,
+`fetch_feed` + the collector's `parse_feed`), and its content read, before
+anything was written.
+
+**Two fixed** (`data/labels.jsonl` + `data/Fonti_OSINT.csv`):
+
+- **NHK News Web Easy** (85) — the registered `www3.nhk.or.jp/rss/news/cat0.xml`
+  is stale (newest 2026-08-08). NHK has moved its news site to `news.web.nhk`,
+  and the same `cat0` feed is live there (newest item today). Registered feed
+  now `https://news.web.nhk/n-data/conf/na/rss/cat0.xml`. It is the same feed
+  on a new host, so the source's history continues.
+- **Berlingske** (70) — the general-news row had no feed. Its
+  `berlingske.dk/content/rss` is live with general Danish news. Registered
+  there, under the round-13-addendum standard (verified, and no other row
+  carries that URL).
+
+**Investigated, not fixed** (flag, don't guess):
+
+- **Il Corriere della Sera** (85) — `stale` again: `xml2.corriereobjects.it/rss/cronaca.xml`'s
+  newest item is 2026-09-02. Its sibling sections on that host are older
+  still (`cronache` 2026-06-07, `homepage` 2024-05-13), and `primo_piano` is
+  gone (404). The best alternative, `www.corriere.it/rss/cronache.xml`,
+  parses, but its newest item is 10 days old and it mixes in 2024 items, so it
+  looks like the next frozen endpoint, not a fix. The live feed system
+  (`dynamic-feed/…`) still emits `<!DOCTYPE`, which the collector rejects by
+  design (round 12 correction). Accepting a DTD-without-entities would be a
+  security decision for the maintainer. Until then the scarcest Italian high
+  source collects nothing new.
+- **The Hill Tech** (70) — `thehill.com/policy/technology/feed/` is live, but
+  7 of its 15 items are also in The Hill's registered feed. Using it would
+  count half the messages under two source_ids, a partial version of the
+  round-9 duplicate. Left `not-xml` for a maintainer to decide.
+- **Berlingske Business** (70) — the only live Berlingske feed is general news,
+  not business. It went to the general row above rather than mislabel this one.
+- **ITV News** (70, `dead`), **Le Parisien** (85), **Sixth Tone** (50)
+  (`not-xml`) — no working feed found:
+  - ITV: four candidate paths return 404, and the homepage timed out.
+  - Le Parisien: autodiscovery points back to the registered, empty feed.
+  - Sixth Tone: autodiscovered `rss/index.xml` yields no usable messages.
+- **Unchanged from earlier rounds:**
+  - Label-10 `stale` feeds: defunct hoax sites, consistent with their label.
+  - **RT News** `dead` (connection error from this egress).
+  - The 14 `blocked`, including Il Post: egress-specific 403/429.
+
+**After, 125 feeds: ok 94, stale 9, blocked 14, not-xml 6, dead 2.**
 
 ## Recommendation
 
