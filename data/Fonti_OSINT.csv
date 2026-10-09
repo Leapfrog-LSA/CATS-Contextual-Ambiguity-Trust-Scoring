@@ -1017,7 +1017,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Belarusian Investigative Center,https://investigativecenter.by,,,BY,,Inv. — Bielorussia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,BelTA (English),https://eng.belta.by,,EN,,,Bielorussia gov
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Bergens Tidende,https://www.bt.no,,NO,,,Norvegia — Bergen
-📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Berlingske,https://www.berlingske.dk,,DA,,,Danimarca
+📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Berlingske,https://www.berlingske.dk,https://www.berlingske.dk/content/rss,DA,,,Danimarca
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Berlingske Business,https://www.berlingske.dk/business,https://www.berlingske.dk/service/rss,DA,,,Danimarca
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Blic,https://www.blic.rs,,SR,,,Serbia
 📰 Media & Testate Giornalistiche,Europa Orientale & Nord Europa,Bulgarian National TV,https://bntnews.bg,,BG,,,Bulgaria pubblica
@@ -1982,7 +1982,7 @@ Macro-categoria,Sottosezione,Fonte,URL,RSS Feed,Lingua,Paese / Area,Accesso,Note
 📰 Media & Testate Giornalistiche,Asia & Pacifico,News.mn,https://news.mn,,MN,,,Mongolia — portale news
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Newslaundry,https://www.newslaundry.com,,EN,,,India media critica
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Newsroom NZ,https://newsroom.co.nz,,EN,,,Nuova Zelanda — giornalismo di approfondimento
-📰 Media & Testate Giornalistiche,Asia & Pacifico,NHK News Web Easy,https://www3.nhk.or.jp/news/easy,https://www3.nhk.or.jp/rss/news/cat0.xml,JA,,,Giappone Simple
+📰 Media & Testate Giornalistiche,Asia & Pacifico,NHK News Web Easy,https://www3.nhk.or.jp/news/easy,https://news.web.nhk/n-data/conf/na/rss/cat0.xml,JA,,,Giappone Simple
 📰 Media & Testate Giornalistiche,Asia & Pacifico,NHK World Japan,https://www3.nhk.or.jp/nhkworld,,EN,,,Giappone pubblica
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Nikkei,https://www.nikkei.com,,JA,,,Giappone economia
 📰 Media & Testate Giornalistiche,Asia & Pacifico,Nishinippon Shimbun,https://www.nishinippon.co.jp,,JA,,,Kyushu — Fukuoka

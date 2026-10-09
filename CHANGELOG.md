@@ -14,6 +14,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   it listed the Docker and sentence-transformers changes as part of 1.8/1.9,
   but they shipped in 1.9.1. `docs/README.md` and the `CLAUDE.md` test counts
   are updated: 476 collected, and 455 unit tests passed with 4 skipped.
+- **Feed-health round 14** (`docs/feed_health_2026-07.md`). The audit of the
+  label registry's feeds found 92 ok, 10 stale, 14 blocked, 6 not-xml and
+  2 dead out of 124.
+  - **NHK News Web Easy** follows NHK's move to `news.web.nhk`.
+  - **Berlingske** (general news, previously feedless) gets its live feed.
+  - Afterwards: 94 ok, 9 stale, out of 125.
+  - **Il Corriere della Sera's** registered feed is stale again (newest item
+    2026-09-02). Its live feed system carries a DTD that the collector rejects
+    by design, so it is flagged for a maintainer decision rather than worked
+    around.
+  - ITV News, Le Parisien, Sixth Tone, The Hill Tech and Berlingske Business
+    are flagged with reasons and not changed.
 
 ## [1.9.1] — 2026-10-06
 
