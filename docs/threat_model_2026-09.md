@@ -97,13 +97,24 @@ about 2 M characters, so one request can take 50–80 s of that thread. A single
 key can send 30 such requests a minute, the per-key limit. So one tenant, or a
 leaked key, can hold the NLP thread for all tenants indefinitely.
 
-Through nginx the client gets a `504` at 30 s. Whether the app then abandons
+Through nginx the client got a `504` at 30 s. Whether the app then abandons
 or finishes the work was not checked.
 
 **Recommend:**
 - cap the total text per request well below what the proxy timeout allows;
 - a per-tenant concurrency limit on the NLP queue;
 - optionally, cancel work whose client has disconnected.
+
+> **Status (9 Oct 2026): still open; two related changes.**
+> - nginx `proxy_read_timeout` is now 120 s, so one request at the body cap can
+>   finish through the proxy. It does not shorten the time a request holds the
+>   NLP thread.
+> - The image's worker count is configurable (`WEB_CONCURRENCY`), 2 in
+>   `docker-compose.yml`. Each worker has its own NLP thread, so one key now
+>   needs as many concurrent large requests as there are workers. That raises
+>   the bar a little; it is not a fix.
+>
+> The text cap and the per-tenant concurrency limit still need a decision.
 
 ### T2 — Postgres and Redis published on the host with default credentials — **M**
 
@@ -296,7 +307,6 @@ publishing.
 
 ### T11 — Security documentation that does not match the code — **Info**
 
-These are left for their owners:
 - **JWT:** the risk register's R8 row lists "API-key+JWT auth", and
   `annex_iv_technical_documentation.md` mentions "RS256 JWT support". The code
   has no JWT; authentication is API keys only.
@@ -304,6 +314,12 @@ These are left for their owners:
   known Fase 1 decision.
 - **`SECURITY.md`:** it lists 1.6.x as the supported version while the current
   release is 1.7.0. Its contact address is still unverified.
+
+> **Status (9 Oct 2026): JWT and version fixed; TLS and contact open.**
+> - JWT: the R8 row and Annex IV now say Bearer API-key auth, with no JWT.
+> - `SECURITY.md` lists 1.9.x, the current release line.
+> - Still open for their owners: the TLS 1.3 claim and the unverified contact
+>   address.
 
 ## Suggested order
 

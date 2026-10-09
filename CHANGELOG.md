@@ -9,11 +9,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **Several API workers** (load test, recommendation 2). The image reads its
+  uvicorn worker count from `WEB_CONCURRENCY`: 1 by default in the
+  `Dockerfile`, 2 in `docker-compose.yml`. Each worker costs about 1.1 GB of
+  RAM for the spaCy model. With 4 concurrent clients, 2 workers doubled the
+  throughput (0.79 → 1.57 req/s at 50 messages). Scores are unchanged.
+- **`/metrics` sums every worker.** The image sets `PROMETHEUS_MULTIPROC_DIR`,
+  and `cats/core/metrics.py` (`render_latest`) aggregates the per-worker files.
+  Without it, each scrape would have seen one worker only. In this mode the
+  default `process_*` and `python_*` metrics are not exported.
+- **nginx `proxy_read_timeout` 30 s → 120 s** (load test, recommendation 3).
+  A request at the 2 MB body cap needs up to 50–80 s. A 1.96 MB request now
+  returns `200` after 32 s through the bundled config, where it got `504` at
+  30 s. The text cap per request (threat model T1) is still open.
+- **No JWT in the compliance docs** (threat model T11). The risk register's
+  R8 row and Annex IV claimed JWT auth, which the code never had; both now say
+  Bearer API-key auth. T11 status updated: JWT and the `SECURITY.md` version
+  are fixed, the TLS claim and the contact address stay open.
 - **Status docs point at 1.9.1.** The September roadmap's October section now
   covers v1.9.1 (T7, the MCP fixes, Python 3.14, dependency bumps). Before,
   it listed the Docker and sentence-transformers changes as part of 1.8/1.9,
   but they shipped in 1.9.1. `docs/README.md` and the `CLAUDE.md` test counts
-  are updated: 476 collected, and 455 unit tests passed with 4 skipped.
+  are updated: 478 collected, and 457 unit tests passed with 4 skipped.
 - **Feed-health round 14** (`docs/feed_health_2026-07.md`). The audit of the
   label registry's feeds found 92 ok, 10 stale, 14 blocked, 6 not-xml and
   2 dead out of 124.

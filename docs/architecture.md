@@ -207,3 +207,18 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
 | IP extraction | Safe `X-Forwarded-For` parsing (first IP only); the bundled nginx **overwrites** the header with the real client address, so clients cannot forge the audited IP |
 | Data retention | Nightly APScheduler job; distributed lock via Redis |
 | Container | Non-root user; read-only filesystem |
+
+## Processes and sizing
+
+The image runs `WEB_CONCURRENCY` uvicorn workers: 1 by default in the
+`Dockerfile`, 2 in `docker-compose.yml`.
+
+- Each worker loads the spaCy model, about 1.1 GB of RAM, and runs coherence on
+  one NLP thread. More workers add throughput for concurrent clients, not
+  speed for a single request ([`load_test_2026-09.md`](load_test_2026-09.md)).
+- Shared state lives outside the workers. Rate limits are in Redis, and the
+  nightly purge, scheduled in every worker, runs once under a Redis lock.
+- `/metrics` sums every worker through prometheus_client's multiprocess mode
+  (`PROMETHEUS_MULTIPROC_DIR`, emptied at container start).
+- nginx waits up to 120 s for an answer (`proxy_read_timeout`), enough for one
+  request at the 2 MB body cap.

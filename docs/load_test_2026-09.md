@@ -189,6 +189,45 @@ Capacity is still bounded by one NLP thread per process, about 100 messages/s
 on this machine. Recommendation 2, more workers, is the way to use the other
 cores.
 
+## Update — recommendations 2 and 3 applied (9 Oct 2026)
+
+**Workers.** The image now reads its worker count from `WEB_CONCURRENCY`
+(uvicorn's own default for `--workers`). The `Dockerfile` keeps 1, and
+`docker-compose.yml` sets 2. Because each worker keeps its own Prometheus
+counters, the image also turns on prometheus_client's multiprocess mode
+(`PROMETHEUS_MULTIPROC_DIR`), and `GET /metrics` sums every worker
+(`cats/core/metrics.py`).
+
+Measured on a different 4-core machine from the runs above, with the image
+built from this change, so compare within the table only:
+
+`/evaluate` with 50 messages, 40 requests per row:
+
+| Clients | 1 worker: req/s | 2 workers: req/s | 1 worker: p50 | 2 workers: p50 |
+|--:|--:|--:|--:|--:|
+| 1 | 0.80 | 0.80 | 0.68 s | 0.64 s |
+| 4 | 0.79 | **1.57** | 2.9 s | **1.3 s** |
+
+- With concurrent clients, two workers double the throughput. A single client
+  gains nothing, since one request still runs on one NLP thread.
+- Each worker measured about 1.0 GB RSS after start-up.
+- `/metrics` reported 21 `/health` requests after 21 were sent, spread over
+  both workers.
+
+**Proxy timeout.** `deploy/nginx.conf` now has `proxy_read_timeout 120s`, up
+from 30 s. The largest request the 2 MB body cap admits is about 2 M
+characters, 50–80 s at 25–40 µs per character. With the bundled nginx config
+in front of the image:
+
+| Request (260 msgs × 7 500 chars, 1.96 MB body) | Result |
+|---|---|
+| `proxy_read_timeout 30s` (before) | `504` after 30.0 s |
+| `proxy_read_timeout 120s` (now) | `200` after 32.0 s |
+
+The 120 s covers one large request on an idle worker. A large request queued
+on a worker's NLP thread behind other large ones can still exceed it. The cap
+on total text per request (threat model T1) is still open.
+
 ## Recommendations
 
 1. **Done, see the update above.** Serialise the spaCy calls: run `coherence` on a dedicated
@@ -199,10 +238,10 @@ cores.
    - The in-process test above says concurrent throughput returns to the
      single-client rate, about 9 req/s at 10 messages, instead of 1.3 req/s.
    - Re-run this test after the change to confirm it end to end.
-2. **Scale with processes, not threads.** Several uvicorn workers use the other
+2. **Done, see the update above.** Scale with processes, not threads. Several uvicorn workers use the other
    cores, at about 1.1 GB of RAM each for the spaCy model. Size them after
    step 1.
-3. **Make the proxy timeout and the request limits agree.** Either raise
+3. **Done (timeout raised), see the update above.** Make the proxy timeout and the request limits agree. Either raise
    `proxy_read_timeout` above the worst case the body cap allows, or cap the
    total text per request, so that an accepted request can finish. This is a
    product decision: long synchronous requests versus a lower documented cap.
