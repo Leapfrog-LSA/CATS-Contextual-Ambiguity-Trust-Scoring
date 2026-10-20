@@ -8,7 +8,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.2] — 2026-10-20
+
+Deployment and maintenance release.
+- **API capacity:** the Docker image can run several uvicorn workers, and
+  `/metrics` sums them all.
+- **Large requests:** nginx now waits long enough for a request at the 2 MB
+  body cap.
+- **Docs:** the compliance docs no longer claim JWT auth.
+- **Dependencies:** bounds raised.
+
+No change to signals, weights or bands (ENGINE 1.4): scores are identical to
+1.9.1. Library, CLI and MCP users are not affected.
+
+**Upgrading a deployment that uses the bundled `docker-compose.yml`:**
+- **RAM:** it now starts **2 workers**, each about 1.1 GB for the spaCy model.
+  On a host with less than about 3 GB free for the app, set
+  `WEB_CONCURRENCY=1` in `.env`.
+- **Metrics:** the default `process_*` and `python_*` metrics are no longer
+  exported (Prometheus multiprocess mode).
+
 ### Changed
+- **Dependency bounds** (Dependabot): uvicorn ≥0.54 (#213),
+  cryptography ≥50.0.2 (#210); dev tools black 26 (#211), isort ≥9.0.2 (#209),
+  pytest-asyncio 1.x (#212). CI passes on all of them, and black 26 leaves
+  every file unchanged.
 - **Several API workers** (load test, recommendation 2). The image reads its
   uvicorn worker count from `WEB_CONCURRENCY`: 1 by default in the
   `Dockerfile`, 2 in `docker-compose.yml`. Each worker costs about 1.1 GB of

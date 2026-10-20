@@ -2,7 +2,8 @@
 
 > Aggiornamento della [roadmap di luglio](piano_sviluppo_roadmap_2026-07.md)
 > allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026), **rivisto il
-> 4 ottobre 2026 alla v1.9.0 e il 6 ottobre alla v1.9.1** (stesso ENGINE 1.4:
+> 4 ottobre 2026 alla v1.9.0, il 6 ottobre alla v1.9.1 e il 20 ottobre alla
+> v1.9.2** (stesso ENGINE 1.4:
 > nessun segnale, peso o banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
 > accanto a ciascuno; i punteggi CATS restano **ordinali**, non probabilità
 > calibrate (WP 4.1/4.3).
@@ -63,9 +64,9 @@ Dalla roadmap di luglio sono chiusi la Fase A, i punti 6–9 e i punti 10–11
 della penalità di dominio, in parte), il 13–14 (ricalibrazione e v2.0) e il 15
 (TODO legali).
 
-## Aggiornamento di ottobre: cosa è uscito con v1.8.0, v1.9.0 e v1.9.1
+## Aggiornamento di ottobre: cosa è uscito con v1.8.0, v1.9.0, v1.9.1 e v1.9.2
 
-Tutto su PyPI (`cats-scoring` 1.9.1, 6 ottobre); dettagli in
+Tutto su PyPI (`cats-scoring` 1.9.2, 20 ottobre); dettagli in
 [`CHANGELOG.md`](../CHANGELOG.md).
 
 - **Nuove funzioni:** `cats compare` (classifica più fonti in una tabella) e
@@ -90,6 +91,17 @@ Tutto su PyPI (`cats-scoring` 1.9.1, 6 ottobre); dettagli in
   - **Dipendenze:** redis 8, transformers 5, sentence-transformers 6, mcp 2.
     Gli aggiornamenti che la CI non prova sono stati verificati a mano, con
     risultati identici.
+- **v1.9.2 (20 ottobre), deployment e manutenzione, punteggi identici alla
+  1.9.1:**
+  - **Più worker:** l'immagine legge il numero di worker da
+    `WEB_CONCURRENCY` (2 in `docker-compose.yml`, circa 1,1 GB di RAM
+    ciascuno) e `/metrics` li somma tutti. Con 4 client il throughput
+    raddoppia.
+  - **Timeout di nginx** da 30 s a 120 s: una richiesta vicina al limite di
+    2 MB ora riceve la risposta invece di un 504.
+  - **Documenti:** il registro dei rischi e l'Annex IV non dichiarano più
+    un'autenticazione JWT che il codice non ha.
+  - **Dipendenze:** uvicorn, cryptography, black 26, isort, pytest-asyncio 1.x.
 
 ## Fase 1 — breve termine (0–4 settimane): chiudere il lavoro aperto
 
@@ -156,7 +168,7 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   dipende dal lancio.
 - [ ] Lancio pubblico e prime "good first issue" — **M** — umano; dopo demo e
   DOI. Il piano di lancio resta fuori da questo repo.
-- [ ] Rafforzare l'API — **M**:
+- [x] Rafforzare l'API — **M**:
   - [x] proteggere `/metrics`: il proxy nginx ora risponde `403`, e Prometheus
     legge le metriche direttamente da `app:8000` sulla rete interna;
   - [x] test di carico su `/evaluate` e `/batch`
