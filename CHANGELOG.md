@@ -8,6 +8,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.10.0] — 2026-10-21
+
+Feed discovery and deployment release.
+- **Feed discovery:** `cats score corriere.it` (and other sites that list
+  their feeds only on an HTML "RSS" page) now finds a live feed.
+- **New setting `CATS_FEED_STALE_DAYS`** (default 30): a feed whose newest
+  item is older is flagged `source.stale` and forces human review. Scores and
+  bands are unchanged, so the calibrated weights still apply.
+- **Deployment:** several API workers (`WEB_CONCURRENCY`), `/metrics` summed
+  across workers, nginx read timeout 120 s.
+
 ### Fixed
 - **Feed autodiscovery finds feeds listed on an HTML "RSS" page.**
   `cats score corriere.it` failed with `no RSS/Atom feed found`: the homepage
