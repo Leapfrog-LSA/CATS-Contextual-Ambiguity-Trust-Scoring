@@ -1,3 +1,3 @@
 """CATS (Contextual Ambiguity & Trust Scoring) — production-ready trust evaluation API."""
 
-__version__ = "1.9.1"
+__version__ = "1.10.0"
