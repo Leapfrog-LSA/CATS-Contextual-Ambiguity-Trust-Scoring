@@ -34,6 +34,7 @@ RSS/Atom feed (with autodiscovery) and calls ``score`` for you.
 from __future__ import annotations
 
 import os
+from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
@@ -89,7 +90,14 @@ _DEGRADED_WARNING = (
     "spaCy model: python -m spacy download it_core_news_lg"
 )
 
-_WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml")
+_WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml", "/rss/")
+
+# A well-known path that answers with HTML is often a feed directory ("RSS"
+# page listing every section feed, main feed first). Its <a href> links that
+# look like feeds are tried in page order, at most this many per page.
+_MAX_INDEX_LINKS = 5
+_FEED_LINK_SUFFIXES = (".xml", ".rss", ".atom")
+_FEED_LINK_SEGMENTS = ("rss", "feed", "atom")
 
 
 class FeedNotFoundError(ValueError):
@@ -101,16 +109,23 @@ class FeedFetchError(ValueError):
 
 
 class _FeedLinkParser(HTMLParser):
-    """Collects ``<link rel="alternate" type="application/{rss,atom}+xml" href=...>`` targets."""
+    """Collects ``<link rel="alternate" type="application/{rss,atom}+xml" href=...>`` targets,
+    and every ``<a href=...>`` target (for feed index pages)."""
 
     def __init__(self) -> None:
         super().__init__()
         self.feed_links: List[str] = []
+        self.anchor_links: List[str] = []
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
-        if tag.lower() != "link":
-            return
+        tag = tag.lower()
         attrs_d = {k.lower(): (v or "") for k, v in attrs}
+        if tag == "a":
+            if attrs_d.get("href"):
+                self.anchor_links.append(attrs_d["href"])
+            return
+        if tag != "link":
+            return
         rel = attrs_d.get("rel", "").lower().split()
         type_ = attrs_d.get("type", "").lower()
         href = attrs_d.get("href", "")
@@ -118,13 +133,52 @@ class _FeedLinkParser(HTMLParser):
             self.feed_links.append(href)
 
 
-def _discover_feed_links(html_text: str) -> List[str]:
+def _parse_links(html_text: str) -> _FeedLinkParser:
     parser = _FeedLinkParser()
     try:
         parser.feed(html_text)
     except Exception:  # malformed HTML must degrade, not crash discovery
-        return []
-    return parser.feed_links
+        return _FeedLinkParser()
+    return parser
+
+
+def _discover_feed_links(html_text: str) -> List[str]:
+    return _parse_links(html_text).feed_links
+
+
+def _discover_index_links(html_text: str) -> List[str]:
+    """Feed-looking ``<a href>`` targets of a feed index page, in page order, de-duplicated."""
+    links = []
+    for href in _parse_links(html_text).anchor_links:
+        path = urlparse(href).path.lower().rstrip("/")
+        last_segment = path.rsplit("/", 1)[-1]
+        if path.endswith(_FEED_LINK_SUFFIXES) or last_segment in _FEED_LINK_SEGMENTS:
+            links.append(href)
+    return list(dict.fromkeys(links))
+
+
+def _newest_timestamp(messages: List[dict]) -> Optional[datetime]:
+    newest = None
+    for message in messages:
+        try:
+            ts = datetime.fromisoformat(str(message["timestamp"]).replace("Z", "+00:00"))
+        except (KeyError, ValueError):
+            continue
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if newest is None or ts > newest:
+            newest = ts
+    return newest
+
+
+def _is_stale(messages: List[dict], stale_after_days: Optional[float]) -> bool:
+    """Whether the feed's newest item is older than ``stale_after_days`` (``None``/0 disables)."""
+    if not stale_after_days:
+        return False
+    newest = _newest_timestamp(messages)
+    if newest is None:
+        return False
+    return datetime.now(timezone.utc) - newest > timedelta(days=stale_after_days)
 
 
 def _reachable(exc: ValueError) -> bool:
@@ -140,8 +194,19 @@ def _reachable(exc: ValueError) -> bool:
     return not isinstance(cause, httpx.HTTPError)
 
 
-def _resolve_feed(url: str, client: httpx.Client, allow_private: bool = False) -> Tuple[str, List[dict], str]:
-    """Find a scorable feed for ``url``: direct fetch, then HTML autodiscovery, then well-known paths.
+def _resolve_feed(
+    url: str,
+    client: httpx.Client,
+    allow_private: bool = False,
+    stale_after_days: Optional[float] = None,
+) -> Tuple[str, List[dict], str]:
+    """Find a scorable feed for ``url``: direct fetch, then HTML autodiscovery, then well-known paths,
+    then the feed-looking links of any well-known path that turned out to be a feed index page.
+
+    A ``url`` that is itself a feed is returned as is, stale or not: the caller
+    chose it. A *discovered* feed whose newest item is older than
+    ``stale_after_days`` is kept only as a fallback while discovery goes on, so
+    an abandoned feed a site still advertises does not win over a live one.
 
     An unsafe ``url`` (non-public host, or a redirect to one) raises
     :class:`UnsafeURLError`. An unsafe ``<link>`` found on the page is skipped,
@@ -149,8 +214,12 @@ def _resolve_feed(url: str, client: httpx.Client, allow_private: bool = False) -
     """
     saw_reachable = False
     html_body: Optional[str] = None
+    index_pages: List[Tuple[str, str]] = []
+    stale_fallback: Optional[Tuple[str, List[dict], str]] = None
 
-    def _attempt(candidate: str, *, keep_html: bool, strict: bool = False) -> Optional[List[dict]]:
+    def _attempt(
+        candidate: str, *, keep_html: bool = False, index_page: bool = False, strict: bool = False
+    ) -> Optional[List[dict]]:
         nonlocal saw_reachable, html_body
         try:
             body = fetch_feed(candidate, client, allow_private=allow_private)
@@ -169,8 +238,19 @@ def _resolve_feed(url: str, client: httpx.Client, allow_private: bool = False) -
         except ValueError:
             if keep_html:
                 html_body = body
+            if index_page:
+                index_pages.append((candidate, body))
             return None
         return messages or None
+
+    def _fresh(candidate: str, messages: List[dict], discovery: str) -> bool:
+        nonlocal stale_fallback
+        if not _is_stale(messages, stale_after_days):
+            return True
+        logger.info("feed_candidate_stale", url=candidate, discovery=discovery)
+        if stale_fallback is None:
+            stale_fallback = (candidate, messages, discovery)
+        return False
 
     messages = _attempt(url, keep_html=True, strict=True)
     if messages:
@@ -179,18 +259,31 @@ def _resolve_feed(url: str, client: httpx.Client, allow_private: bool = False) -
     if html_body:
         for link in _discover_feed_links(html_body):
             candidate = urljoin(url, link)
-            messages = _attempt(candidate, keep_html=False)
-            if messages:
+            messages = _attempt(candidate)
+            if messages and _fresh(candidate, messages, "html_link"):
                 return candidate, messages, "html_link"
 
     parsed = urlparse(url)
     root = f"{parsed.scheme}://{parsed.netloc}"
     for path in _WELL_KNOWN_FEED_PATHS:
         candidate = root + path
-        messages = _attempt(candidate, keep_html=False)
-        if messages:
+        messages = _attempt(candidate, index_page=True)
+        if messages and _fresh(candidate, messages, "well_known_path"):
             return candidate, messages, "well_known_path"
 
+    tried = set()
+    for page_url, page_html in index_pages:
+        for link in _discover_index_links(page_html)[:_MAX_INDEX_LINKS]:
+            candidate = urljoin(page_url, link)
+            if candidate in tried:
+                continue
+            tried.add(candidate)
+            messages = _attempt(candidate)
+            if messages and _fresh(candidate, messages, "feed_index"):
+                return candidate, messages, "feed_index"
+
+    if stale_fallback is not None:
+        return stale_fallback
     if not saw_reachable:
         raise FeedFetchError(f"could not reach {url} or any candidate feed path")
     raise FeedNotFoundError(f"no RSS/Atom feed found for {url}")
@@ -204,13 +297,15 @@ def score_feed(
     timeout: float = 20.0,
     client: Optional[httpx.Client] = None,
     allow_private: bool = False,
+    stale_after_days: Optional[float] = None,
     **score_kwargs,
 ) -> Dict:
     """Score a source straight from its RSS/Atom feed: fetch, discover, then :func:`score`.
 
     ``url`` may omit its scheme (``https://`` is assumed). If it is not itself
     a feed, autodiscovery tries the page's ``<link rel="alternate">`` tags,
-    then well-known paths (``/feed``, ``/rss``, …). ``client`` is an
+    then well-known paths (``/feed``, ``/rss``, …), then the feed links listed
+    on a well-known path that is an HTML feed index page. ``client`` is an
     injectable ``httpx.Client`` (e.g. with a ``MockTransport``) for tests;
     when omitted, a client is created and closed internally.
 
@@ -223,14 +318,25 @@ def score_feed(
     :func:`score` still raises ``ValueError`` if the feed yields zero usable
     messages after normalisation.
 
+    A feed whose newest item is older than ``stale_after_days`` (default
+    ``CATS_FEED_STALE_DAYS``; ``0`` disables the check) no longer describes the
+    source's current behaviour — ``silence`` only sees gaps *between* items, so
+    an abandoned feed does not look silent. Discovery prefers a live feed over
+    it; if it is still the one scored, ``source.stale`` is true and the result
+    requires human review. Score and band are unchanged.
+
     The result adds a ``source`` block (``url``, ``feed_url``, ``messages``,
-    ``first_timestamp``, ``last_timestamp``, ``discovery``) to ``score()``'s
-    normal output. The domain-provenance penalty is applied against the
+    ``first_timestamp``, ``last_timestamp``, ``discovery``, ``stale``) to
+    ``score()``'s normal output. The domain-provenance penalty is applied against the
     original ``url``, not the feed URL, so it scores the source rather than
     its feed host.
     """
     if "://" not in url:
         url = f"https://{url}"
+    if stale_after_days is None:
+        from cats.core.config import settings
+
+        stale_after_days = settings.feed_stale_days
 
     owns_client = client is None
     active_client = client or httpx.Client(
@@ -240,7 +346,9 @@ def score_feed(
         headers={"User-Agent": DEFAULT_USER_AGENT},
     )
     try:
-        feed_url, messages, discovery = _resolve_feed(url, active_client, allow_private=allow_private)
+        feed_url, messages, discovery = _resolve_feed(
+            url, active_client, allow_private=allow_private, stale_after_days=stale_after_days
+        )
     finally:
         if owns_client:
             active_client.close()
@@ -248,6 +356,7 @@ def score_feed(
     messages.sort(key=lambda m: m["timestamp"])
     messages = messages[-max_messages:]
 
+    stale = _is_stale(messages, stale_after_days)
     result = score(messages, source_type=source_type, url=url, **score_kwargs)
     result["source"] = {
         "url": url,
@@ -256,7 +365,11 @@ def score_feed(
         "first_timestamp": messages[0]["timestamp"],
         "last_timestamp": messages[-1]["timestamp"],
         "discovery": discovery,
+        "stale": stale,
     }
+    if stale:
+        result["requires_human_review"] = True
+        logger.warning("feed_stale", url=url, feed_url=feed_url, last_timestamp=messages[-1]["timestamp"])
     logger.info(
         "score_feed_completed",
         url=url,
@@ -278,6 +391,9 @@ def review_reason(result: Dict) -> Optional[str]:
     """Why ``result`` (from :func:`score`/:func:`score_feed`) requires human review, or ``None``."""
     if not result["requires_human_review"]:
         return None
+    source = result.get("source") or {}
+    if source.get("stale"):
+        return f"stale feed (newest item {str(source['last_timestamp'])[:10]})"
     evidence = result["evidence"]
     if not evidence["sufficient"]:
         return f"insufficient evidence ({evidence['messages']} < {evidence['min_messages']} messages)"

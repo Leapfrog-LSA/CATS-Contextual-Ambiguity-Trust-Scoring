@@ -74,6 +74,16 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("CATS_MIN_EVIDENCE_MESSAGES", "MIN_EVIDENCE_MESSAGES"),
     )
 
+    # Age in days after which a feed's newest item makes the feed stale for
+    # `cats.lite.score_feed`: discovery prefers a live feed, and a stale one
+    # that is still scored is flagged `source.stale` and `requires_review`.
+    # Scores and bands are NOT changed. 0 disables the check. Documented as
+    # CATS_FEED_STALE_DAYS; the bare spelling is also accepted.
+    feed_stale_days: float = Field(
+        default=30,
+        validation_alias=AliasChoices("CATS_FEED_STALE_DAYS", "FEED_STALE_DAYS"),
+    )
+
     # Trust X-Forwarded-For / proxy headers for client-IP extraction (rate
     # limiting, audit). Off by default (threat model T3): only a proxy that
     # overwrites the header, like the bundled nginx, makes it trustworthy, and

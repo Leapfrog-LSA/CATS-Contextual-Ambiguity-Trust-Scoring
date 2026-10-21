@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
+
 import httpx
 import pytest
 
@@ -191,6 +194,130 @@ def test_score_feed_max_messages_keeps_latest():
     assert result["source"]["messages"] == 2
     assert result["source"]["first_timestamp"] < result["source"]["last_timestamp"]
     assert result["source"]["last_timestamp"].startswith("2026-06-05")
+
+
+def _recent_rss(days_ago: int = 0):
+    """Five items ending ``days_ago`` days before now, so freshness does not depend on the test date."""
+    newest = datetime.now(timezone.utc) - timedelta(days=days_ago)
+    return _rss(
+        [(f"Notizia {i}", format_datetime(newest - timedelta(hours=6 * (4 - i)), usegmt=True)) for i in range(5)]
+    )
+
+
+_STALE_ITEMS = _rss(
+    [
+        ("Vecchia notizia uno", "Tue, 26 Mar 2024 08:00:00 GMT"),
+        ("Vecchia notizia due", "Mon, 06 May 2024 08:00:00 GMT"),
+        ("Vecchia notizia tre", "Mon, 13 May 2024 06:07:52 GMT"),
+    ]
+)
+
+_FEED_INDEX_PAGE = (
+    "<html><head><title>RSS</title></head><body>"
+    '<a href="/news/2026/an-article.html">Un articolo</a>'
+    '<a href="//feeds.example.net/home.xml">Home - tutte le notizie</a>'
+    '<a href="/rss/section/Cronache.xml">Cronache</a>'
+    "</body></html>"
+)
+
+
+def test_discover_index_links_keeps_feed_looking_anchors_in_order():
+    from cats.lite import _discover_index_links
+
+    html = _FEED_INDEX_PAGE + '<a href="/feed/">Feed</a><a href="/rss/section/Cronache.xml">dup</a>'
+    assert _discover_index_links(html) == ["//feeds.example.net/home.xml", "/rss/section/Cronache.xml", "/feed/"]
+
+
+def test_score_feed_feed_index_page():
+    # corriere.it: no <link rel="alternate">, no feed at the usual paths, but
+    # /rss/ is an HTML page listing the section feeds, main feed first.
+    fresh = _recent_rss()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=_PLAIN_HTML)
+        if url == "https://example.com/rss/":
+            return httpx.Response(200, text=_FEED_INDEX_PAGE)
+        if url == "https://feeds.example.net/home.xml":
+            return httpx.Response(200, text=fresh)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/", client=client, load_nlp=False)
+
+    assert result["source"]["discovery"] == "feed_index"
+    assert result["source"]["feed_url"] == "https://feeds.example.net/home.xml"
+    assert result["source"]["stale"] is False
+
+
+def test_score_feed_skips_stale_advertised_feed_for_live_one():
+    html = (
+        '<html><head><link rel="alternate" type="application/rss+xml" href="/old.xml"/></head>' "<body></body></html>"
+    )
+    fresh = _recent_rss(days_ago=1)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=html)
+        if url == "https://example.com/old.xml":
+            return httpx.Response(200, text=_STALE_ITEMS)
+        if url == "https://example.com/feed":
+            return httpx.Response(200, text=fresh)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/", client=client, load_nlp=False)
+
+    assert result["source"]["feed_url"] == "https://example.com/feed"
+    assert result["source"]["stale"] is False
+
+
+def test_score_feed_falls_back_to_stale_feed_and_flags_it():
+    from cats.lite import review_reason
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url == "https://example.com/":
+            return httpx.Response(200, text=_PLAIN_HTML)
+        if url == "https://example.com/rss.xml":
+            return httpx.Response(200, text=_STALE_ITEMS)
+        return httpx.Response(404, text="not found")
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/", client=client, load_nlp=False, stale_after_days=30)
+
+    assert result["source"]["feed_url"] == "https://example.com/rss.xml"
+    assert result["source"]["discovery"] == "well_known_path"
+    assert result["source"]["stale"] is True
+    assert result["requires_human_review"] is True
+    assert review_reason(result) == "stale feed (newest item 2024-05-13)"
+
+
+def test_score_feed_direct_stale_feed_is_kept_and_flagged():
+    requested = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(str(request.url))
+        return httpx.Response(200, text=_STALE_ITEMS)
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/rss/homepage.xml", client=client, load_nlp=False)
+
+    assert requested == ["https://example.com/rss/homepage.xml"]
+    assert result["source"]["discovery"] == "direct"
+    assert result["source"]["stale"] is True
+
+
+def test_score_feed_stale_check_can_be_disabled():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=_STALE_ITEMS)
+
+    with _client_for(handler) as client:
+        result = score_feed("https://example.com/rss", client=client, load_nlp=False, stale_after_days=0)
+
+    assert result["source"]["stale"] is False
 
 
 def test_score_feed_applies_domain_penalty_to_source_url(monkeypatch):

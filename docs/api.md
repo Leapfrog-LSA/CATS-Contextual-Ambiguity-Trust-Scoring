@@ -315,7 +315,21 @@ print(result["source"])  # feed_url, message count, time span, how it was found
 
 If `url` is not itself a feed, `score_feed` tries autodiscovery in order:
 1. the page's `<link rel="alternate" type="application/rss+xml|atom+xml">` tags,
-2. well-known paths (`/feed`, `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`).
+2. well-known paths (`/feed`, `/rss`, `/feed.xml`, `/rss.xml`, `/atom.xml`, `/index.xml`, `/rss/`),
+3. feed index pages: when a well-known path answers with an HTML page (a
+   site's "RSS" directory, e.g. `corriere.it/rss/`), its feed-looking
+   `<a href>` links (`.xml`/`.rss`/`.atom`, or ending in `/rss`, `/feed`,
+   `/atom`), in page order, at most 5 per page. `source.discovery` is
+   `feed_index`.
+
+A feed whose newest item is older than `CATS_FEED_STALE_DAYS` (default 30;
+`stale_after_days=` per call, `0` disables) is **stale**: `silence` only
+measures gaps between items, so an abandoned feed does not look silent and
+would be scored as if it were current. A discovered stale feed is kept only as
+a fallback while discovery looks for a live one. If it is still the one
+scored (or `url` is itself a stale feed), `source.stale` is `true` and
+`requires_human_review` is forced on, with review reason
+`stale feed (newest item YYYY-MM-DD)`. Score and band are unchanged.
 
 `FeedNotFoundError` is raised if the host answers but no feed is found;
 `FeedFetchError` if the host (and every candidate path) is unreachable. As
