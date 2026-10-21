@@ -8,6 +8,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- **1.10.0 notes completed.** Its CHANGELOG section now carries the upgrade
+  note for `docker-compose.yml` deployments (2 workers at about 1.1 GB each;
+  no `process_*` / `python_*` metrics) and the Dependabot bounds (#209–#213),
+  which shipped in 1.10.0 but were not listed.
+- **Status docs point at 1.10.0.** The September roadmap's October section
+  covers v1.10.0, and its "Rafforzare l'API" item is ticked: all its
+  sub-items were done. `docs/README.md` follows.
+- **pre-commit hooks match `make lint`.** Before, they could disagree with CI:
+  - black 26.10.1 and isort 9.0.2, instead of 24.3.0 and 5.13.2;
+  - the hooks now run on `cats/` and `tests/` only, the paths CI lints;
+  - the flake8 hook works again. Its unquoted `--extend-ignore=E203,W503`
+    was split at the comma, so flake8 got `W503` as a file name and failed
+    on every run.
+
 ## [1.10.0] — 2026-10-21
 
 Feed discovery and deployment release.
@@ -18,6 +33,15 @@ Feed discovery and deployment release.
   bands are unchanged, so the calibrated weights still apply.
 - **Deployment:** several API workers (`WEB_CONCURRENCY`), `/metrics` summed
   across workers, nginx read timeout 120 s.
+
+No change to signals, weights or bands (ENGINE 1.4).
+
+**Upgrading a deployment that uses the bundled `docker-compose.yml`:**
+- **RAM:** it now starts **2 workers**, each about 1.1 GB for the spaCy model.
+  On a host with less than about 3 GB free for the app, set
+  `WEB_CONCURRENCY=1` in `.env`.
+- **Metrics:** the default `process_*` and `python_*` metrics are no longer
+  exported (Prometheus multiprocess mode).
 
 ### Fixed
 - **Feed autodiscovery finds feeds listed on an HTML "RSS" page.**
@@ -37,6 +61,10 @@ Feed discovery and deployment release.
   reason `stale feed (newest item …)`). Scores and bands are unchanged.
 
 ### Changed
+- **Dependency bounds** (Dependabot): uvicorn ≥0.54 (#213),
+  cryptography ≥50.0.2 (#210); dev tools black 26 (#211), isort ≥9.0.2 (#209),
+  pytest-asyncio 1.x (#212). CI passes on all of them, and black 26 leaves
+  every file unchanged.
 - **Several API workers** (load test, recommendation 2). The image reads its
   uvicorn worker count from `WEB_CONCURRENCY`: 1 by default in the
   `Dockerfile`, 2 in `docker-compose.yml`. Each worker costs about 1.1 GB of
