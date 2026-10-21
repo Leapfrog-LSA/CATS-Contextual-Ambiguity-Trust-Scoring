@@ -8,6 +8,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **Feed autodiscovery finds feeds listed on an HTML "RSS" page.**
+  `cats score corriere.it` failed with `no RSS/Atom feed found`: the homepage
+  has no `<link rel="alternate">`, and `/rss` redirects to an `http://` URL
+  that answers 403. `score_feed` now also tries `/rss/` and, when a
+  well-known path answers with an HTML feed directory, its feed-looking
+  `<a href>` links in page order (`discovery: feed_index`). `corriere.it`
+  now resolves to the live homepage feed.
+- **Stale feeds are no longer scored as if they were current.** Corriere's
+  old `rss/homepage.xml` still answers 200 but stopped in May 2024; scored
+  directly it got a normal `medium` band with `silence` near 0, because
+  `silence` only measures gaps between items. A feed whose newest item is
+  older than `CATS_FEED_STALE_DAYS` (default 30, `0` disables) is now stale:
+  discovery prefers a live feed over it, and if it is still scored,
+  `source.stale` is `true` and `requires_human_review` is forced on (review
+  reason `stale feed (newest item …)`). Scores and bands are unchanged.
+
 ### Changed
 - **Several API workers** (load test, recommendation 2). The image reads its
   uvicorn worker count from `WEB_CONCURRENCY`: 1 by default in the
