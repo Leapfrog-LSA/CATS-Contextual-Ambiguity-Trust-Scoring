@@ -667,12 +667,36 @@ these unless the facts below change.
   (XXE guard) stays a blanket rule, with no exception for one feed. The source
   collects nothing new until Corriere serves a parseable feed without a DTD.
   Re-check only the legacy `xml2.corriereobjects.it` sections for freshness.
+  **Superseded on 2026-10-21, see the follow-up below:** such a feed now
+  exists.
 - **The Hill Tech: left as is** (`not-xml`, collects nothing). The live
   `policy/technology/feed/` duplicates about half of The Hill's registered
   feed, and keeping the two source_ids independent matters more than adding
   this one. Revisit only if a tech-only feed with no overlap appears.
 
-## Recommendation
+### Round 14 follow-up — Il Corriere della Sera (2026-10-21)
+
+The condition the maintainer set on 2026-10-09 is now met: Corriere serves a
+live feed without a DTD. v1.10.0's feed discovery (`cats score corriere.it`)
+found it on Corriere's HTML feed index:
+`https://xml2.corriereobjects.it/feed-hp/homepage-restyle-2025.xml`.
+
+- **Checked with the collector's own code:**
+  - `fetch_feed` and `parse_feed` (`cats.calibration.collect_rss`) accept it,
+    with no `<!DOCTYPE` and no exception to the XXE guard;
+  - it yields 139 messages, the newest from the same day;
+  - `classify()` returns `ok`;
+  - no other registry row carries this URL.
+- **Before:** the registered `rss/cronaca.xml` had been `stale` since
+  2026-09-02, 49 days.
+- **Maintainer decision (2026-10-21): switch.** `data/labels.jsonl` and
+  `data/Fonti_OSINT.csv` now register the homepage feed.
+- **Trade-off, accepted:** the source moves from the *cronaca* section to the
+  whole homepage. Its new messages cover more topics than its history, so
+  Corriere's signals may shift for that reason, not because the outlet's
+  behaviour changed.
+- **Old items:** the feed also keeps some older items. 20 of the 139 date from
+  July and August 2026.
 
 After round 13 the registry has an honest accounting of reachability,
 freshness, *and* actual collector compatibility, including client-fingerprint

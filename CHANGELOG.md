@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **Il Corriere della Sera collects again.** Its registered feed
+  (`xml2.corriereobjects.it/rss/cronaca.xml`) had been stale since
+  2026-09-02.
+  - **New feed:** `data/labels.jsonl` and `data/Fonti_OSINT.csv` now point at
+    the live homepage feed, `xml2.corriereobjects.it/feed-hp/homepage-restyle-2025.xml`,
+    which v1.10.0's feed discovery found.
+  - **Checks:** it has no DTD, so the collector's XXE guard accepts it with no
+    exception. `parse_feed` extracts 139 messages, the newest from the same
+    day.
+  - **Trade-off:** the source now covers the whole homepage, not just
+    *cronaca*.
+  - **Records:** the maintainer decision is in `docs/feed_health_2026-07.md`
+    (round 14 follow-up).
 - **1.10.0 notes completed.** Its CHANGELOG section now carries the upgrade
   note for `docker-compose.yml` deployments (2 workers at about 1.1 GB each;
   no `process_*` / `python_*` metrics) and the Dependabot bounds (#209–#213),
