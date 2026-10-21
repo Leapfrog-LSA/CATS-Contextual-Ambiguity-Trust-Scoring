@@ -104,7 +104,7 @@ committed. Status as of 2026-08-30 (was all blank/unverified before):
 
 | Outlet | Homepage | RSS (verified) | MBFC rating |
 |---|---|---|---|
-| Corriere della Sera | corriere.it | `xml2.corriereobjects.it/rss/cronaca.xml` — in catalogue, labelled, collected | High |
+| Corriere della Sera | corriere.it | `xml2.corriereobjects.it/feed-hp/homepage-restyle-2025.xml` (since 2026-10-21; was `rss/cronaca.xml`, stale since 2026-09-02) — in catalogue, labelled, collected | High |
 | La Repubblica | repubblica.it | `repubblica.it/rss/homepage/rss2.0.xml` — labelled, collected | High |
 | Il Sole 24 Ore | ilsole24ore.com | `ilsole24ore.com/rss/italia.xml` — labelled, collected | Mostly Factual |
 | ANSA | ansa.it | `ansa.it/sito/ansait_rss.xml` — labelled, collected | High |
