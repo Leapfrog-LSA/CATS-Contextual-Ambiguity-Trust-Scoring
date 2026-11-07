@@ -27,8 +27,23 @@ the 70 files above in this repository:
 - one source, `eldiario.es`, accounts for about 34.0 million characters
   (38%), mostly full article bodies.
 
-Run the script for the per-publisher table. These figures do not include the
-`cats-snapshots` repository, which grows daily.
+Run the script for the per-publisher table.
+
+The **`Leapfrog-LSA/cats-snapshots`** repository was measured the same way on
+2026-11-07: all 105 daily snapshots, 2026-07-02 → 2026-11-07, 303 MB,
+downloaded with `make snapshots-download` and passed to the script as a glob.
+- 111 sources from 101 publisher domains;
+- 243,350 distinct texts, about 143.0 million characters;
+- by length, counting per source, 164,678 texts are ≤ 300 characters and
+  6,535 are over 5,000 characters;
+- `eldiario.es` again accounts for about 38% (54.9 million characters); its
+  longest single text is 334,796 characters;
+- growth since 2026-10-01: about 2,400 new distinct texts and 1.4 million
+  characters per day, about 3.1 MB of snapshot file per day.
+
+It holds every text in this repository's files but about 360 (the combined
+count is 243,707 distinct texts). Deciding about the texts here therefore
+means deciding about `cats-snapshots` too.
 
 - **TODO (maintainer):** decide whether the raw texts stay public. The
   questions to settle first are in `DATA_LICENSE` §3.

@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`NOTICE.md` covers `cats-snapshots` too.** The text inventory run over
+  all 105 snapshots (2026-07-02 → 2026-11-07) found 243,350 distinct texts
+  (about 143 million characters) from 101 publisher domains. 6,535 texts are
+  over 5,000 characters, and the repository grows by about 2,400 texts
+  (3.1 MB) a day. It holds every text in this repository's `data/` files
+  but about 360.
 - **Draft post-market monitoring plan (EU AI Act Art. 72)**,
   `docs/eu_ai_act/post_market_monitoring_art72.md`.
   - **Indicators:** it maps the indicators CATS can already measure onto
