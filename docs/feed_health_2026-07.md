@@ -698,7 +698,7 @@ found it on Corriere's HTML feed index:
 - **Old items:** the feed also keeps some older items. 20 of the 139 date from
   July and August 2026.
 
-## Round 15 (2026-11-07) — no registry change; 2 decisions for the maintainer
+## Round 15 (2026-11-07) — VoxEurop Italia fixed; News24 to verify
 
 A routine re-audit, the first since round 14 (2026-10-09). It was run with
 `python research/feed_health_audit.py`, from a cloud session's egress. Every
@@ -723,12 +723,13 @@ blocked 14, not-xml 6, dead 2.
   `</rss>`, on `/it/feed/`, `/it/feed/rss2/`, `/it/feed/atom/` and the
   site-wide `/feed/`. The collector's parser rejects the document, so this
   source collects nothing.
-  - **Workaround found, not applied:** any query string bypasses the cache.
+  - **Workaround found:** any query string bypasses the cache.
     `https://voxeurop.eu/it/feed/?x=1` classifies `ok`. It has the same 30
     items, with the same links, as the plain feed with the trailing script
     cut off; the newest item is from 2026-11-05.
-  - **Why not applied:** the parameter is arbitrary, and the fix holds only
-    as long as the site's cache ignores query strings. The other route is to
+  - **Why it was not applied at first:** the parameter is arbitrary, and the
+    fix holds only as long as the site's cache ignores query strings. The
+    maintainer chose it anyway; see the decision below. The other route is to
     make `parse_feed` drop anything after the root element's closing tag.
     That loosens the parser that guards against XXE (round 12 correction),
     so it is a security decision, like the `<!DOCTYPE` rule.
@@ -759,18 +760,24 @@ blocked 14, not-xml 6, dead 2.
   Tribune, The Monitor, Times of Israel, Axios Future, +972 Magazine,
   Il Post, De Standaard.
 
-**After, 125 feeds:** unchanged. `data/labels.jsonl` and
-`data/Fonti_OSINT.csv` are not touched.
+**Maintainer decision (2026-11-07): VoxEurop Italia registers the
+query-string feed.** `data/labels.jsonl`, `data/Fonti_OSINT.csv` and
+`data/Fonti_OSINT_CONSOLIDATO.md` now point at
+`https://voxeurop.eu/it/feed/?x=1`.
+- **Re-checked before writing:** `classify()` gives `ok`, and no other
+  registry row carries this URL.
+- **History continues:** it is the same feed on the same host, so the
+  source's history carries on.
+- **`parse_feed` is unchanged:** the XXE guard keeps rejecting anything
+  that is not a well-formed document.
+- **Re-check each round:** if the site's cache starts serving query-string
+  URLs too, the beacon comes back and the source turns `not-xml` again.
 
-**Decisions for the maintainer** (not taken here):
+**After, 125 feeds: ok 96, stale 8, blocked 10, not-xml 6, dead 5.**
 
-1. **VoxEurop Italia:** choose one of three options:
-   - register `https://voxeurop.eu/it/feed/?x=1`, a working workaround;
-   - let `parse_feed` ignore trailing content after `</rss>` / `</feed>`, a
-     parser change that touches the XXE guard;
-   - leave the source collecting nothing.
-2. **News24:** verify from a non-cloud network. If the feed is fine there,
-   this is the same egress-only block as the 10 `blocked` feeds.
+**Still open for the maintainer:** verify **News24** from a non-cloud
+network. If the feed works there, this is the same egress-only block as the
+10 `blocked` feeds.
 
 After round 13 the registry has an honest accounting of reachability,
 freshness, *and* actual collector compatibility, including client-fingerprint
