@@ -9,6 +9,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Draft post-market monitoring plan (EU AI Act Art. 72)**,
+  `docs/eu_ai_act/post_market_monitoring_art72.md`.
+  - **Indicators:** it maps the indicators CATS can already measure onto
+    Arts. 9–15 and marks each data source as existing or missing. The
+    groups are holdout accuracy, score and input drift, feed health,
+    contests and human labels, robustness and security, and interaction
+    with other AI systems.
+  - **Process:** it proposes review cadences, triggers and records, and
+    lists the engineering gaps.
+  - **Not decided:** every threshold, cadence, owner and legal point is a
+    `TODO` for the maintainer or counsel.
+  - **Legal frame,** as summarised in the draft and to be verified by
+    counsel: Reg. (EU) 2026/1744 replaced the template implementing act with
+    Commission guidance, including a (voluntary) template, due by
+    2 September 2027. It also moved Chapter III Sections 1–3 to
+    2 December 2027 for Annex III systems.
+  - **Links:** the risk-management, Annex IV and folder README documents
+    now link to it.
 - **Text inventory** (`research/text_inventory.py`). It lists, per source,
   the third-party texts stored in the repository: publisher domain, unique
   texts, characters, length buckets, links back to the originals, and first
