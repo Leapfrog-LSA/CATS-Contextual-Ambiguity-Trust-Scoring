@@ -9,6 +9,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **CI also tests on Python 3.15.** The `test` matrix is now 3.11, 3.14 and
+  3.15, so Dependabot's bump of the Docker image to `python:3.15-slim` (#224)
+  is tested before it merges, as 3.14 was in 1.9.x. Locally, on CPython
+  3.15.0b4 with Postgres and Redis, the full suite gives 480 passed and
+  4 skipped, the same as on 3.13 in the same container. `pyproject.toml`
+  lists 3.15 among its classifiers. 3.14 stays in the matrix while the image
+  still runs it.
 - **Il Corriere della Sera collects again.** Its registered feed
   (`xml2.corriereobjects.it/rss/cronaca.xml`) had been stale since
   2026-09-02.
