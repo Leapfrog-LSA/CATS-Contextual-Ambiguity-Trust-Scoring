@@ -1,5 +1,10 @@
 # Calibration input data
 
+Licensing and attribution for every file here: [`DATA_LICENSE`](../DATA_LICENSE)
+and [`NOTICE.md`](../NOTICE.md). The message texts in `*_sources.jsonl` and
+`snapshots/` belong to their publishers. `python research/text_inventory.py`
+lists them per source and by length.
+
 ## `Fonti_OSINT.csv`
 OSINT source catalogue v5.25, 2026-06-17 (5 275 sources, 311 with an RSS feed;
 the human-readable consolidated edition lives in

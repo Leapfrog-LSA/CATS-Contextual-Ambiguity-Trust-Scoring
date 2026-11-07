@@ -169,6 +169,13 @@ Italian-language limitation.
 
 ---
 
+## Post-market monitoring (Annex IV point 9 / Art. 72)
+
+The PMM plan is part of this documentation. Draft:
+[`post_market_monitoring_art72.md`](post_market_monitoring_art72.md).
+
+---
+
 ## Declaration of conformity / registration
 
 - EU declaration of conformity (Art. 47): TODO.

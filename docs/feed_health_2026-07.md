@@ -698,6 +698,87 @@ found it on Corriere's HTML feed index:
 - **Old items:** the feed also keeps some older items. 20 of the 139 date from
   July and August 2026.
 
+## Round 15 (2026-11-07) — VoxEurop Italia fixed; News24 to verify
+
+A routine re-audit, the first since round 14 (2026-10-09). It was run with
+`python research/feed_health_audit.py`, from a cloud session's egress. Every
+candidate below was checked with the script's own `classify()` (that is,
+`fetch_feed` + the collector's `parse_feed`) before anything was concluded.
+
+**At audit, 125 feeds: ok 95, stale 8, blocked 10, not-xml 7, dead 5.**
+After round 14 and its Corriere follow-up the figures were ok 95, stale 8,
+blocked 14, not-xml 6, dead 2.
+- **not-xml +1:** VoxEurop Italia.
+- **dead +3:** WND, News24, Corriere del Corsaro.
+- **blocked −4:** some of those moves are between `blocked` and `dead`
+  (News24's Cloudflare challenge, below). `ok` holds at 95 even though
+  VoxEurop left it, so at least one previously blocked feed now answers.
+  Blocked results depend on the egress, so none of this is evidence of a
+  fix or a break on the publisher's side.
+
+**New this round, investigated:**
+
+- **VoxEurop Italia** (85) — `not-xml`: *junk after document element*. The
+  WordPress cache plugin (WP Rocket) appends a `<script>` beacon after
+  `</rss>`, on `/it/feed/`, `/it/feed/rss2/`, `/it/feed/atom/` and the
+  site-wide `/feed/`. The collector's parser rejects the document, so this
+  source collects nothing.
+  - **Workaround found:** any query string bypasses the cache.
+    `https://voxeurop.eu/it/feed/?x=1` classifies `ok`. It has the same 30
+    items, with the same links, as the plain feed with the trailing script
+    cut off; the newest item is from 2026-11-05.
+  - **Why it was not applied at first:** the parameter is arbitrary, and the
+    fix holds only as long as the site's cache ignores query strings. The
+    maintainer chose it anyway; see the decision below. The other route is to
+    make `parse_feed` drop anything after the root element's closing tag.
+    That loosens the parser that guards against XXE (round 12 correction),
+    so it is a security decision, like the `<!DOCTYPE` rule.
+- **WND (World Net Daily)** (30) — `dead`: *more than 5 redirects*. The
+  server's redirect loop is reproducible with curl: `www.wnd.com/feed/`
+  answers 301 to `www.wnd.com/feed/?%2F`. `/feed`, `/?feed=rss2` and the
+  apex host loop the same way. `/category/news/feed/` answers, but has no
+  items. No working feed was found. Left as is; re-check next round, since
+  this looks like a site misconfiguration rather than a retired feed.
+- **News24** (85) — `dead` (`conn:ProxyError`) in the audit. curl through
+  the same egress gets a 403 Cloudflare "Just a moment…" challenge page, so
+  this is a block on this egress, not a dead feed. `www.news24.com/feed` is
+  404. Verify from another network before changing anything.
+- **Corriere del Corsaro** (10) — `dead`: the egress proxy cannot open a
+  connection to the host (curl: `CONNECT tunnel failed, response 502`). It
+  is a label-10 hoax site, so going offline is consistent with its label.
+  Left as is.
+- **Diretta News.it** (10) — newly `stale` (newest 2026-10-06). A label-10
+  site going quiet; left as is.
+
+**Unchanged from earlier rounds:**
+- ITV News and L'Orient Today: `dead` (404). Two more L'Orient candidates,
+  `/rss` and `today.lorientlejour.com/rss`, are 404 too.
+- `not-xml`: Natural News, Sixth Tone, The Hill Tech, Berlingske Business,
+  Le Parisien, `bild.pics`.
+- The other 7 `stale` feeds: defunct label-10/30 sites.
+- 10 `blocked` (403): Nation Africa, The Guardian NG, Manila Bulletin, Sudan
+  Tribune, The Monitor, Times of Israel, Axios Future, +972 Magazine,
+  Il Post, De Standaard.
+
+**Maintainer decision (2026-11-07): VoxEurop Italia registers the
+query-string feed.** `data/labels.jsonl`, `data/Fonti_OSINT.csv` and
+`data/Fonti_OSINT_CONSOLIDATO.md` now point at
+`https://voxeurop.eu/it/feed/?x=1`.
+- **Re-checked before writing:** `classify()` gives `ok`, and no other
+  registry row carries this URL.
+- **History continues:** it is the same feed on the same host, so the
+  source's history carries on.
+- **`parse_feed` is unchanged:** the XXE guard keeps rejecting anything
+  that is not a well-formed document.
+- **Re-check each round:** if the site's cache starts serving query-string
+  URLs too, the beacon comes back and the source turns `not-xml` again.
+
+**After, 125 feeds: ok 96, stale 8, blocked 10, not-xml 6, dead 5.**
+
+**Still open for the maintainer:** verify **News24** from a non-cloud
+network. If the feed works there, this is the same egress-only block as the
+10 `blocked` feeds.
+
 After round 13 the registry has an honest accounting of reachability,
 freshness, *and* actual collector compatibility, including client-fingerprint
 blocks: **2 `dead`** (ITV News, L'Orient Today — confirmed 404 across every

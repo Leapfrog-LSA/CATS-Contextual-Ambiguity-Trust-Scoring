@@ -833,7 +833,7 @@
 | VeronaSera | https://www.veronasera.it | — | IT | — | — | Verona — network Citynews |
 | Virgilio Notizie | https://notizie.virgilio.it | — | — | — | — | Aggregatore — Portale |
 | Volere la Luna | https://volerelaluna.it | — | — | — | — | Analisi critica — Politica — Blog |
-| VoxEurop Italia | https://voxeurop.eu/it | https://voxeurop.eu/it/feed/ | — | — | Online | Europa — Prospettiva europea |
+| VoxEurop Italia | https://voxeurop.eu/it | https://voxeurop.eu/it/feed/?x=1 | — | — | Online | Europa — Prospettiva europea |
 | Whistleblower.it | https://www.whistleblower.it | — | — | IT | — | Protezione whistleblower — Italia |
 | Wired Italia | https://www.wired.it | https://www.wired.it/feed/ | — | — | Online | Tech/Cultura — Tech/Culture |
 | ZeroUno | https://www.zerounoweb.it | https://www.zerounoweb.it/feed/ | — | — | — | Enterprise — ICT |

@@ -59,6 +59,7 @@ counsel.** See [`classification.md`](classification.md).
 | [`annex_iv_technical_documentation.md`](annex_iv_technical_documentation.md) | Annex IV / Art. 11 | Draft, pre-filled from implementation |
 | [`risk_management_art9.md`](risk_management_art9.md) | Art. 9 | Draft template |
 | [`data_governance_art10.md`](data_governance_art10.md) | Art. 10 | Draft template |
+| [`post_market_monitoring_art72.md`](post_market_monitoring_art72.md) | Art. 72 / Annex IV point 9 | Draft plan; thresholds and owner TODO |
 
 The accuracy/robustness declaration (Art. 15) inside Annex IV depends on the
 empirical validation tracked in [`../calibration.md`](../calibration.md) and
