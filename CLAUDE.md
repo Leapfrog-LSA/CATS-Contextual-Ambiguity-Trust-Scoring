@@ -32,8 +32,9 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   overrides the test's own and fails at collection demanding `psycopg2`, which
   this project does not use. So either export nothing, or copy the CI `test`-job
   values verbatim — `.github/workflows/ci.yml` / `docs/cloud_setup.md`.
-- CI runs the test job on Python **3.11** (the `requires-python` floor) and
-  **3.14** (the Docker image's interpreter); lint runs on 3.11 only.
+- CI runs the test job on Python **3.11** (the `requires-python` floor),
+  **3.14** (the Docker image's interpreter) and **3.15** (the image's next
+  interpreter, Dependabot #224); lint runs on 3.11 only.
 - `tests/integration/` needs live Postgres + Redis (`make docker-up`). In a cloud
   session, start them with `service postgresql start` / `service redis-server start`.
   A fresh container also lacks the `cats` role and the `cats_test` database, and

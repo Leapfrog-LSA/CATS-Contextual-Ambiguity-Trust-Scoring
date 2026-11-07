@@ -50,11 +50,12 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    # 3.11 is the floor (requires-python); 3.14 is what the Docker image runs.
+    # 3.11 is the floor (requires-python); 3.14 is what the Docker image runs
+    # today; 3.15 is what it runs once the python:3.15-slim bump (#224) lands.
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.14"]
+        python-version: ["3.11", "3.14", "3.15"]
     services:
       postgres:
         image: postgres:16-alpine
