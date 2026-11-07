@@ -8,6 +8,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Draft post-market monitoring plan (EU AI Act Art. 72)**,
+  `docs/eu_ai_act/post_market_monitoring_art72.md`.
+  - **Indicators:** it maps the indicators CATS can already measure onto
+    Arts. 9–15 and marks each data source as existing or missing. The
+    groups are holdout accuracy, score and input drift, feed health,
+    contests and human labels, robustness and security, and interaction
+    with other AI systems.
+  - **Process:** it proposes review cadences, triggers and records, and
+    lists the engineering gaps.
+  - **Not decided:** every threshold, cadence, owner and legal point is a
+    `TODO` for the maintainer or counsel.
+  - **Legal frame:** Reg. (EU) 2026/1744 replaced the template implementing
+    act with voluntary Commission guidance, due by 2 September 2027, and
+    moved Annex III high-risk obligations to 2 December 2027.
+  - **Links:** the risk-management, Annex IV and folder README documents
+    now link to it.
+
 ### Changed
 - **CI also tests on Python 3.15.** The `test` matrix is now 3.11, 3.14 and
   3.15, so Dependabot's bump of the Docker image to `python:3.15-slim` (#224)

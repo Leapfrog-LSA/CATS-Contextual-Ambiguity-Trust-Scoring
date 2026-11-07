@@ -58,9 +58,10 @@ Order of measures: eliminate/reduce by design → mitigate → provide informati
 ## 6. Post-market monitoring (Art. 72) — link
 
 - Operational telemetry via `/metrics` (Prometheus); encrypted audit trail.
-- TODO: define the post-market monitoring plan — what is collected, how
-  drift/accuracy degradation is detected, and the feedback loop into this
-  register.
+- Draft plan: [`post_market_monitoring_art72.md`](post_market_monitoring_art72.md).
+  It covers the indicators, data sources, review cadence, triggers, and the
+  feedback loop into this register. Its thresholds, cadences and owner are
+  still TODO (maintainer), and its legal points TODO (legal).
 
 ## 7. Testing against measures (Art. 9(6)–(8))
 
