@@ -8,6 +8,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Text inventory** (`research/text_inventory.py`). It lists, per source,
+  the third-party texts stored in the repository: publisher domain, unique
+  texts (deduplicated across files), characters, length buckets, links back
+  to the originals, and first and last timestamps. It writes CSV/JSON and
+  prints a Markdown summary.
+  - **Results on 2026-11-07:** 110 sources, 152,666 unique texts, about 89.8
+    million characters. 4,099 texts are over 5,000 characters, and
+    `eldiario.es` alone is 38% of the characters. These figures inform the
+    copyright decision (roadmap, item 1).
+- **Large-file guard: files over 2 MiB are refused.**
+  - **Where:** `scripts/check_large_files.py` runs in pre-commit (on staged
+    files) and in the new CI job `large-files` (on the files a PR or push
+    adds or modifies).
+  - **Scope:** existing large files that nobody touches are not flagged;
+    changing one is.
+  - **Pre-commit config:** the `cats|tests` path filter moves from the top
+    level to each linter hook, so that the size check sees every file.
+- **`NOTICE.md` and `DATA_LICENSE` (drafts).** `NOTICE.md` gives third-party
+  attributions: publishers' texts, MBFC, CRED-1, the spaCy Italian model
+  (CC BY-NC-SA 3.0) and Tranco. `DATA_LICENSE` sets out the status of each
+  data file. The legal points are left as explicit TODOs for the maintainer
+  and are not decided. `README.md` and `data/README.md` link to both files.
+
 ### Changed
 - **Il Corriere della Sera collects again.** Its registered feed
   (`xml2.corriereobjects.it/rss/cronaca.xml`) had been stale since
