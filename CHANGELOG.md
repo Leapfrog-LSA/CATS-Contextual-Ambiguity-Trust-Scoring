@@ -20,9 +20,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     lists the engineering gaps.
   - **Not decided:** every threshold, cadence, owner and legal point is a
     `TODO` for the maintainer or counsel.
-  - **Legal frame:** Reg. (EU) 2026/1744 replaced the template implementing
-    act with voluntary Commission guidance, due by 2 September 2027, and
-    moved Annex III high-risk obligations to 2 December 2027.
+  - **Legal frame,** as summarised in the draft and to be verified by
+    counsel: Reg. (EU) 2026/1744 replaced the template implementing act with
+    Commission guidance, including a (voluntary) template, due by
+    2 September 2027. It also moved Chapter III Sections 1–3 to
+    2 December 2027 for Annex III systems.
   - **Links:** the risk-management, Annex IV and folder README documents
     now link to it.
 

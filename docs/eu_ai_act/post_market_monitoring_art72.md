@@ -22,7 +22,7 @@
 | Art. 72(1)–(2) | The provider must establish and document a PMM system, proportionate to the technology and its risks. The system must actively and systematically collect, document and analyse performance data over the system's lifetime, including data from deployers or other sources, to evaluate continued compliance with Chapter III Section 2 (Arts. 8–15). Where relevant, this covers interaction with other AI systems. It does **not** cover sensitive operational data of deployers that are law-enforcement authorities. | [AI Act, Art. 72](https://artificialintelligenceact.eu/article/72/) |
 | Art. 72(3), amended | The PMM system is based on a **PMM plan**, which is part of the Annex IV technical documentation (Annex IV point 9). The Omnibus replaced the implementing act that was to set a mandatory template. Instead, the Commission is to adopt **guidance, including a template**, by **2 September 2027**. On 2026-11-07 no template has been published: the Commission's guidelines page lists a *voluntary* PMM template as "in preparation". | [Reg. (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj/eng); [Commission guidelines tracker](https://digital-strategy.ec.europa.eu/en/news/supporting-implementation-ai-act-clear-guidelines) |
 | Application dates | Reg. 2026/1744 (in force since 27 July 2026) moves the Chapter III high-risk obligations to **2 December 2027** for Annex III systems and to **2 August 2028** for Annex I systems. | [Reg. (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj/eng); [overview](https://artificialintelligenceact.eu/ai-act-explorer/digital-omnibus/) |
-| Linked articles | Art. 3(25), definition of the PMM system. Art. 12(2)(c), logs that support PMM. Art. 17(1)(h)–(i), PMM and incident reporting as part of the QMS. Art. 20, corrective actions. Art. 26(5)–(6), deployers monitor and inform the provider, and keep logs. Art. 73, serious-incident reporting (immediately, and within 15 days at most). | [Reg. (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng) |
+| Linked articles | Art. 3(25), definition of the PMM system. Art. 12(2)(b), logs that support PMM (and 12(2)(c), logs for deployer monitoring under Art. 26(5)). Art. 17(1)(h)–(i), PMM and incident reporting as part of the QMS. Art. 20, corrective actions. Art. 26(5)–(6), deployers monitor and inform the provider, and keep logs. Art. 73, serious-incident reporting (immediately, and within 15 days at most). | [Reg. (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng) |
 
 - **TODO (legal):** confirm the wording above against the consolidated text
   on EUR-Lex. This draft relies partly on secondary summaries.
@@ -63,10 +63,10 @@
 | Deployers | Monitor in line with the instructions for use, and inform the provider of risks and serious incidents (Art. 26(5)). Keep logs (Art. 26(6)). **TODO (maintainer/legal):** the instructions for use (Art. 13(3)) do not exist yet. They must say what deployers should report, and where. |
 | Feedback givers | Anyone filing a *score feedback* issue (`.github/ISSUE_TEMPLATE/score_feedback.yml`) or contesting via the API. |
 
-Exclusion: CATS must never request or receive sensitive operational data
-from deployers that are law-enforcement authorities (Art. 72(2)).
-**TODO (legal):** write this into the instructions for use and any deployer
-agreement.
+Art. 72(2) leaves the sensitive operational data of law-enforcement
+deployers outside the PMM obligation. **TODO (legal/maintainer):** decide
+whether CATS should also decline to receive such data, and if so, how to say
+it in the instructions for use and any deployer agreement.
 
 ## 3. What is monitored
 
@@ -80,8 +80,8 @@ listed in §8; ❌ it does not exist yet.
 
 | # | Indicator | Data source | Source status | Reference (not a threshold) | Threshold |
 |---|---|---|---|---|---|
-| A1 | Pairwise concordance on the **future holdout** | `cats.calibration.evaluate` / `report` on `data/holdout_future.jsonl` (53 sources) | ✅ (manual run) | 0.750 (0.762 with domain penalty), last validated 2026-08-28 (`accuracy_declaration.md`); 0.70 used as the "generalises forward" bar (`calibration_findings_2026-07-28.md`); v2.0 target AUC-ROC ≥ 0.78 | TODO (maintainer) |
-| A2 | Spearman rank correlation, same holdout | same | ✅ | +0.554 (+0.578 with penalty) | TODO (maintainer) |
+| A1 | Pairwise concordance on the **future holdout** | `cats.calibration.evaluate` / `report` on `data/holdout_future.jsonl` (53 sources) | ✅ (manual run) | 0.750 (`accuracy_declaration.md`, generated 2026-08-30); 0.762 with the domain penalty (`docs/calibration.md`, re-checked in `docs/domain_provenance_maintenance_2026-10.md`); 0.70 used as the "generalises forward" bar (`calibration_findings_2026-07-28.md`); v2.0 target AUC-ROC ≥ 0.78 | TODO (maintainer) |
+| A2 | Spearman rank correlation, same holdout | same | ✅ | +0.554 (+0.578 with penalty, `docs/calibration.md`) | TODO (maintainer) |
 | A3 | Band agreement, exact and within 1 band | same | ✅ | 26.4% / 79.2% | TODO (maintainer) |
 | A4 | Size of the validation set (sources with a future window) | `data/holdout_future.jsonl` | ✅ | 53; roadmap target > 100 sources | TODO (maintainer) |
 
@@ -89,11 +89,11 @@ listed in §8; ❌ it does not exist yet.
 
 | # | Indicator | Data source | Source status | Reference | Threshold |
 |---|---|---|---|---|---|
-| B1 | Band distribution of scores served | `cats_evaluations_total{band}`, `cats_trust_score` histogram (`cats/core/metrics.py`) | ⚠️ in-process only: no Prometheus server or alert rules in the repo | Band cutoffs 80/60/40/20 | TODO (maintainer) |
+| B1 | Band distribution of scores served | `cats_evaluations_total{band}`, `cats_trust_score` histogram (`cats/core/metrics.py`); per-tenant stored counts via `GET /v1/cats/stats` (`trust_scores.band`) | ⚠️ metrics are in-process only (no Prometheus server or alert rules in the repo); `/stats` is per tenant, on request | Band cutoffs 80/60/40/20 | TODO (maintainer) |
 | B2 | Per-signal medians, by source type / language / country | `research/observatory_aggregate.py` → `docs/observatory/` (aggregates only, no source identifiers) | ✅ (run once, 2026-09-17) | 2026-09-17 report | TODO (maintainer) |
 | B3 | Share of evaluations flagged non-Italian | `language` block in each response (`cats/pipeline/language.py`) | ❌ not persisted, no metric | — | TODO (maintainer) |
 | B4 | Share with `evidence.sufficient = false` | `evidence` block (`CATS_MIN_EVIDENCE_MESSAGES = 3`) | ❌ not persisted, no metric | — | TODO (maintainer) |
-| B5 | Share with degraded NLP (`nlp_unavailable`) | `degraded_signals`; `/health` `nlp` field | ❌ not persisted, no metric | — | TODO (maintainer) |
+| B5 | Share with degraded NLP (`nlp_unavailable`) | API: coherence signal `metadata.reason = nlp_unavailable`; lite/CLI/MCP: `degraded_signals`; `/health` `nlp` field | ❌ not persisted, no metric | — | TODO (maintainer) |
 | B6 | `requires_review` rate | response field | ❌ not persisted, no metric | — | TODO (maintainer) |
 | B7 | Engine-version mix of stored scores | `trust_scores.engine_version` (alembic 003); `/explain` flags a mismatch | ✅ | `ENGINE_VERSION = "1.4"` | TODO (maintainer) |
 
@@ -108,7 +108,7 @@ listed in §8; ❌ it does not exist yet.
 
 | # | Indicator | Data source | Source status | Reference | Threshold |
 |---|---|---|---|---|---|
-| D1 | Contests opened, resolved, upheld (score changed) | `contests` table; `/contest/{id}/resolve` | ⚠️ no listing endpoint; no outcome taxonomy | — | TODO (maintainer) |
+| D1 | Contests opened and resolved, by status | `contests` table; `/contest/{id}/resolve` takes `upheld` or `rejected` (`cats/api/schemas.py`) | ⚠️ no listing endpoint. What `upheld` means (the contest or the score) is not documented. Resolving never changes the stored score. | — | TODO (maintainer) |
 | D2 | Time to resolve a contest | `contests.created_at` / `resolved_at` | ⚠️ as D1 | — | TODO (maintainer) |
 | D3 | Human disagreement labels and their agreement with CATS | `data/human_labels.jsonl` (validation-only, never training) via `research/ingest_score_feedback.py` | ⚠️ 0 records today; ingestion manual | — | TODO (maintainer) |
 
@@ -141,19 +141,22 @@ any.
 
 ## 4. Collection rules (data protection)
 
-- **Aggregates only.** Use aggregates wherever possible. Reports never name
-  a source, the same rule `research/observatory_aggregate.py` enforces with
-  `_check_no_identifiers`.
+- **Proposal: aggregates only.** Use aggregates wherever possible, and never
+  name a source in a report. This is the rule `research/observatory_aggregate.py`
+  already enforces with `_check_no_identifiers`.
 - **No personal data beyond what each source already holds:**
-  - the audit log is AES-256-GCM encrypted, with 90-day retention;
+  - the audit log has 90-day retention. Its payload is AES-256-GCM
+    encrypted, but `ip_address` and `user_id` are stored in plaintext next
+    to it (threat model T5);
   - `trust_scores` and `contests` are kept indefinitely today
     (threat model T5);
   - `human_labels.jsonl` requires the filer's consent.
-- **Deployer reports** are taken in only through the channels in §6, and
-  never include law-enforcement operational data (§2).
+- **Deployer reports:** there is no channel yet (§6, TODO). The handling of
+  law-enforcement data is the open point in §2.
 - **TODO (legal):** confirm that the GDPR basis and retention cover the
   PMM uses above, in particular the indefinite retention of `trust_scores`
-  and `contests` (open threat-model item T5).
+  and `contests` and the plaintext IP in `audit_logs` (open threat-model
+  item T5).
 
 ## 5. Analysis and review
 
@@ -165,17 +168,22 @@ any.
 | R-4 Security review | E1–E4 | continuous (CI); proposal: threat-model refresh twice a year | TODO (maintainer) |
 | R-5 Plan review | this document | proposal: yearly, and when the Commission template is published | TODO (maintainer) |
 
-**Output of each review:** a dated record (§7). Each finding is mapped to an
-entry in the risk register (`risk_management_art9.md` §2), new or existing.
+**Proposed output of each review:** a dated record (§7), with each finding
+mapped to an entry in the risk register (`risk_management_art9.md` §2), new
+or existing. **TODO (maintainer):** adopt or amend this.
 
 ## 6. Triggers and actions
 
-| Trigger | Action |
+All the actions below are **proposals**. **TODO (maintainer):** adopt or
+amend them. The recalibration rule is the exception: it is already a
+project rule (CLAUDE.md).
+
+| Trigger | Proposed action |
 |---|---|
 | An indicator crosses its threshold (once set) | Open a GitHub issue labelled `pmm`. Assess it against the risk register. If it is confirmed, take the corrective action (Art. 20) and record the residual risk. |
 | Accuracy breach (A1–A3) | Run the recalibration cycle that CLAUDE.md and `docs/calibration.md` require: `python -m cats.calibration`, then re-validation on the **future holdout**. Never ship new weights or thresholds without it. |
 | Drift without an accuracy breach (B, C) | Investigate the cause (feeds, language mix, NLP availability) before touching weights. |
-| A contest is upheld, or a feedback issue shows a systematic error | Record it in `human_labels.jsonl` (validation-only), check it against the A-indicators, and update the risk register if it is a pattern. |
+| A contest or a feedback issue shows a systematic error | Record it in `human_labels.jsonl` (validation-only), check it against the A-indicators, and update the risk register if it is a pattern. |
 | A deployer reports a risk (Art. 26(5)) | Assess it, and inform deployers if the risk is confirmed. **TODO (legal):** when market surveillance authorities must be told. |
 | **Possible serious incident (Art. 3(49), Art. 73)** | **TODO (legal/maintainer):** there is no Art. 73 procedure today. It needs: who decides that an event is a serious incident; the clock (immediately once a causal link is established or reasonably likely, and within 15 days at the latest, with shorter limits for some cases); which authority to notify; and the Commission's reporting template. Until it exists, `SECURITY.md` (security only) is the only incident channel. |
 
@@ -202,7 +210,8 @@ These are not done by this draft. Each would be a separate PR.
    - Counters need no schema change. They are the cheaper first step.
 2. **Contest reporting** (D1–D2):
    - a list/aggregate endpoint or script;
-   - an outcome taxonomy (score upheld / changed / out of scope);
+   - documented meanings for the existing `upheld` / `rejected` statuses,
+     plus any extra outcome (e.g. out of scope);
    - an audit row for contest creation (today `log_contest` writes none);
    - an `event_type` that is not always `evaluation`.
 3. **A path from resolved contests to `human_labels.jsonl`**: the schema has
@@ -224,8 +233,16 @@ These are not done by this draft. Each would be a separate PR.
 | PMM owner and deputy | maintainer |
 | Thresholds for A1–A4, B1–B7, C1–C2, D1–D3, E4–E5, G | maintainer |
 | Review cadences R-1 … R-5 | maintainer |
+| Triggers and actions (§6), review output (§5), aggregates-only rule (§4) | maintainer |
+| When to revise this plan (proposal: on any `ENGINE_VERSION` or calibrated-weights change, besides R-5) | maintainer |
 | Art. 73 serious-incident procedure | legal + maintainer |
 | Deployer reporting channel and instructions for use | maintainer + legal |
 | Relevance of "interaction with other AI systems" (MCP) | maintainer + legal |
 | Retention of `trust_scores` / `contests` and of PMM records | legal |
 | Which engineering gaps (§8) to build, and in what order | maintainer |
+
+## 10. Plan versions
+
+| Version | Date | Change |
+|---|---|---|
+| 0.1 (draft) | 2026-11-07 | First draft, pre-filled from the codebase. Not adopted. |
