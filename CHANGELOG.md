@@ -9,6 +9,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **Feed-health round 15 (2026-11-07).** Of 125 feeds: 95 ok, 8 stale,
+  10 blocked, 7 not-xml, 5 dead. The registry is unchanged; the record is in
+  `docs/feed_health_2026-07.md`.
+  - **VoxEurop Italia** (85) collects nothing. Its cache plugin appends a
+    `<script>` after `</rss>`, so the parser rejects the feed. A
+    query-string workaround works, but it is left to the maintainer, as is
+    the alternative of a parser change.
+  - **WND:** the server's redirect loop leaves it with no working feed.
+  - **News24:** a Cloudflare challenge on this egress; needs a check from
+    another network.
 - **Il Corriere della Sera collects again.** Its registered feed
   (`xml2.corriereobjects.it/rss/cronaca.xml`) had been stale since
   2026-09-02.
