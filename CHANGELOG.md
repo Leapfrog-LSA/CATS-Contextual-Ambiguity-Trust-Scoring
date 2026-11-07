@@ -35,6 +35,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **Feed-health round 15 (2026-11-07).** Of 125 feeds after the fix below:
+  96 ok, 8 stale, 10 blocked, 6 not-xml, 5 dead. The record is in
+  `docs/feed_health_2026-07.md`.
+  - **VoxEurop Italia (85) collects again.** Its cache plugin appended a
+    `<script>` after `</rss>`, so the collector's parser rejected the feed.
+    `data/labels.jsonl` and the catalogue now register
+    `https://voxeurop.eu/it/feed/?x=1`. The query string bypasses the cache
+    and serves the same items as a well-formed feed. This was a maintainer
+    decision; `parse_feed` and its XXE guard are unchanged.
+  - **WND:** the server's redirect loop leaves it with no working feed.
+  - **News24:** a Cloudflare challenge on this egress; needs a check from
+    another network.
 - **CI also tests on Python 3.15.** The `test` matrix is now 3.11, 3.14 and
   3.15, so Dependabot's bump of the Docker image to `python:3.15-slim` (#224)
   is tested before it merges, as 3.14 was in 1.9.x. Locally, on CPython

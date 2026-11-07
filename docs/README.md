@@ -38,7 +38,7 @@
 
 | Document | What it covers |
 |---|---|
-| [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (13 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
+| [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (15 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
 | [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
 ## Observatory
