@@ -59,6 +59,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **Docker image runs Python 3.15** (`python:3.15-slim`, was `3.14-slim`;
+  Dependabot #224). Its CI tested the image on the current `main`: the
+  `docker` job built it and rendered every migration, and the test suite
+  passed on 3.11, 3.14 and 3.15. The CI matrix stays 3.11 / 3.14 / 3.15:
+  3.15 is now the image interpreter, and 3.14 stays as a listed classifier.
+  The comments in `ci.yml` and `CLAUDE.md` now say so.
 - **Feed-health round 15 (2026-11-07).** Of 125 feeds after the fix below:
   96 ok, 8 stale, 10 blocked, 6 not-xml, 5 dead. The record is in
   `docs/feed_health_2026-07.md`.
@@ -76,8 +82,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is tested before it merges, as 3.14 was in 1.9.x. Locally, on CPython
   3.15.0b4 with Postgres and Redis, the full suite gives 480 passed and
   4 skipped, the same as on 3.13 in the same container. `pyproject.toml`
-  lists 3.15 among its classifiers. 3.14 stays in the matrix while the image
-  still runs it.
+  lists 3.15 among its classifiers. 3.14 stayed in the matrix, and still
+  does now that the image runs 3.15 (see the Docker entry above).
 - **Il Corriere della Sera collects again.** Its registered feed
   (`xml2.corriereobjects.it/rss/cronaca.xml`) had been stale since
   2026-09-02.
