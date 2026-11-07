@@ -21,9 +21,10 @@ jobs:
       - run: flake8 cats/ tests/ --max-line-length=120 --extend-ignore=E203,W503
       - run: mypy cats/ --ignore-missing-imports --no-strict-optional
 
-  # Refuses files over 2 MiB that this PR or push adds or modifies: large blobs
-  # stay in git history for good (scripts/check_large_files.py). Files already
-  # on main that nobody touches are not flagged.
+  # Refuses files over 2 MiB that any commit of this PR or push adds or
+  # modifies: large blobs stay in git history for good
+  # (scripts/check_large_files.py). Files already on main that nobody touches
+  # are not flagged.
   large-files:
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +41,7 @@ jobs:
         run: |
           if [ -n "$BASE_REF" ]; then
             base="origin/$BASE_REF"
-          elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+          elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
             base="$BEFORE"
           else
             base="HEAD~1"

@@ -66,8 +66,21 @@ def test_texts_are_deduplicated_across_files(tmp_path):
     assert (row["first_timestamp"], row["last_timestamp"]) == ("2026-07-01T08:00:00Z", "2026-07-03T08:00:00Z")
     assert [f["messages"] for f in files] == [1, 2]
 
-    totals = summarize([row], files)
-    assert totals["unique_texts"] == 2 and totals["domains"] == 1
+    totals = summarize([row], files, sources)
+    assert totals["unique_texts"] == 2 and totals["domains"] == 1 and totals["distinct_texts"] == 2
+
+
+def test_distinct_total_counts_a_text_shared_by_two_sources_once(tmp_path):
+    shared = _message("Wire copy republished by two outlets.")
+    path = _write_jsonl(
+        tmp_path / "s.jsonl",
+        [{"source_id": "A", "messages": [shared]}, {"source_id": "B", "messages": [shared]}],
+    )
+    sources, files = build_inventory([path])
+    totals = summarize([inv.row() for inv in sources.values()], files, sources)
+    assert totals["unique_texts"] == 2
+    assert totals["distinct_texts"] == 1
+    assert totals["distinct_chars"] == len(shared["text"])
 
 
 def test_invalid_json_names_the_file_and_line(tmp_path):

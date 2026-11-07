@@ -189,8 +189,18 @@ def build_inventory(paths: Sequence[Path]) -> Tuple[Dict[str, SourceInventory], 
     return sources, file_rows
 
 
-def summarize(rows: Sequence[dict], file_rows: Sequence[dict]) -> dict:
-    """Totals across all sources and files."""
+def summarize(
+    rows: Sequence[dict], file_rows: Sequence[dict], sources: Optional[Dict[str, "SourceInventory"]] = None
+) -> dict:
+    """Totals across all sources and files.
+
+    ``unique_texts`` / ``unique_chars`` add up the per-source figures, so a text
+    that two sources share counts twice. ``distinct_texts`` / ``distinct_chars``
+    count each text once across the whole repository (needs ``sources``).
+    """
+    distinct: Dict[str, int] = {}
+    for inventory in (sources or {}).values():
+        distinct.update(inventory.lengths)
     totals = {
         "files": len(file_rows),
         "file_bytes": sum(row["bytes"] for row in file_rows),
@@ -200,6 +210,8 @@ def summarize(rows: Sequence[dict], file_rows: Sequence[dict]) -> dict:
         "unique_texts": sum(row["unique_texts"] for row in rows),
         "unique_chars": sum(row["unique_chars"] for row in rows),
         "with_link": sum(row["with_link"] for row in rows),
+        "distinct_texts": len(distinct),
+        "distinct_chars": sum(distinct.values()),
     }
     totals.update({f"bucket_{label}": sum(row[f"bucket_{label}"] for row in rows) for label, _ in BUCKETS})
     return totals
@@ -212,10 +224,12 @@ def render_markdown(rows: Sequence[dict], totals: dict, *, top: int) -> str:
         "",
         f"- Files read: {totals['files']} ({totals['file_bytes'] / 1_000_000:.1f} MB on disk)",
         f"- Sources: {totals['sources']} ({totals['domains']} distinct publisher domains)",
-        f"- Message occurrences: {totals['occurrences']:,}; unique texts: {totals['unique_texts']:,}"
-        f" ({totals['unique_chars']:,} characters)",
-        f"- Unique texts with a link to the original: {totals['with_link']:,}",
-        "- Unique texts by length (characters): "
+        f"- Message occurrences: {totals['occurrences']:,}; distinct texts: {totals['distinct_texts']:,}"
+        f" ({totals['distinct_chars']:,} characters)",
+        f"- Unique texts per source, summed: {totals['unique_texts']:,} ({totals['unique_chars']:,} characters;"
+        " a text shared by several sources counts once for each)",
+        f"- Per-source unique texts with a link to the original: {totals['with_link']:,}",
+        "- Per-source unique texts by length (characters): "
         + ", ".join(f"{label}: {totals[f'bucket_{label}']:,}" for label in bucket_labels),
         "",
         "Length buckets are descriptive, not legal thresholds.",
@@ -257,7 +271,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     sources, file_rows = build_inventory(paths)
     rows = sorted((inv.row() for inv in sources.values()), key=lambda r: (-r["unique_chars"], r["source_id"]))
-    totals = summarize(rows, file_rows)
+    totals = summarize(rows, file_rows, sources)
 
     if args.csv:
         with args.csv.open("w", encoding="utf-8", newline="") as handle:

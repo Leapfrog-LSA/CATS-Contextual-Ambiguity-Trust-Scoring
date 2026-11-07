@@ -2,60 +2,76 @@ CATS — DATA LICENSING STATUS
 ============================
 
 DRAFT, pending maintainer and legal review (2026-11-07).
-This file does not yet grant a licence to any data. Sections marked
-"TODO (legal)" are decisions for the maintainer or a lawyer; they are open
-questions, not determinations. Until they are settled, the default applies:
-no rights in the data are granted beyond what applicable law allows.
+This file grants NO licence to any data yet. Every "TODO (legal)" or
+"TODO (maintainer)" item is an open question, not a determination. Until it
+is settled, no rights in the data are granted.
 
 The MIT License in LICENSE covers the source code only. It does NOT cover
 the data files listed below. Third-party attributions are in NOTICE.md.
 
 
-1. PROJECT-AUTHORED DATA
-------------------------
+1. DATA COMPILED OR DERIVED BY THIS PROJECT
+-------------------------------------------
 
-Created by this project: structure, selection, derived values, synthetic
-examples. The project can license these.
+  a) No third-party ratings in them:
+     data/Fonti_OSINT.csv,
+     data/Fonti_OSINT_CONSOLIDATO.md   source catalogue (names, URLs, feeds)
+     data/disinfo_sources.csv          compiled registry; each row cites its
+                                       sources
+     examples/*.jsonl                  synthetic examples written for the
+                                       project
+     docs/observatory/*.md             aggregate statistics; no source
+                                       identifiers
 
-  data/Fonti_OSINT.csv, data/Fonti_OSINT_CONSOLIDATO.md   source catalogue
-  data/disinfo_sources.csv          compiled registry; each row cites its source
-  data/labels.jsonl                 labels derived from the catalogue + ratings
-  data/train.jsonl, data/holdout.jsonl, data/holdout_future.jsonl
-                                    per-source signal values + label; no texts
-  data/calibrated_weights.json      calibrated weight table
-  data/human_labels.jsonl           human score-feedback records (empty today)
-  examples/*.jsonl                  synthetic examples written for the project
-  docs/observatory/*.md             aggregate statistics; no source identifiers
+  b) With values derived from MBFC ratings (see section 2):
+     data/labels.jsonl                 numeric labels mapped from the ratings
+     data/train.jsonl, data/holdout.jsonl,
+     data/holdout_future.jsonl         per-source signal values + those
+                                       labels; no texts
+     data/calibrated_weights.json      weights calibrated against those
+                                       labels
 
-  TODO (maintainer): choose the licence for these files. CC BY 4.0 is a
-  common choice for research data and is compatible with the CC BY 4.0
-  inputs in section 2; CC0 is the alternative if no attribution is wanted.
-  The Zenodo checklist (docs/zenodo_deposit_checklist.md) currently says
-  "MIT" for the whole deposit; update it to match this choice.
+  c) Contributed by outside reviewers:
+     data/human_labels.jsonl           score-feedback records (empty today)
+
+  TODO (legal): confirm that the project holds the rights needed to license
+  each group. In particular:
+    - whether the compilations in (a) attract copyright (L. 633/1941 art. 2
+      n. 9) or the sui generis database right (art. 102-bis);
+    - whether MBFC's terms allow the derived values in (b) to be
+      redistributed, and under what licence.
+
+  TODO (maintainer): once that is clear, choose a licence for the files the
+  project can license, for example CC BY 4.0 or CC0.
+  TODO (legal): check that the chosen licence is compatible with the terms of
+  every input those files derive from.
+
+  TODO (maintainer): set the terms under which outside contributions to (c)
+  are accepted, so that the chosen licence can apply to them.
 
   TODO (legal): disinfo_sources.csv and the catalogue name real outlets and,
   in the attribution column, state actors. Confirm that publishing these
   attributions, each sourced, raises no defamation or other issue in the
-  jurisdictions that matter.
+  relevant jurisdictions.
 
-  TODO (maintainer): human_labels.jsonl will hold text written by outside
-  contributors (score-feedback issues, demo, API). Decide under which terms
-  contributions are accepted, so that the chosen data licence can apply to
-  them.
+  Note: docs/zenodo_deposit_checklist.md covers only the whitepaper (MIT) and
+  deposits no data. A future Zenodo deposit of data must follow this file,
+  not the MIT licence.
 
 
-2. THIRD-PARTY REFERENCE DATA (redistributed under the owner's terms)
-----------------------------------------------------------------------
+2. THIRD-PARTY REFERENCE DATA (the owners' terms apply)
+-------------------------------------------------------
 
   data/cred1_current.csv            CC BY 4.0 (CRED-1, OpenSources.co) and MIT
                                     (Iffy.news Index). Attribution in NOTICE.md.
   data/ratings.csv,
   data/ratings_provenance.csv       Ratings © Media Bias/Fact Check.
-                                    TODO (legal): check MBFC's terms of use for
-                                    redistribution, Zenodo included.
+                                    TODO (legal): MBFC's terms of use have not
+                                    been checked. Check them for keeping these
+                                    files in a public repository and for any
+                                    other redistribution, Zenodo included.
 
-These files stay under their owners' terms. This project cannot relicense
-them.
+This project cannot relicense these files.
 
 
 3. THIRD-PARTY TEXTS (not licensed by this project)
@@ -66,56 +82,66 @@ them.
   and the Leapfrog-LSA/cats-snapshots repository.
 
 These files contain headlines, summaries and, for some feeds, full article
-bodies, copied from the publishers' public RSS feeds. The copyright belongs
-to each publisher. This project grants NO licence to these texts, and none of
-the licences above applies to them. Scale and per-publisher breakdown:
-NOTICE.md section 1, or run research/text_inventory.py.
+bodies, copied from the publishers' public RSS feeds. This project grants NO
+licence to these texts, and nothing in sections 1-2 applies to them. Scale
+and per-publisher breakdown: NOTICE.md section 1, or run
+research/text_inventory.py.
 
 TODO (legal) — questions to settle before deciding whether these texts stay
-public and before any Zenodo deposit:
+public, and before any Zenodo deposit that includes them:
 
-  a) Basis for collecting and keeping them. Italian law has two
-     text-and-data-mining exceptions, both from Directive (EU) 2019/790
-     arts. 3-4 and introduced by D.Lgs. 177/2021:
-       - L. 633/1941 art. 70-ter covers research organisations and
-         cultural-heritage institutions.
-       - Art. 70-quater covers anyone, with lawful access, unless the
-         rights holder has expressly reserved TDM. It allows copies to be
-         kept only as long as the extraction needs them.
-     Which, if either, applies to this project? Have any of the publishers
-     reserved TDM (opt-out)? Note also art. 70-septies (L. 132/2025) on AI.
+  a) Protection and owners. Which texts are protected works at all (a short
+     headline may not be), and who holds the rights? Some publishers offer
+     republication or Creative Commons terms (NOTICE.md section 1). Do those
+     terms already cover this use?
 
-  b) Publishing. The exceptions in (a) are about reproduction and
-     extraction. Does any of them, or quotation under art. 70, cover making
-     the texts PUBLICLY available in a git repository or a Zenodo deposit,
-     especially the full article bodies (texts over 5,000 characters)?
+  b) Basis for collecting and keeping them. Italian law has two
+     text-and-data-mining exceptions, introduced by D.Lgs. 177/2021 to
+     implement Directive (EU) 2019/790 arts. 3-4:
+       - L. 633/1941 art. 70-ter: research organisations and
+         cultural-heritage institutions, for the purposes of scientific
+         research.
+       - Art. 70-quater: anyone with lawful access, unless the rights holder
+         has expressly reserved TDM. Copies may be kept only as long as the
+         extraction needs them.
+     Does either apply to this project? Have any of the publishers reserved
+     TDM (opt-out)? See also art. 70-septies (added by L. 132/2025), on AI.
 
-  c) Other jurisdictions. Several publishers are outside the EU (for
+  c) Publishing. The exceptions in (b) concern reproduction and extraction.
+     Does any of them, or quotation under art. 70, cover making the texts
+     PUBLICLY available in a git repository or a Zenodo deposit, especially
+     the full article bodies (texts over 5,000 characters)? Does the bulk
+     collection engage the sui generis database right of a publisher's site
+     or feed (Directive 96/9/EC art. 7; L. 633/1941 art. 102-bis)?
+
+  d) Other jurisdictions. Several publishers are outside the EU (for
      example dawn.com, mb.com.ph, thehill.com).
 
-  d) Personal data in the texts. Assess GDPR Art. 85 (journalistic,
-     academic expression) or another basis (roadmap, item 18).
+  e) Personal data in the texts. What is the GDPR Art. 6 lawful basis? Do
+     the national exemptions adopted under GDPR Art. 85 apply (in Italy,
+     D.Lgs. 196/2003 artt. 136 ff.)?
 
-  e) What to do now. The options include:
+  f) What to do now. The options include:
        - keep the texts as they are;
-       - keep only hashes, lengths, timestamps and links, plus the derived
-         signal values;
+       - keep only hashes, lengths, timestamps, links and the derived signal
+         values;
        - truncate the texts to headline + short summary;
        - make the texts private and purge them from git history.
-     The purge is a history rewrite with a force-push and needs the
-     maintainer's explicit approval (roadmap, item 2).
+     The purge rewrites history with a force-push. It needs the maintainer's
+     explicit approval, and it must happen before any Zenodo deposit of the
+     repository.
 
-Takedown (PROPOSED, not yet in force): until this is settled, a publisher
+Takedown (PROPOSED, not yet in force): while this is unsettled, a publisher
 who wants its texts removed could write to technical@cats-system.org, and
 the texts would be removed from the current tree. Removing them from git
-history needs the purge in (e).
-TODO (maintainer): confirm this address works (roadmap, item 8), then
-confirm or change this takedown route.
+history needs the purge in (f).
+TODO (maintainer): confirm that this address receives mail (also open in
+docs/piano_sviluppo_roadmap_2026-09.md), then confirm or change this route.
 
 
 4. CHANGES
 ----------
 
-New data files must be added to the right section above and, if they come
-from a third party, to NOTICE.md. Files over 2 MiB are refused by
+New data files must be added to the right section above. If they come from
+a third party, add them to NOTICE.md too. Files over 2 MiB are refused by
 pre-commit and CI (scripts/check_large_files.py).

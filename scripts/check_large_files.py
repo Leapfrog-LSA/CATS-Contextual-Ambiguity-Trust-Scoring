@@ -23,12 +23,17 @@ Two ways to run it:
   A file identical to its committed version in ``HEAD`` is skipped, so
   ``pre-commit run --all-files`` does not flag the existing large files.
 
-* **CI** (``.github/workflows/ci.yml``) checks every file a pull request or a
-  push adds or modifies, using the blob sizes git records for ``--head``::
+* **CI** (``.github/workflows/ci.yml``) checks every blob that the commits in
+  ``--base..--head`` introduce, using the sizes git records. That includes a
+  large file added in one commit and deleted in a later one of the same PR:
+  merge commits keep it in history all the same::
 
       python scripts/check_large_files.py --base origin/main --head HEAD
 
-Exit status: 0 if every checked file is within the limit, 1 otherwise.
+Symlinks are measured as git stores them (the link text), never followed.
+
+Exit status: 0 if every checked file is within the limit, 1 if one is over it,
+2 if git cannot compare the two refs.
 """
 
 from __future__ import annotations
@@ -46,15 +51,27 @@ def _git(*args: str) -> str:
     return subprocess.run(["git", *args], check=True, capture_output=True, text=True).stdout
 
 
-def changed_files(base: str, head: str) -> List[str]:
-    """Paths added or modified between the merge base of ``base`` and ``head``, and ``head``."""
-    output = _git("diff", "--name-only", "--no-renames", "--diff-filter=AM", "-z", f"{base}...{head}")
-    return [path for path in output.split("\0") if path]
+def new_blobs(base: str, head: str) -> List[Tuple[str, int]]:
+    """``(path, size)`` for every blob reachable from ``head`` but not from ``base``.
 
-
-def blob_size(head: str, path: str) -> int:
-    """Size in bytes of ``path`` as committed in ``head`` (independent of the working tree)."""
-    return int(_git("cat-file", "-s", f"{head}:{path}").strip())
+    Walks every commit in ``base..head``, not just the final tree, so a blob that
+    an intermediate commit added and a later one removed is still reported.
+    """
+    objects = _git("rev-list", "--objects", f"{base}..{head}")
+    batch = subprocess.run(
+        ["git", "cat-file", "--batch-check=%(objecttype) %(objectsize) %(rest)"],
+        input=objects,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    blobs = []
+    for line in batch.splitlines():
+        parts = line.split(" ", 2)
+        if len(parts) < 2 or parts[0] != "blob":
+            continue
+        blobs.append((parts[2] if len(parts) == 3 else "", int(parts[1])))
+    return blobs
 
 
 def unchanged_since_head(paths: Sequence[str]) -> List[str]:
@@ -97,9 +114,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.base:
         if args.files:
             parser.error("pass either file names or --base, not both")
-        sizes = [(path, blob_size(args.head, path)) for path in changed_files(args.base, args.head)]
+        try:
+            sizes = new_blobs(args.base, args.head)
+        except subprocess.CalledProcessError as exc:
+            sys.stderr.write(f"git failed comparing {args.base}..{args.head}: {exc.stderr.strip()}\n")
+            return 2
     else:
-        files = [path for path in args.files if os.path.isfile(path)]
+        files = [path for path in args.files if os.path.isfile(path) and not os.path.islink(path)]
         big = [path for path in files if os.path.getsize(path) > args.max_bytes]
         skip = set(unchanged_since_head(big))
         sizes = [(path, os.path.getsize(path)) for path in big if path not in skip]

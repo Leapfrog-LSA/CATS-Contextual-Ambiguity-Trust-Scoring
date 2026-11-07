@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from scripts.check_large_files import changed_files, main, oversized, unchanged_since_head
+from scripts.check_large_files import main, new_blobs, oversized, unchanged_since_head
 
 LIMIT = 1000
 
@@ -52,7 +52,7 @@ def test_ci_mode_checks_only_files_added_or_modified_since_base(repo, capsys):
     _git(repo, "checkout", "-q", "-b", "feature")
     (repo / "small.txt").write_bytes(b"still small")
     _git(repo, "commit", "-qam", "touch small")
-    assert changed_files("main", "HEAD") == ["small.txt"]
+    assert [path for path, _ in new_blobs("main", "HEAD")] == ["small.txt"]
     assert main(["--base", "main", "--max-bytes", str(LIMIT)]) == 0
 
     (repo / "added_big.bin").write_bytes(b"z" * (LIMIT + 1))
@@ -73,3 +73,29 @@ def test_ci_mode_ignores_deleted_files(repo):
 def test_files_and_base_are_mutually_exclusive(repo):
     with pytest.raises(SystemExit):
         main(["small.txt", "--base", "main"])
+
+
+def test_ci_mode_flags_a_large_blob_removed_by_a_later_commit(repo, capsys):
+    # With merge commits, an intermediate commit's blob reaches main even if the PR's final tree drops it.
+    _git(repo, "checkout", "-q", "-b", "oops")
+    (repo / "dump.bin").write_bytes(b"d" * (LIMIT + 1))
+    _git(repo, "add", "dump.bin")
+    _git(repo, "commit", "-qm", "add dump")
+    _git(repo, "rm", "-q", "dump.bin")
+    _git(repo, "commit", "-qm", "remove dump")
+    assert main(["--base", "main", "--max-bytes", str(LIMIT)]) == 1
+    assert "dump.bin" in capsys.readouterr().err
+
+
+def test_symlinks_are_not_followed(repo):
+    (repo / "link").symlink_to("legacy_big.jsonl")
+    assert main(["link", "--max-bytes", str(LIMIT)]) == 0
+    _git(repo, "checkout", "-q", "-b", "with-link")
+    _git(repo, "add", "link")
+    _git(repo, "commit", "-qm", "add link")
+    assert main(["--base", "main", "--max-bytes", str(LIMIT)]) == 0
+
+
+def test_unknown_base_fails_with_a_readable_error(repo, capsys):
+    assert main(["--base", "0" * 40, "--max-bytes", str(LIMIT)]) == 2
+    assert "git failed" in capsys.readouterr().err
