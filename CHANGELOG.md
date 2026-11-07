@@ -27,8 +27,44 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     2 December 2027 for Annex III systems.
   - **Links:** the risk-management, Annex IV and folder README documents
     now link to it.
+- **Text inventory** (`research/text_inventory.py`). It lists, per source,
+  the third-party texts stored in the repository: publisher domain, unique
+  texts, characters, length buckets, links back to the originals, and first
+  and last timestamps. Totals also count each distinct text once across the
+  repository. It writes CSV/JSON and prints a Markdown summary.
+  - **Results on 2026-11-07:** 110 sources, 152,065 distinct texts, about
+    89.6 million characters. 4,099 texts are over 5,000 characters, and
+    `eldiario.es` alone is 38% of the characters. These figures inform the
+    pending decision on whether raw texts stay public.
+- **Large-file guard: files over 2 MiB are refused.**
+  - **Where:** `scripts/check_large_files.py` runs in pre-commit (on staged
+    files) and in the new CI job `large-files`.
+  - **CI scope:** the job checks every blob that the commits of a PR or push
+    add, including a file added in one commit and deleted in a later one.
+    Existing large files that nobody touches are not flagged; changing one
+    is.
+  - **Pre-commit config:** the `cats|tests` path filter moves from the top
+    level to each linter hook, so that the size check sees every file.
+- **`NOTICE.md` and `DATA_LICENSE` (drafts).** `NOTICE.md` gives third-party
+  attributions: publishers' texts, MBFC, CRED-1, the spaCy Italian model
+  (CC BY-NC-SA 3.0) and Tranco. `DATA_LICENSE` sets out the status of each
+  data file and grants no licence yet. The legal points are left as explicit
+  TODOs for the maintainer and are not decided. `README.md` and
+  `data/README.md` link to both files.
 
 ### Changed
+- **Feed-health round 15 (2026-11-07).** Of 125 feeds after the fix below:
+  96 ok, 8 stale, 10 blocked, 6 not-xml, 5 dead. The record is in
+  `docs/feed_health_2026-07.md`.
+  - **VoxEurop Italia (85) collects again.** Its cache plugin appended a
+    `<script>` after `</rss>`, so the collector's parser rejected the feed.
+    `data/labels.jsonl` and the catalogue now register
+    `https://voxeurop.eu/it/feed/?x=1`. The query string bypasses the cache
+    and serves the same items as a well-formed feed. This was a maintainer
+    decision; `parse_feed` and its XXE guard are unchanged.
+  - **WND:** the server's redirect loop leaves it with no working feed.
+  - **News24:** a Cloudflare challenge on this egress; needs a check from
+    another network.
 - **CI also tests on Python 3.15.** The `test` matrix is now 3.11, 3.14 and
   3.15, so Dependabot's bump of the Docker image to `python:3.15-slim` (#224)
   is tested before it merges, as 3.14 was in 1.9.x. Locally, on CPython

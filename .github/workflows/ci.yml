@@ -21,6 +21,33 @@ jobs:
       - run: flake8 cats/ tests/ --max-line-length=120 --extend-ignore=E203,W503
       - run: mypy cats/ --ignore-missing-imports --no-strict-optional
 
+  # Refuses files over 2 MiB that any commit of this PR or push adds or
+  # modifies: large blobs stay in git history for good
+  # (scripts/check_large_files.py). Files already on main that nobody touches
+  # are not flagged.
+  large-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Check added and modified file sizes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            base="origin/$BASE_REF"
+          elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            base="$BEFORE"
+          else
+            base="HEAD~1"
+          fi
+          python scripts/check_large_files.py --base "$base" --head HEAD
+
   test:
     runs-on: ubuntu-latest
     # 3.11 is the floor (requires-python); 3.14 is what the Docker image runs

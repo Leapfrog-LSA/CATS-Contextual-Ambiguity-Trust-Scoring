@@ -55,7 +55,7 @@
 {"source_id": "La Lettura (CdS)", "source_type": "news", "label": 85.0, "url": "https://www.corriere.it/la-lettura", "rss": null}
 {"source_id": "La Verità", "source_type": "news", "label": 50.0, "url": "https://www.laverita.info", "rss": "https://www.laverita.info/feed/"}
 {"source_id": "Sole 24 Ore Norme & Tributi", "source_type": "news", "label": 70.0, "url": "https://www.ilsole24ore.com/norme-e-tributi", "rss": null}
-{"source_id": "VoxEurop Italia", "source_type": "news", "label": 85.0, "url": "https://voxeurop.eu/it", "rss": "https://voxeurop.eu/it/feed/"}
+{"source_id": "VoxEurop Italia", "source_type": "news", "label": 85.0, "url": "https://voxeurop.eu/it", "rss": "https://voxeurop.eu/it/feed/?x=1"}
 {"source_id": "Bild", "source_type": "news", "label": 50.0, "url": "https://www.bild.de", "rss": "https://www.bild.de/feed/alles.xml"}
 {"source_id": "De Standaard", "source_type": "news", "label": 85.0, "url": "https://www.standaard.be", "rss": "https://www.standaard.be/rss.xml"}
 {"source_id": "DPA International", "source_type": "news", "label": 85.0, "url": "https://www.dpa-international.com", "rss": null}
