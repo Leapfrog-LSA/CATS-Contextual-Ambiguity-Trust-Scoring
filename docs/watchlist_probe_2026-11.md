@@ -105,9 +105,10 @@ dead.
    - **No effect on collection:** these are catalogue rows outside the labelled
      registry, so they don't affect daily collection. The feed-health rounds
      cover the registry only.
-   - **Before any fix:** a cleanup should re-check each feed from another
-     network, and first decide which of the two diverging catalogue copies is
-     the source of truth.
+   - **Follow-up (same day):** a cleanup re-checked them and replaced 8, emptied
+     24 cells that answer 404, and kept the rest. See *Catalogue cleanup* in
+     `docs/feed_health_2026-07.md`. Which of the two diverging catalogue copies
+     is the source of truth is still open.
 
 ## Reproducing
 

@@ -76,6 +76,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **Catalogue dead-feed cleanup (`data/Fonti_OSINT.csv`, its consolidated
+  `.md`).** The watchlist probe found 57 non-registry catalogue feeds dead or
+  unparseable. Re-checked with the collector's own code:
+  - **8 replaced** with feeds found by CATS's discovery and verified `ok`.
+  - **24 RSS cells emptied** where the site answers 404 and no replacement
+    exists.
+  - **25 kept:** 16 are working feeds that carry a DTD (which CATS refuses by
+    design), and 9 were not condemned by the site.
+
+  The catalogue now has 287 feeds, down from 311. The label registry rebuilt
+  from it is byte-identical, so `labels.jsonl` and collection are
+  unaffected. Details are in `docs/feed_health_2026-07.md`.
 - **Docker image runs Python 3.15** (`python:3.15-slim`, was `3.14-slim`;
   Dependabot #224). Its CI tested the image on the current `main`: the
   `docker` job built it and rendered every migration, and the test suite

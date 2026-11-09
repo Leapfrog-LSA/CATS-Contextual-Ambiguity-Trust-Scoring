@@ -779,6 +779,61 @@ query-string feed.** `data/labels.jsonl`, `data/Fonti_OSINT.csv` and
 network. If the feed works there, this is the same egress-only block as the
 10 `blocked` feeds.
 
+## Catalogue cleanup (2026-11-09) — 32 feed URLs in `data/Fonti_OSINT.csv`
+
+These are the dead and unparseable catalogue feeds found by the
+[watchlist coverage probe](watchlist_probe_2026-11.md): 63 in total, of which
+57 are catalogue rows outside the labelled registry. The other 6 are registry
+feeds that round 15 already covers (ITV News, L'Orient Today, News24,
+Sixth Tone, The Hill Tech, Berlingske Business), and they are left as they are.
+
+**Method.**
+- **Re-check:** each of the 57 was re-checked with this script's `classify()`
+  (that is, `fetch_feed` + the collector's `parse_feed`).
+- **Replacement search:** when a feed was still failing, CATS's own feed
+  discovery (`cats.lite._resolve_feed`, from the outlet's homepage) looked for
+  a replacement. A candidate was accepted only if `classify()` returned `ok`
+  and no other catalogue row carried it.
+- **When a cell may be emptied:** only when the site itself answered 404 and
+  no replacement was found. This is the rule the OSINT watchlist uses: only the
+  site may condemn the site.
+
+**Replaced, 8:**
+
+| Source | Old feed | New feed |
+|---|---|---|
+| Afrique XXI | `https://afriquexxi.info/spip.php?page=backend` | `https://afriquexxi.info/?page=backend&lang=fr` |
+| Global Project | `https://www.globalproject.info/rss` | `https://globalproject.info/feed` |
+| Limes | `https://www.limesonline.com/feed/` | `https://www.limesonline.com/rss/` |
+| Libero | `https://liberoquotidiano.it/rss` | `https://liberoquotidiano.it/rss.xml` |
+| Tuttosport | `https://www.tuttosport.com/rss/home.xml` | `https://www.tuttosport.com/rss/` |
+| Ouest France | `https://www.ouest-france.fr/rss/une.xml` | `https://www.ouest-france.fr/rss/une` |
+| La Prensa Panama | `https://www.prensa.com/nacionales/feed/` | `https://www.prensa.com/arc/outboundfeeds/rss/?outputType=xml` |
+| Vietnam Plus | `https://en.vietnamplus.vn/rss` | `https://en.vietnamplus.vn/rss/home.rss` |
+
+La Prensa Panamá's new feed is site-wide; the old one was the *nacionales*
+section only.
+
+**RSS cell emptied, 24** (404 on both 2026-11-09 checks, no feed
+found by discovery): The Drum, Avvenire, Eco di Bergamo, Il Messaggero Veneto, Il Piccolo, Il Tirreno, La Nuova Sardegna, La Sicilia, Network Digital 360, Milano Finanza, Redattore Sociale, Jornal de Noticias, Publico PT, Tages-Anzeiger, Aamulehti, Exit News, Gazeta Polska, CR Hoy, El Mostrador, Graphic Online, Mmegi, The Libya Observer, Dhaka Tribune, World Bank News.
+
+**Kept as is:**
+- **16 feeds that carry a DTD:** Radio 24, Dnevnik.si, Wire India, Adnkronos, Corriere dello Sport, Giornale di Sicilia, HWUpgrade, Il Foglio, Rai News 24, Sky TG24, Lidovky.cz, Radio Zamaneh, Prachatai, ThePrint, US — Federal Register, RedHotCyber.
+  These are working feeds. CATS's collector refuses any `<!DOCTYPE` by design
+  (XXE guard, round 12 correction), so CATS cannot read them, but the
+  catalogue is not CATS-only.
+- **9 feeds that failed without the site condemning them:**
+  El Faro, L'Essenziale, Osservatorio Balcani, El Periódico España, Wayka, Kathmandu Post, Korea Bizwire, PNG Loop, Taiwan Plus. The failures were a connection error, a
+  feed that is not well-formed, or an empty feed. Verify them from another
+  network before changing anything.
+
+**Effect.**
+- **Catalogue:** the catalogue now lists 287 feeds (was 311).
+- **Label registry:** `cats.calibration.label_from_ratings` over the new
+  catalogue gives a registry byte-identical to the old one (146 rows). None of
+  the 32 rows is MBFC-rated, so `data/labels.jsonl` and snapshot collection
+  are unaffected.
+
 After round 13 the registry has an honest accounting of reachability,
 freshness, *and* actual collector compatibility, including client-fingerprint
 blocks: **2 `dead`** (ITV News, L'Orient Today — confirmed 404 across every
