@@ -292,7 +292,7 @@
 | The Conversation (Global) | https://theconversation.com/global | — | EN | — | — | Accademia |
 | The Daily Beast | https://www.thedailybeast.com | — | EN | — | — | USA tabloide premium |
 | The Dispatch | https://thedispatch.com | — | EN | — | — | Centrodestra USA |
-| The Drum | https://www.thedrum.com | https://www.thedrum.com/rss.xml | EN | — | — | Marketing Media |
+| The Drum | https://www.thedrum.com | — | EN | — | — | Marketing Media |
 | The Economist | https://www.economist.com | — | EN | — | — | Analisi settimanale |
 | The Examination | https://theexamination.org | — | — | Globale | — | Sanità globale |
 | The Hill | https://thehill.com | — | EN | — | — | USA Congresso |
@@ -338,7 +338,7 @@
 | 100Reporters | https://100r.org | — | — | Globale | — | Network reporter |
 | Africa Is a Country | https://africasacountry.com | — | EN | — | — | Cultura e politica — Pan-Africa |
 | African Arguments | https://africanarguments.org | — | EN | — | — | Analisi politica — Pan-Africa |
-| Afrique XXI | https://afriquexxi.info | https://afriquexxi.info/spip.php?page=backend | FR | — | — | Investigativo AF — Africa Inv. FR |
+| Afrique XXI | https://afriquexxi.info | https://afriquexxi.info/?page=backend&lang=fr | FR | — | — | Investigativo AF — Africa Inv. FR |
 | Agência Pública | https://apublica.org | — | PT | — | — | Investigativo brasiliano — Brasile |
 | Al-Monitor | https://www.al-monitor.com | https://www.al-monitor.com/rss | EN | — | — | Medio Oriente — MENA |
 | AllAfrica | https://allafrica.com | — | EN | — | — | Aggregatore notizie africane — Pan-Africa |
@@ -580,7 +580,7 @@
 | ArezzoNotizie | https://www.arezzonotizie.it | — | IT | — | — | Arezzo — network Citynews |
 | Articolo 21 | https://www.articolo21.org | — | — | — | — | Libertà stampa |
 | Autorità Garante Concorrenza | https://www.agcm.it | — | — | — | — | Antitrust IT — Italia — Regolatore |
-| Avvenire | https://www.avvenire.it | https://www.avvenire.it/rss | IT | — | — | Cattolico — Quotidiano |
+| Avvenire | https://www.avvenire.it | — | IT | — | — | Cattolico — Quotidiano |
 | Avviso Pubblico | https://www.avvisopubblico.it | — | — | — | — | Legalità enti locali — Italia |
 | Bari Today | https://www.baritoday.it | — | — | IT-Puglia | — | Bari online — Puglia |
 | Basilicata24 | https://www.basilicata24.it | — | IT | — | — | Basilicata — testata digitale |
@@ -630,7 +630,7 @@
 | Doppiozero | https://www.doppiozero.com | https://www.doppiozero.com/rss.xml | — | — | Online | Cultura |
 | East Journal | https://www.eastjournal.net | https://www.eastjournal.net/feed | — | — | Online | Est Europa — Geopolitica |
 | Eastwest | https://eastwest.eu | https://eastwest.eu/feed/ | — | — | — | Geopolitica — Rivista |
-| Eco di Bergamo | https://www.ecodibergamo.it | https://www.ecodibergamo.it/rss | — | IT-Lombardia | — | Bergamo — Locale |
+| Eco di Bergamo | https://www.ecodibergamo.it | — | — | IT-Lombardia | — | Bergamo — Locale |
 | Effimera | https://effimera.org | — | — | — | — | Filosofia — Cultura |
 | Emergency | https://www.emergency.it | — | — | — | — | Umanitario |
 | EUnews | https://www.eunews.it | https://www.eunews.it/feed/ | — | EU | — | UE in italiano — Notizie europee in italiano — UE |
@@ -663,7 +663,7 @@
 | Giornale di Sicilia | https://gds.it | https://gds.it/rss | — | IT-Sicilia | — | Palermo — Sicilia |
 | Giornale di Vicenza | https://www.giornalediviencenza.it | — | — | IT-Veneto | — | Vicenza — Veneto |
 | GiornalistiItalia | https://www.giornalistiitalia.it | — | — | — | — | Giornalismo |
-| Global Project | https://www.globalproject.info | https://www.globalproject.info/rss | — | — | — | Sinistra radicale — Politica |
+| Global Project | https://www.globalproject.info | https://globalproject.info/feed | — | — | — | Sinistra radicale — Politica |
 | GoNews | https://www.gonews.it | — | IT | — | — | Toscana — testata digitale regionale |
 | Governo Italiano | https://governo.it | — | — | — | — | Governo IT — Italia — Istituzione |
 | HDBlog | https://www.hdblog.it | https://www.hdblog.it/rss/ | — | — | Online | Tech |
@@ -689,8 +689,8 @@
 | Il Manifesto | https://ilmanifesto.it | https://ilmanifesto.it/feed/ | IT | — | — | Sinistra — Quotidiano |
 | Il Mattino | https://www.ilmattino.it | https://www.ilmattino.it/rss | — | IT-Campania | — | Napoli/Sud — Quotidiano |
 | Il Messaggero | https://www.ilmessaggero.it | https://www.ilmessaggero.it/rss | — | — | — | Roma — Quotidiano |
-| Il Messaggero Veneto | https://www.messaggeroveneto.it | https://www.messaggeroveneto.it/rss | — | IT-FVG | — | Udine — Locale |
-| Il Piccolo | https://www.ilpiccolo.it | https://www.ilpiccolo.it/rss | — | IT-FVG | — | Trieste — Locale |
+| Il Messaggero Veneto | https://www.messaggeroveneto.it | — | — | IT-FVG | — | Udine — Locale |
+| Il Piccolo | https://www.ilpiccolo.it | — | — | IT-FVG | — | Trieste — Locale |
 | Il Post | https://www.ilpost.it | https://www.ilpost.it/feed/ | — | — | Online | Qualità |
 | Il Quotidiano del Sud | https://www.quotidianodelsud.it | — | — | Sud | — | Cosenza |
 | Il Quotidiano di Sicilia | https://www.quotidianodisicilia.it | — | — | IT-Sicilia | — | Sicilia |
@@ -702,7 +702,7 @@
 | Il Sole 24 Ore Tech | https://www.ilsole24ore.com/tecnologia | — | — | — | — | FT24 — Tech |
 | Il Tascabile | https://www.iltascabile.com | https://www.iltascabile.com/feed/ | — | — | Online | Cultura |
 | Il Tempo | https://www.iltempo.it | https://www.iltempo.it/rss | — | IT-Lazio | — | Roma — Lazio — Quotidiano |
-| Il Tirreno | https://www.iltirreno.it | https://www.iltirreno.it/rss | — | IT-Toscana | — | Livorno/Grosseto — Locale |
+| Il Tirreno | https://www.iltirreno.it | — | — | IT-Toscana | — | Livorno/Grosseto — Locale |
 | Il Trentino | https://www.ildolomiti.it | https://www.ildolomiti.it/rss | — | IT-TAA | — | Trentino — Quotidiano |
 | IlNapolista | https://ilnapolista.it | https://ilnapolista.it/feed/ | — | — | — | Calcio critico — Sport |
 | IlPescara | https://www.ilpescara.it | — | IT | — | — | Pescara — network Citynews |
@@ -729,7 +729,7 @@
 | La Nazione | https://www.lanazione.it | https://www.lanazione.it/rss | — | IT-Toscana | — | Toscana — Locale |
 | La Nuova del Sud | https://www.lanuova.net | — | IT | — | — | Basilicata — quotidiano |
 | La Nuova Ferrara | https://lanuovaferrara.gelocal.it | — | IT | — | — | Ferrara — gruppo GEDI |
-| La Nuova Sardegna | https://www.lanuovasardegna.it | https://www.lanuovasardegna.it/rss | — | IT-Sardegna | — | Sassari — Locale |
+| La Nuova Sardegna | https://www.lanuovasardegna.it | — | — | IT-Sardegna | — | Sassari — Locale |
 | La Nuova Venezia | https://nuovavenezia.gelocal.it | — | IT | — | — | Venezia — gruppo GEDI |
 | La Prealpina | https://www.prealpina.it | — | — | IT-Lombardia | — | Varese — Lombardia |
 | La Provincia (CO-CR-LC) | https://laprovinciacr.it | — | — | IT-Lombardia | — | Cremona/Como/LC — Lombardia |
@@ -738,7 +738,7 @@
 | La Repubblica Economia | https://www.repubblica.it/economia | — | — | — | — | — |
 | La Repubblica Firenze | https://firenze.repubblica.it | — | — | IT-Toscana | — | Firenze — Toscana |
 | La Sentinella del Canavese | https://lasentinella.gelocal.it | — | IT | — | — | Piemonte (Ivrea) — gruppo GEDI |
-| La Sicilia | https://www.lasicilia.it | https://www.lasicilia.it/rss.xml | — | IT-Sicilia | — | Sicilia — Quotidiano |
+| La Sicilia | https://www.lasicilia.it | — | — | IT-Sicilia | — | Sicilia — Quotidiano |
 | La Stampa | https://www.lastampa.it | — | — | — | — | Torino e nazionale — Quotidiano |
 | La Tribuna di Treviso | https://tribunatreviso.gelocal.it | — | IT | — | — | Treviso — gruppo GEDI |
 | La Verità | https://www.laverita.info | https://www.laverita.info/feed/ | — | — | — | Sovranista — Quotidiano |
@@ -750,10 +750,10 @@
 | Leggo | https://www.leggo.it | https://www.leggo.it/rss | — | — | Gratuito | Free press — Quotidiano |
 | Lettera43 | https://www.lettera43.it | https://www.lettera43.it/feed/ | — | — | Online | Investigativo |
 | Libera | https://www.libera.it | — | — | — | — | Antimafia — Italia |
-| Libero | https://liberoquotidiano.it | https://liberoquotidiano.it/rss | — | — | — | Destra — Quotidiano |
+| Libero | https://liberoquotidiano.it | https://liberoquotidiano.it/rss.xml | — | — | — | Destra — Quotidiano |
 | Libertatea | https://www.libertatea.ro | — | RO | — | — | Romania |
 | Libertà | https://www.liberta.it | — | IT | — | — | Piacenza — quotidiano storico |
-| Limes | https://www.limesonline.com | https://www.limesonline.com/feed/ | — | — | — | Geopolitica — Rivista |
+| Limes | https://www.limesonline.com | https://www.limesonline.com/rss/ | — | — | — | Geopolitica — Rivista |
 | Linkiesta | https://www.linkiesta.it | https://www.linkiesta.it/rss/ | — | — | Online | Liberale |
 | Live Sicilia | https://www.livesicilia.it | — | — | IT-Sicilia | — | Online — Sicilia |
 | Lsdi (Libertà di Stampa) | https://www.lsdi.it | — | IT | — | — | Monitor |
@@ -763,13 +763,13 @@
 | Messaggero Umbria | https://www.ilmessaggero.it/umbria | — | — | IT-Umbria | — | Perugia — Umbria |
 | MessinaToday | https://www.messinatoday.it | — | IT | — | — | Messina — network Citynews |
 | Micromega | https://www.micromega.net | https://www.micromega.net/feed/ | — | — | — | Cultura/Politica — Rivista |
-| Milano Finanza | https://www.milanofinanza.it | https://www.milanofinanza.it/rss | — | — | — | Finanza — Economia |
+| Milano Finanza | https://www.milanofinanza.it | — | — | — | — | Finanza — Economia |
 | MilanoToday | https://www.milanotoday.it | — | — | IT-Lombardia | — | Milano online — Lombardia |
 | Minima &Moralia | https://www.minimaetmoralia.it | https://www.minimaetmoralia.it/feed/ | — | — | — | Letteratura — Cultura |
 | ModenaToday | https://www.modenatoday.it | — | IT | — | — | Modena — network Citynews |
 | MonzaToday | https://www.monzatoday.it | — | IT | — | — | Monza-Brianza — network Citynews |
 | Napoli Today | https://www.napolitoday.it | — | — | IT-Campania | — | Napoli online — Campania |
-| Network Digital 360 | https://www.networkdigital360.it | https://www.networkdigital360.it/feed/ | — | — | Online | Business IT — Tech |
+| Network Digital 360 | https://www.networkdigital360.it | — | — | — | Online | Business IT — Tech |
 | Normattiva | https://www.normattiva.it | — | — | IT | — | Leggi italiane — Pubblico — Testi delle leggi italiane — Database |
 | Notizie Radicali | https://www.radicali.it/notizie | — | — | — | — | Liberali — Politica |
 | NovaraToday | https://www.novaratoday.it | — | IT | — | — | Novara — network Citynews |
@@ -799,7 +799,7 @@
 | Rai News 24 | https://www.rainews.it | https://www.rainews.it/rss | — | — | Online | RAI — TV/Online |
 | Rai Tre | https://www.raiplay.it/programmi/report | — | — | — | — | Report RAI — TV |
 | RavennaToday | https://www.ravennatoday.it | — | IT | — | — | Ravenna — network Citynews |
-| Redattore Sociale | https://www.redattoresociale.it | https://www.redattoresociale.it/rss | — | — | Online | Sociale |
+| Redattore Sociale | https://www.redattoresociale.it | — | — | — | Online | Sociale |
 | Reggio Today | https://www.reggiotoday.it | — | — | IT-Emilia-Romagna | — | Reggio online — Emilia |
 | Registro Imprese IT | https://www.registroimprese.it | — | — | — | Database | Aziende italiane — Freemium |
 | RiminiToday | https://www.riminitoday.it | — | IT | — | — | Rimini — network Citynews |
@@ -824,7 +824,7 @@
 | Trentino | https://www.trentino.corriere.it | — | — | IT-TAA | — | Trentino-AA — Locale |
 | TrentoToday | https://www.trentotoday.it | — | IT | — | — | Trento — network Citynews |
 | TriestePrima | https://www.triesteprima.it | — | IT | — | — | Trieste — network Citynews |
-| Tuttosport | https://www.tuttosport.com | https://www.tuttosport.com/rss/home.xml | — | — | — | Torino/Juventus — Sport |
+| Tuttosport | https://www.tuttosport.com | https://www.tuttosport.com/rss/ | — | — | — | Torino/Juventus — Sport |
 | UdineToday | https://www.udinetoday.it | — | IT | — | — | Udine — network Citynews |
 | Valigia Blu | https://www.valigiablu.it | https://www.valigiablu.it/feed/ | — | — | Online | Qualità — Fact-checking, inchieste |
 | Valigia Blu FC | https://www.valigiablu.it/tag/fact-checking | — | — | IT | — | Italia |
@@ -952,7 +952,7 @@
 | Irish Independent | https://www.independent.ie | — | EN | — | — | Irlanda |
 | Irish Times | https://www.irishtimes.com | — | EN | — | — | Irlanda |
 | Jersey Evening Post | https://jerseyeveningpost.com | — | EN | — | — | Jersey |
-| Jornal de Noticias | https://www.jn.pt | https://www.jn.pt/rss/ | PT | — | — | Portogallo |
+| Jornal de Noticias | https://www.jn.pt | — | PT | — | — | Portogallo |
 | Journalism.co.uk | https://www.journalism.co.uk | — | UK | — | — | Media industry news |
 | Kathimerini Greece | https://www.ekathimerini.com | — | — | GR | — | Quality English — Grecia |
 | Kieler Nachrichten | https://www.kn-online.de | — | DE | — | — | Schleswig-Holstein — Kiel |
@@ -1030,7 +1030,7 @@
 | Observador | https://observador.pt | — | PT | — | — | Portogallo online |
 | OpenEurope | https://openeurope.org.uk | — | UK | — | — | Brexit/UE |
 | Ostsee-Zeitung | https://www.ostsee-zeitung.de | — | DE | — | — | Meclemburgo — Rostock |
-| Ouest France | https://www.ouest-france.fr | https://www.ouest-france.fr/rss/une.xml | FR | — | — | Regionale FR |
+| Ouest France | https://www.ouest-france.fr | https://www.ouest-france.fr/rss/une | FR | — | — | Regionale FR |
 | OÖNachrichten | https://www.nachrichten.at | — | DE | — | — | Alta Austria — Linz |
 | Paris-Normandie | https://www.paris-normandie.fr | — | FR | — | — | Normandia — Rouen |
 | Pressgazette | https://pressgazette.co.uk | — | UK | — | — | News industry |
@@ -1038,7 +1038,7 @@
 | Profil | https://www.profil.at | — | DE | — | — | Austria — newsmagazine |
 | Proto Thema | https://www.protothema.gr | — | EL | — | — | Grecia — quotidiano più letto |
 | Protothema Greece | https://en.protothema.gr | — | — | GR | — | English — Grecia |
-| Publico PT | https://www.publico.pt | https://feeds.publico.pt/publico/rss | PT | — | — | Portogallo quality |
+| Publico PT | https://www.publico.pt | — | PT | — | — | Portogallo quality |
 | Reuters Institute | https://reutersinstitute.politics.ox.ac.uk | — | UK | — | — | Ricerca media — Accademia |
 | RFI English | https://www.rfi.fr/en | — | EN | — | — | Francia radio int. |
 | RFI Français | https://www.rfi.fr/fr | — | FR | — | — | Radio int. FR |
@@ -1066,7 +1066,7 @@
 | Sächsische Zeitung | https://www.saechsische.de | — | DE | — | — | Sassonia — Dresda |
 | Süddeutsche Zeitung | https://www.sueddeutsche.de | — | DE | — | — | Germania |
 | Süddeutsche Zeitung Magazin | https://sz-magazin.sueddeutsche.de | — | DE | — | — | Long-form DE |
-| Tages-Anzeiger | https://www.tagesanzeiger.ch | https://www.tagesanzeiger.ch/standard.rss | DE | — | — | Svizzera |
+| Tages-Anzeiger | https://www.tagesanzeiger.ch | — | DE | — | — | Svizzera |
 | Tagesspiegel | https://www.tagesspiegel.de | — | DE | — | — | Berlino |
 | taz | https://taz.de | — | DE | — | — | Germania sinistra |
 | Telecinco / Informativos | https://www.telecinco.es | — | ES | — | — | Spagna — Mediaset España |
@@ -1119,7 +1119,7 @@
 | 7x7 Russia | https://7x7-journal.ru | — | — | RU | — | Regionale — Russia |
 | 7x7 — Horizontal Russia | https://semnasem.org | — | RU/EN | — | — | Russia — giornalismo regionale indipendente |
 | A1Plus Armenia | https://a1plus.am | — | EN/HY | — | — | Armenia |
-| Aamulehti | https://www.aamulehti.fi | https://www.aamulehti.fi/rss/uutiset.rss | FI | — | — | Finlandia |
+| Aamulehti | https://www.aamulehti.fi | — | FI | — | — | Finlandia |
 | Adevărul | https://adevarul.ro | — | RO | — | — | Romania — quotidiano storico |
 | Adresseavisen | https://www.adressa.no | — | NO | — | — | Norvegia — Trondheim |
 | Aftenposten | https://www.aftenposten.no | — | NO | — | — | Norvegia quality |
@@ -1181,7 +1181,7 @@
 | Espreso.tv Ukraine | https://espreso.tv | — | — | UA | — | Online — Ucraina |
 | Eurasianet | https://eurasianet.org | — | EN | — | — | Asia centrale |
 | EVN Report | https://evnreport.com | — | EN | — | — | Armenia — analisi e approfondimento |
-| Exit News | https://exit.al/en | https://exit.al/en/feed/ | — | AL | — | English — Albania |
+| Exit News | https://exit.al/en | — | — | AL | — | English — Albania |
 | Expressen | https://www.expressen.se | — | SV | — | — | Svezia tabloide |
 | Faktabaari | https://faktabaari.fi | — | — | FI | — | Fact-checking FI — Finlandia |
 | Faktacheck (Estonia) | https://faktacheck.err.ee | — | — | EE | — | FC EE — Estonia |
@@ -1189,7 +1189,7 @@
 | Faktoje Albania | https://faktoje.al | — | — | AL | — | Fact-check — Albania |
 | Finance.si | https://www.finance.si | — | SL | — | — | Slovenia — economico |
 | Fontanka | https://www.fontanka.ru | — | RU | — | — | San Pietroburgo |
-| Gazeta Polska | https://www.gazetapolska.pl | https://www.gazetapolska.pl/feed/ | PL | — | — | Polonia |
+| Gazeta Polska | https://www.gazetapolska.pl | — | PL | — | — | Polonia |
 | Gazeta Wyborcza | https://wyborcza.pl | — | PL | — | — | Polonia quality |
 | Georgian Dream Opposite | https://formula.ge | — | KA | — | — | Georgia TV |
 | Göteborgs-Posten | https://www.gp.se | https://www.gp.se/feed | SV | — | — | Svezia |
@@ -1355,7 +1355,7 @@
 | Convoca.pe | https://convoca.pe | https://convoca.pe/feed/ | ES | — | — | Investigativo — Perù |
 | Correio Braziliense | https://www.correiobraziliense.com.br | — | PT | — | — | già in lista |
 | Cosecha Roja | https://cosecharoja.org | — | — | AR | — | Violenza/genere — Argentina |
-| CR Hoy | https://www.crhoy.com | https://www.crhoy.com/feed/ | ES | — | — | Costa Rica |
+| CR Hoy | https://www.crhoy.com | — | ES | — | — | Costa Rica |
 | Criterio Honduras | https://criterio.hn | — | — | HN | — | Inv. — Honduras |
 | Crusoé | https://crusoe.com.br | — | — | BR | — | Business inv. — Brasile |
 | Cuarta Pared Bolivia | https://cuartapared.bo | — | — | BO | — | Inv. — Bolivia |
@@ -1387,7 +1387,7 @@
 | El Heraldo Honduras | https://www.elheraldo.hn | — | ES | — | — | Honduras |
 | El Informador | https://www.informador.mx | — | ES | — | — | Messico — Guadalajara/Jalisco |
 | El Mercurio | https://digital.elmercurio.com | — | ES | — | — | Cile quality |
-| El Mostrador | https://www.elmostrador.cl | https://www.elmostrador.cl/feed/ | ES | — | — | Cile online |
+| El Mostrador | https://www.elmostrador.cl | — | ES | — | — | Cile online |
 | El Mundo Costa Rica | https://www.elmundo.cr | — | — | CR | — | Online |
 | El Nacional | https://www.elnacional.com | — | ES | — | — | Venezuela — quotidiano storico |
 | El Nuevo Día | https://www.elnuevodia.com | — | ES | — | — | Porto Rico — quotidiano principale |
@@ -1444,7 +1444,7 @@
 | La Prensa (PE) | https://laprensa.pe | — | ES | — | — | Perù tabloide |
 | La Prensa Grafica | https://www.laprensagrafica.com | — | ES | — | — | già in lista |
 | La Prensa Libre Guatemala | https://www.prensalibre.com | — | — | GT | — | già in lista |
-| La Prensa Panama | https://www.prensa.com | https://www.prensa.com/nacionales/feed/ | ES | — | — | Panama |
+| La Prensa Panama | https://www.prensa.com | https://www.prensa.com/arc/outboundfeeds/rss/?outputType=xml | ES | — | — | Panama |
 | La República (PE) | https://larepublica.pe | — | ES | — | — | Perù |
 | La Tercera | https://www.latercera.com | — | ES | — | — | Cile |
 | La Tribuna Honduras | https://www.latribuna.hn | — | — | HN | — | Honduras |
@@ -1641,7 +1641,7 @@
 | Ghanaian Times | https://www.ghanaiantimes.com.gh | — | EN | — | — | Testata nazionale — Ghana · fonte aggregatore, verifica consigliata |
 | GhanaWeb | https://www.ghanaweb.com | — | EN | — | — | Ghana |
 | Goobjoog News | https://goobjoog.com | — | SO/EN | — | — | Somalia — network news |
-| Graphic Online | https://www.graphic.com.gh | https://www.graphic.com.gh/feeds | EN | — | — | Quotidiano — Ghana |
+| Graphic Online | https://www.graphic.com.gh | — | EN | — | — | Quotidiano — Ghana |
 | GroundUp | https://www.groundup.org.za | — | EN | — | — | Sudafrica civico |
 | Guineenews | https://guineenews.org | — | FR | — | — | Guinea — portale storico |
 | HeraldLIVE SA | https://www.heraldlive.co.za | — | — | ZA | — | Port Elizabeth — Sudafrica |
@@ -1710,7 +1710,7 @@
 | Mercury SA | https://www.iol.co.za/mercury | — | — | ZA | — | Durban — Sudafrica |
 | Midi Madagasikara | https://midi-madagasikara.mg | — | FR/MG | — | — | Madagascar — quotidiano |
 | Miniflux | https://miniflux.app | — | — | — | Open Source | RSS minimalista — RSS Reader |
-| Mmegi | https://www.mmegi.bw | https://www.mmegi.bw/rss/rss.xml | EN | — | — | Botswana |
+| Mmegi | https://www.mmegi.bw | — | EN | — | — | Botswana |
 | Modern Ghana | https://www.modernghana.com | — | EN | — | — | Testata nazionale — Ghana · fonte aggregatore, verifica consigliata |
 | Moneyweb | https://www.moneyweb.co.za | — | EN | — | — | Testata nazionale — South Africa · fonte aggregatore, verifica consigliata |
 | MUSEBA Journalism | https://www.musebajournalism.net | — | FR/EN | — | — | Camerun investigativo |
@@ -1794,7 +1794,7 @@
 | The Fourth Estate Ghana | https://thefourthestategh.com | — | EN | — | — | Ghana investigativo |
 | The Guardian Nigeria | https://www.ngrguardiannews.com | — | EN | — | — | Testata/portale — Nigeria · fonte aggregatore, verifica consigliata |
 | The Independent Mauritius | https://www.lexpress.mu | — | FR/EN | — | — | Mauritius |
-| The Libya Observer | https://www.libyaobserver.ly | https://www.libyaobserver.ly/feed | EN | — | — | già in lista |
+| The Libya Observer | https://www.libyaobserver.ly | — | EN | — | — | già in lista |
 | The Monitor | https://www.monitor.co.ug | https://www.monitor.co.ug/rss | EN | — | — | Quality |
 | The Namibian | https://www.namibian.com.na | https://www.namibian.com.na/rss/ | EN | — | — | Quality — Namibia |
 | The Nation | https://thenationonlineng.net | — | EN | — | — | Testata/portale — Nigeria · fonte aggregatore, verifica consigliata |
@@ -2009,7 +2009,7 @@
 | Deccan Herald | https://www.deccanherald.com | — | — | IN | — | South India |
 | DeepSeek | https://www.deepseek.com | — | — | — | Freemium | Cina — LLM |
 | Detik.com | https://news.detik.com | — | — | ID | — | Mass media — Indonesia |
-| Dhaka Tribune | https://www.dhakatribune.com | https://www.dhakatribune.com/feed | EN | — | — | Bangladesh |
+| Dhaka Tribune | https://www.dhakatribune.com | — | EN | — | — | Bangladesh |
 | Diamond Online | https://diamond.jp | — | JA | — | — | Giappone — business |
 | Dinamalar | https://www.dinamalar.com | — | TA | — | — | Tamil Nadu — tamil |
 | DVB Myanmar | https://english.dvb.no | https://english.dvb.no/feed/ | — | MM | — | Indip. — Myanmar |
@@ -2234,7 +2234,7 @@
 | Vientiane Times | https://www.vientianetimes.org.la | — | — | LA | — | Gov — Laos |
 | Vietnam Investment Review | https://vir.com.vn | — | — | VN | — | Business — Vietnam |
 | Vietnam News | https://vietnamnews.vn | — | EN | — | — | Vietnam |
-| Vietnam Plus | https://en.vietnamplus.vn | https://en.vietnamplus.vn/rss | EN | — | — | Vietnam agenzia |
+| Vietnam Plus | https://en.vietnamplus.vn | https://en.vietnamplus.vn/rss/home.rss | EN | — | — | Vietnam agenzia |
 | VietnamNet | https://vietnamnet.vn/en | — | — | VN | — | Online — Vietnam |
 | Vijaya Karnataka | https://vijaykarnataka.com | — | KN | — | — | Karnataka — kannada |
 | Vishvas News | https://www.vishvasnews.com | — | — | — | — | India — FC |
@@ -4406,7 +4406,7 @@
 | Tax Justice Network | https://taxjustice.net | — | — | — | — | Evasione — Advocacy |
 | Wall Street Journal | https://www.wsj.com | — | EN | — | — | Business USA |
 | World Bank Blogs | https://blogs.worldbank.org | — | — | — | — | Org. |
-| World Bank News | https://www.worldbank.org/en/news | https://www.worldbank.org/en/news/rss.xml | EN | — | — | Istituzionale |
+| World Bank News | https://www.worldbank.org/en/news | — | EN | — | — | Istituzionale |
 | IMF Finances | https://finances.worldbank.org | — | — | — | Database | Dati finanziari storici dal 1984 — Gratuito |
 | OCSE Data Explorer | https://data-explorer.oecd.org | — | — | — | — | Economie OCSE: lavoro, commercio, istruzione — Gratuito — Portale ufficiale |
 | OECD Tax Stats | https://stats.oecd.org/index.aspx?DataSetCode=REV | — | — | — | — | Gratuito — Fiscalità |

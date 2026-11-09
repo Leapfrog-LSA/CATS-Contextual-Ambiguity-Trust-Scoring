@@ -6,7 +6,7 @@ and [`NOTICE.md`](../NOTICE.md). The message texts in `*_sources.jsonl` and
 lists them per source and by length.
 
 ## `Fonti_OSINT.csv`
-OSINT source catalogue v5.25, 2026-06-17 (5 275 sources, 311 with an RSS feed;
+OSINT source catalogue v5.25, 2026-06-17 (5 275 sources, 311 with an RSS feed at release, 287 after the 2026-11-09 dead-feed cleanup in `docs/feed_health_2026-07.md`;
 the human-readable consolidated edition lives in
 [`Fonti_OSINT_CONSOLIDATO.md`](Fonti_OSINT_CONSOLIDATO.md)). Input for
 `python -m cats.calibration.label_from_ratings --sources data/Fonti_OSINT.csv`.
