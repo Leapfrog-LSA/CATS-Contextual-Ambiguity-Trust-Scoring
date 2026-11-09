@@ -9,6 +9,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Coverage probe on the OSINT watchlist catalogue**
+  (`docs/watchlist_probe_2026-11.md`). CATS scored the 852 feeds that
+  returned messages, out of the catalogue's 1,088, with no errors. The report
+  gives aggregates only, names no source and stores no texts, and it is not
+  an accuracy test.
+  - **Findings:**
+    - 83% of feeds land in `medium`, because one fetch has no history and
+      coherence is near-inert outside Italian.
+    - All 6 `high` results are one-message artefacts.
+    - The domain penalty hits 6 legitimate outlets when the Tranco table is
+      absent.
+    - CATS's own catalogue has 63 dead or unparseable feed URLs.
+- **Documented the one-message score artefact** in the README *Honest
+  limits*, in `docs/api.md` (`evidence`) and in risk R5. With fewer than 2
+  messages, `coherence` returns 100, which can lift a dead feed into `high`.
+  It is flagged but not yet penalised; the fix waits for the next
+  recalibration.
 - **`NOTICE.md` covers `cats-snapshots` too.** The text inventory run over
   all 105 snapshots (2026-07-02 → 2026-11-07) found 243,350 distinct texts
   (about 143 million characters) from 101 publisher domains. 6,535 texts are
