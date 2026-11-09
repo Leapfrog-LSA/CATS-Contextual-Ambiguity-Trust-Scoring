@@ -88,7 +88,12 @@ or `band`, and they are not persisted — `/explain` does not report them):
   `CATS_MIN_EVIDENCE_MESSAGES` (default 3). Below the minimum,
   `sufficient: false` and `requires_review` is forced `true`: with a
   near-empty history the negative-polarity signals cannot fire, so the raw
-  score alone can look deceptively high.
+  score alone can look deceptively high. With a single message it can be very high: `coherence`
+  returns 100 at zero confidence (`metadata.reason: insufficient_messages`),
+  which can lift the score into the `high` band. When `sufficient` is `false`,
+  treat `score` and `band` as not informative. The score itself is not
+  penalised yet: that is a signal change, deferred to the next recalibration
+  cycle (risk R5).
 
 ---
 

@@ -133,6 +133,7 @@ On top of the four behavioural signals, an asymmetric **domain-provenance penalt
 * Ranking still leans heavily on one signal (`silence`), with `coherence` as the main tie-breaker.
 * The default stack is Italian-optimised — other languages are detected and flagged, not blocked, but accuracy degrades.
 * Calibration is validated on a 56-source train / 53-source future-holdout split — informative, not large-scale.
+* **Fewer than 3 messages: read `evidence`, not the score.** With a single message `coherence` has nothing to compare and returns 100 (at zero confidence), so a one-item or long-dead feed can show a `high` band. CATS flags these cases (`evidence.sufficient: false`, review forced), but the score itself is not lowered until the next recalibration cycle. In a [probe over 852 catalogue feeds](docs/watchlist_probe_2026-11.md), all 6 `high` results were one-message feeds.
 * Scores are ordinal, not probabilities, and are not a substitute for human review.
 
 Full detail, numbers and the validation history: [docs/architecture.md](docs/architecture.md) and the [calibration findings](docs/calibration_findings_2026-07-28.md).
