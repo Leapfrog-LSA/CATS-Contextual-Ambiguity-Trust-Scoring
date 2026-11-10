@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **TDM reservation check** (`research/tdm_reservation_check.py`). For each
+  publisher in `data/labels.jsonl`, it collects the machine-readable signals
+  that a publisher has reserved text and data mining (L. 633/1941
+  art. 70-quater; Directive (EU) 2019/790 art. 4):
+  - **TDMRep:** the `/.well-known/tdmrep.json` file, the HTTP headers and the
+    HTML `<meta>`, combined with the precedence the W3C Community Group
+    report gives;
+  - **robots.txt:** for the generic agent, for CATS's collector and for
+    known AI crawlers.
+
+  It reports signals, not legal conclusions: reservations in terms of use are
+  not read. All fetches go through the URL guard. 14 unit tests cover the
+  pattern matching, precedence and robots rules.
 - **Coverage probe on the OSINT watchlist catalogue**
   (`docs/watchlist_probe_2026-11.md`). CATS scored the 852 feeds that
   returned messages, out of the catalogue's 1,088, with no errors. The report
