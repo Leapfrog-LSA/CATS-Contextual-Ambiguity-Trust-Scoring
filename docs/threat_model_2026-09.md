@@ -317,7 +317,8 @@ publishing.
 
 > **Status (9 Oct 2026): JWT and version fixed; TLS and contact open.**
 > - JWT: the R8 row and Annex IV now say Bearer API-key auth, with no JWT.
-> - `SECURITY.md` lists 1.9.x, the current release line.
+> - `SECURITY.md` lists 1.10.x, the current release line (re-checked
+>   12 Nov 2026; it must be bumped with each release).
 > - Still open for their owners: the TLS 1.3 claim and the unverified contact
 >   address.
 

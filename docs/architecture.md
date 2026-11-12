@@ -5,9 +5,9 @@
 ```
 Client (HTTPS + API key)
     │
-nginx (TLS 1.3 · rate 30 req/min per IP)
+nginx (TLS 1.3 when enabled — template in deploy/nginx.conf, not enabled by default · rate 30 req/min per IP)
     │
-FastAPI (async, Python 3.11)
+FastAPI (async, Python 3.15 in the image; >=3.11 supported)
     │
     ├─ POST /v1/cats/evaluate
     │       │
@@ -18,13 +18,18 @@ FastAPI (async, Python 3.11)
     │       ├─ Phase 5: compute_gaming()        TTR + burst + repetition
     │       ├─ Phase 6: get_dynamic_weights()   context-aware weight selection
     │       ├─ Phase 7: aggregate_score()       weighted mean
+    │       ├─ Phase 7b: apply_domain_penalty() − 0.6 × domain_red_flag (if context.url)
     │       ├─ Phase 8: determine_band()        score → ordinal band
     │       └─ Phase 9: log_evaluation()        AES-256-GCM audit log
     │
+    ├─ POST /v1/cats/batch
     ├─ GET  /v1/cats/explain/{trace_id}  GDPR Art.14/22
     ├─ POST /v1/cats/contest/{trace_id}  GDPR Art.22
+    ├─ POST /v1/cats/contest/{contest_id}/resolve
     ├─ POST /v1/cats/review/{trace_id}
-    └─ GET  /v1/cats/stats
+    ├─ GET  /v1/cats/stats
+    ├─ GET  /health
+    └─ GET  /metrics
                 │              │
             Redis 7         PostgreSQL 16
         (rate limiting)   (trust_scores, audit_logs, contests)
@@ -37,6 +42,10 @@ FastAPI (async, Python 3.11)
 - Extracts named entities (PER, ORG, GPE, LOC) via spaCy `it_core_news_lg`
 - Computes Jaccard similarity between consecutive messages
 - Score = average overlap × 100
+- Optional backend: SBERT cosine similarity (`CATS_COHERENCE_BACKEND=sbert`),
+  falling back to NER when unavailable
+- Without the spaCy model: neutral 50 at confidence 0 (`metadata.reason:
+  nlp_unavailable`), flagged degraded, forces human review
 
 ### Volatility
 - TextBlob polarity per message with Italian negation correction
@@ -182,7 +191,7 @@ is a manual step, not run automatically anywhere in this repo today.
 ### Response-time guardrails (risk register R3/R5)
 
 Two blocks accompany every evaluation (`/evaluate` response and `cats.lite`
-result). Both are **flags**: they never change the score or the band —
+result), plus a degraded-signal check. All are **flags**: they never change the score or the band —
 penalising the score itself would change scoring semantics and require the
 recalibration cycle. Neither is persisted, so `/explain` does not report them.
 
@@ -196,6 +205,11 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
   negative-polarity signals cannot fire (0 inverts to a perfect reliability
   contribution), so a near-empty history can aggregate deceptively high;
   `sufficient: false` therefore forces `requires_review`.
+- **Degraded signals** (`engine.degraded_signals`) — a signal that fell back to a
+  placeholder instead of being measured (coherence with `metadata.reason:
+  nlp_unavailable`, i.e. no spaCy model) forces `requires_review`. `cats.lite`
+  lists it in `degraded_signals`; `/evaluate` shows it via the signal's
+  `metadata.reason`.
 
 ## Security Design
 
@@ -204,9 +218,9 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
 | API authentication | `Authorization: Bearer <key>` with dual-key rotation |
 | Rate limiting | Redis sliding-window Lua script, 30 req/min per API key; failed auth attempts limited per client IP |
 | Audit storage | AES-256-GCM encrypted JSONB in PostgreSQL |
-| IP extraction | Safe `X-Forwarded-For` parsing (first IP only); the bundled nginx **overwrites** the header with the real client address, so clients cannot forge the audited IP |
+| IP extraction | Safe `X-Forwarded-For` parsing (first IP only); the bundled nginx **overwrites** the header with the real client address, so clients cannot forge the audited IP. The header is honoured only when `TRUST_PROXY_HEADERS=true` (default off; enabled in `docker-compose.yml` behind the bundled nginx), otherwise the socket peer address is used |
 | Data retention | Nightly APScheduler job; distributed lock via Redis |
-| Container | Non-root user; read-only filesystem |
+| Container | Non-root user (`USER cats`); the filesystem is not mounted read-only (the app writes to `/tmp/cats-prometheus`) |
 
 ## Processes and sizing
 

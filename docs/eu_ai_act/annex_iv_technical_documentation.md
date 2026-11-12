@@ -97,8 +97,10 @@ learning — currently none; weights change only via explicit recalibration).
 > TODO: State the metrics that define "working correctly" for the intended use
 > and why they are appropriate (e.g. Spearman rank correlation / concordance vs
 > analyst gold labels; the v2.0 AUC-ROC ≥ 0.78 target for binary
-> reliable/unreliable). Today only the operational `/metrics` (Prometheus) are
-> emitted; **predictive** accuracy is not yet empirically validated (WP 4.1).
+> reliable/unreliable). Rank agreement on a time-forward holdout has been
+> measured (see §6 and [`accuracy_declaration.md`](accuracy_declaration.md));
+> which metric and threshold define "working correctly" is still a provider
+> decision. Scores stay ordinal (WP 4.1/4.3).
 
 ---
 
@@ -112,11 +114,19 @@ Summarised here; full system in [`risk_management_art9.md`](risk_management_art9
 
 **Accuracy.**
 - Current default NLP accuracy ~55–62% (spaCy NER + TextBlob); optional BERT /
-  Sentence-BERT backends improve this. **Predictive reliability is not yet
-  validated on labelled OSINT data** (WP 4.1).
-- TODO: attach validation report once the labelled dataset + temporal
-  train/holdout split (see [`../calibration.md`](../calibration.md)) is run; declare
-  the achieved metric and the conditions it holds under.
+  Sentence-BERT backends improve this.
+- **Measured rank agreement:** [`accuracy_declaration.md`](accuracy_declaration.md),
+  generated 2026-08-30 from the future holdout (`data/holdout_future.jsonl`,
+  n = 53 labelled sources):
+  - Spearman +0.554;
+  - pairwise concordance 0.750;
+  - band agreement 26.4% exact, 79.2% within one band.
+
+  The method is in [`../calibration.md`](../calibration.md).
+- **Limits:** the sample is small and the labels come from distant supervision.
+  The v2.0 target (AUC-ROC ≥ 0.78) is not yet met, and scores remain ordinal,
+  not calibrated probabilities (WP 4.1/4.3).
+- TODO (provider): provenance and sign-off of the accuracy declaration.
 
 **Robustness.**
 - Input validation via Pydantic schemas (`cats/api/schemas.py`): message count

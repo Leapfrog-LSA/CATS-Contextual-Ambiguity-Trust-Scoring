@@ -25,8 +25,8 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
   `os.environ.setdefault` — `tests/unit/conftest.py` for every unit module (so
   each one also runs on its own, e.g. `pytest tests/unit/test_signals.py`) and
   `tests/integration/test_api.py` for the integration suite. So with **no env
-  vars at all** `pytest` collects the full suite (506) and `tests/unit/` passes
-  (485 passed, 4 skipped: three need `gradio`, one is a deliberate schema skip).
+  vars at all** `pytest` collects the full suite (520) and `tests/unit/` passes
+  (499 passed, 4 skipped: three need `gradio`, one is a deliberate schema skip).
   Because it is `setdefault`, an exported variable *wins over* the test's value:
   a `DATABASE_URL` missing the `+asyncpg` driver (plain `postgresql://…`)
   overrides the test's own and fails at collection demanding `psycopg2`, which
@@ -35,8 +35,12 @@ code: the `cats.lite` / `cats.calibration` library and the FastAPI deployment.
 - CI runs the test job on Python **3.11** (the `requires-python` floor),
   **3.15** (the Docker image's interpreter, `python:3.15-slim` since #224) and
   **3.14** (the previous image interpreter, still a listed classifier); lint
-  runs on 3.11 only.
-- `tests/integration/` needs live Postgres + Redis (`make docker-up`). In a cloud
+  runs on 3.11 only. CI also runs a `large-files` job (no added or modified file
+  over 2 MiB, `scripts/check_large_files.py`, also a pre-commit hook) and a
+  `docker` job that builds the image and loads the migrations in it.
+- `tests/integration/` needs live Postgres + Redis (`make docker-up`), plus the
+  `cats_test` database, which docker-up does not create:
+  `docker compose exec postgres createdb -U cats cats_test`. In a cloud
   session, start them with `service postgresql start` / `service redis-server start`.
   A fresh container also lacks the `cats` role and the `cats_test` database, and
   without them every integration test fails with `InvalidPasswordError`. Create

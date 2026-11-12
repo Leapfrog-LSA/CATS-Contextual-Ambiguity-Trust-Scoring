@@ -6,9 +6,9 @@
 |---|---|---|
 | Art. 5(1)(e) | Storage limitation | 90-day audit retention; nightly APScheduler purge with distributed Redis lock |
 | Art. 13–14 | Transparency | `/v1/cats/explain/{trace_id}` returns full signal breakdown + methodology disclaimer |
-| Art. 22 | Right not to be subject to automated decision | `/v1/cats/contest/{trace_id}` endpoint; `requires_review` flag forces human oversight for scores < 40 or evaluations below the evidence minimum |
+| Art. 22 | Right not to be subject to automated decision | `/v1/cats/contest/{trace_id}` endpoint; `requires_review` flag forces human oversight for scores < 40, evaluations below the evidence minimum, degraded (unmeasured) signals, or low-confidence signals with score < 50 (and stale feeds in `score_feed`) |
 | Art. 25 | Data protection by design | AES-256-GCM encrypted audit logs; no raw personal data stored in `trust_scores` |
-| Art. 32 | Security of processing | TLS 1.3 (nginx); encrypted audit trail; non-root container; rate limiting |
+| Art. 32 | Security of processing | TLS 1.3 template in `deploy/nginx.conf`, not enabled by default (whether the bundled nginx enables it or the deployer provides TLS is an open maintainer decision); encrypted audit trail; non-root container; rate limiting |
 
 ## EU AI Act (2024/1689)
 
@@ -23,7 +23,7 @@
 | Obligation | CATS Status |
 |---|---|
 | Transparency | Explainability endpoint; disclaimer on every explanation response |
-| Human oversight | `requires_review` flag (low bands, or insufficient evidence); contest/review endpoints |
+| Human oversight | `requires_review` flag (low bands, insufficient evidence, degraded signals, low-confidence signals with score < 50, stale feeds in `score_feed`); contest/review endpoints |
 | Accuracy documentation | WP 4.1 — NLP accuracy ~55–62%; signal weights calibrated and validated on a future snapshot (concordance 0.750 → 0.762 with the domain penalty, as of the Aug 2026 gaming/volatility/silence fixes); band thresholds still initial estimates |
 | Ordinal scoring | WP 4.3 — scores are rankings, not absolute probabilities |
 
@@ -42,7 +42,7 @@
 | v1.4 | ✅ Validation | Calibrated weights validated on a future snapshot (concordance 0.755) |
 | v1.5 | ✅ Hardening | Domain-provenance asymmetric penalty (ENGINE 1.4, 0.755 → 0.775) |
 | v1.6 | ✅ Guardrails & audit fixes | Language flag (R3) · minimum-evidence flag (R5) · adversarial regression suite · audit-IP spoofing fix, degraded NLP startup, calibrated weights shipped in Docker |
-| v1.7–v1.9 (Sep–Oct 2026) | ✅ Usability & honesty, no scoring change (ENGINE 1.4) | CLI (`cats score`, `cats compare`), MCP server; an unmeasured `coherence` (no spaCy model) is flagged in `degraded_signals` and forces human review; feed fetching refuses internal addresses; ranked domains on "suspicious" TLDs no longer penalised |
+| v1.7–v1.10 (Sep–Oct 2026) | ✅ Usability & honesty, no scoring change (ENGINE 1.4) | CLI (`cats score`, `cats compare`), MCP server; an unmeasured `coherence` (no spaCy model) is flagged in `degraded_signals` and forces human review; feed fetching refuses internal addresses; ranked domains on "suspicious" TLDs no longer penalised; stale feeds flagged and sent to review (v1.10) |
 | Aug 2026 | ✅ Signal fixes | Gaming/volatility/silence bugs fixed and recalibrated (concordance 0.755 → 0.750, 0.775 → 0.762 with domain penalty — no regression); content-credibility and cross-source corroboration signals spiked and rejected; Tranco popularity corroboration added to the domain penalty |
 | v2.0 (2027) | Validation | Concordance/AUC ≥ 0.78 on a ≥ 100-source future holdout with multi-month per-source history; band-threshold validation; full EU AI Act **Annex IV** technical documentation |
 

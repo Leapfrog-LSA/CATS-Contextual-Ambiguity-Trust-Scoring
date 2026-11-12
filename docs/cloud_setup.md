@@ -68,7 +68,7 @@ python -m textblob.download_corpora || true
 # python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='neuraly/bert-base-italian-cased-sentiment')" || true
 ```
 
-> The optional editable extras are `[sbert]` and `[bert]` only — there is **no**
+> The optional editable extras are `[sbert]`, `[bert]` and `[mcp]` — there is **no**
 > `[dev]` extra. Dev/test tools live in `requirements-dev.txt`, so install with
 > `pip install -e . -r requirements-dev.txt`, not `pip install -e ".[dev]"`.
 

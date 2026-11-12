@@ -50,14 +50,14 @@ record and the GitHub record agree:
 | Field | Value |
 |---|---|
 | Upload type | Publication → Technical note (or "Preprint" if the maintainer prefers) |
-| Title | CATS — Contextual Ambiguity & Trust Scoring: Whitepaper Tecnico v1.0 |
+| Title | CATS — Contextual Ambiguity & Trust Scoring: Whitepaper Tecnico v1.1 |
 | Authors | `Leapfrog-LSA` (match `CITATION.cff`; add an ORCID per author if/when individual authors are attributed instead of the org) |
 | Description | Adapt the abstract already in `CITATION.cff`: "Trust intelligence scoring for OSINT sources: behavioural reliability analysis (narrative coherence, sentiment volatility, temporal silence, gaming detection) with empirical weight calibration, GDPR Art. 13-22 endpoints and EU AI Act documentation." Add one line noting the whitepaper is in Italian and that it documents the method independent of a specific engine version. |
-| Version | `1.0` (the whitepaper's own version — do **not** put the software version `1.7.0` here; they version independently) |
+| Version | `1.1` (the whitepaper's own version — do **not** put the software version (currently `1.10.0`) here; they version independently) |
 | Language | Italian (`ita`) |
 | License | MIT (matches repo `LICENSE`) — Zenodo's license picker has MIT natively |
 | Keywords | `OSINT`, `trust-scoring`, `source-reliability`, `disinformation`, `EU-AI-Act`, `GDPR` (copy verbatim from `CITATION.cff` so the two records are keyword-consistent) |
-| Related/alternate identifiers | Add the GitHub repo as "is supplement to": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring`; add the `v1.7.0` GitHub Release as "references": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/releases/tag/v1.7.0` |
+| Related/alternate identifiers | Add the GitHub repo as "is supplement to": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring`; add the GitHub Release that is current at deposit time (see `CITATION.cff` `version`; today `v1.10.0`) as "references": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/releases/tag/v1.10.0` |
 | Access right | Open access |
 | Publication date | Date of actual deposit (not the `.docx` file's original date) |
 | Funding | None known — leave blank unless the maintainer has a grant to declare |
@@ -69,13 +69,13 @@ GitHub Release** if enabled — decide up front whether that's wanted:
 
 - [ ] Decide: manual one-off deposit (this checklist only) vs. enabling
       [Zenodo's GitHub app](https://zenodo.org/account/settings/github/) so
-      each future release (`v1.8.0`, etc.) gets its own version DOI
+      each future release (the next release, etc.) gets its own version DOI
       automatically. If enabling it, do so **before** cutting the next
       release, and note that this mints a DOI per release — only do it if
       that cadence is wanted for citation purposes, not just for this one
       whitepaper.
 - [ ] If manual: after the deposit is published, Zenodo gives both a
-      **version DOI** (this specific v1.0 upload) and a **concept DOI**
+      **version DOI** (this specific v1.1 upload) and a **concept DOI**
       (stable across all future versions of the same record). Record both.
 
 ## 4. After publishing

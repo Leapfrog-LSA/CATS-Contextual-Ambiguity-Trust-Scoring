@@ -57,6 +57,7 @@ Compute the trust score for a source.
 | `messages[].text` | string | ✅ | 1–10 000 chars |
 | `messages[].metadata` | object | ❌ | Free-form |
 | `context.source_type` | string | ❌ | `social` or `news`; affects weights |
+| `context.url` | string | ❌ | Source URL; enables the [domain-provenance penalty](architecture.md#domain-provenance-penalty-engine-14) and adds a `domain_provenance` entry to `signals` when the URL was assessed |
 
 Size, rate and error behaviour for every endpoint: [Limits and errors](#limits-and-errors).
 
@@ -94,6 +95,15 @@ or `band`, and they are not persisted — `/explain` does not report them):
   treat `score` and `band` as not informative. The score itself is not
   penalised yet: that is a signal change, deferred to the next recalibration
   cycle (risk R5).
+
+`requires_review` is `true` when any of these holds:
+
+- evidence is insufficient (`evidence.sufficient: false`, above);
+- a signal is degraded, i.e. could not be measured and fell back to a
+  placeholder (`metadata.reason: nlp_unavailable`, e.g. `coherence` without the
+  spaCy model);
+- the band is `low` or `very_low`;
+- any signal has confidence below 0.3 and the score is under 50.
 
 ---
 
@@ -149,19 +159,34 @@ GDPR Art. 14/22 — explainability endpoint.
     "trust_score": 72.4,
     "band": "medium_high",
     "signals": [
-      {"signal": "coherence", "value": 71.2, "weight": 0.35, "contribution": 24.92,
-       "score_share_pct": 41.0, "confidence": 0.8, "metadata": {"pairs": 5}}
+      {"signal": "coherence", "value": 71.2, "polarity": "positive", "reliability_value": 71.2,
+       "weight": 0.35, "contribution": 24.92, "score_share_pct": 41.0,
+       "confidence": 0.8, "metadata": {"pairs": 5}}
     ],
     "primary_driver": "coherence",
-    "methodology": "Weighted aggregation of 4 behavioural signals; score_share_pct is each signal's share of the weighted score",
+    "methodology": "Weighted aggregation of 4 behavioural signals on a common reliability axis (negative-polarity signals inverted as 100 - value); score_share_pct is each signal's share of the weighted score. Domain-provenance, when present, is applied afterwards as an asymmetric penalty (see domain_penalty).",
     "disclaimer": "Scores are ordinal rankings of source reliability patterns..."
   }
 }
 ```
 
-`score_share_pct` is each signal's share of the weighted score (a linear-model
-attribution), and `primary_driver` is the signal that contributed the most —
-both surface *why* a source got its score.
+`contribution` and `score_share_pct` are computed on the reliability axis:
+`reliability_value` equals `value` for a `positive`-polarity signal
+(`coherence`) and `100 - value` for a `negative` one (`volatility`, `silence`,
+`gaming`). `score_share_pct` is each signal's share of the weighted score (a
+linear-model attribution), and `primary_driver` is the signal that contributed
+the most — both surface *why* a source got its score.
+
+Two optional blocks can appear in `explanation`:
+
+- **`domain_penalty`** — only when a URL was assessed (`context.url`). Fields:
+  `domain_red_flag_score`, `penalty_weight`, `penalty_applied`, `confidence`,
+  `metadata`, `note`. The penalty is subtracted after the weighted mean and
+  only ever lowers the score.
+- **`engine_mismatch`** — only when the trace was scored under an older
+  aggregation engine. Fields: `scored_with`, `explained_with`, `note`. The
+  per-signal decomposition then uses current semantics and may not sum to the
+  stored score; re-evaluate for a faithful explanation.
 
 ---
 
@@ -200,6 +225,19 @@ Tenant-scoped; resolving an already-resolved contest returns **409**.
 
 ---
 
+## POST /review/{trace_id}
+
+Request a human review of an evaluation. No request body. Tenant-scoped: an
+unknown trace, or one from another tenant, returns **404**. Writes a
+`human_review_requested` audit event.
+
+**Response 200**
+```json
+{ "message": "Review logged", "trace_id": "550e8400-..." }
+```
+
+---
+
 ## GET /stats
 
 Aggregate statistics across all evaluations.
@@ -208,11 +246,27 @@ Aggregate statistics across all evaluations.
 
 ## GET /health
 
+Served at the app root (`/health`), not under `/v1/cats`; no authentication.
 Deep health check — returns status of API, Redis, PostgreSQL, NLP model.
+
+**Response 200**
+```json
+{
+  "status": "healthy",
+  "checks": { "api": "ok", "redis": "ok", "database": "ok", "nlp": "ok" },
+  "version": "1.10.0"
+}
+```
+
+`status` is `degraded` when any check is not `ok`: `redis`/`database` report
+`error` (details are logged, not returned), and `nlp` reports `not_loaded` when
+the spaCy model is missing.
 
 ---
 
 ## GET /metrics
+
+Served at the app root (`/metrics`), not under `/v1/cats`.
 
 Prometheus exposition format (`text/plain`). Includes HTTP request
 count/latency (labelled by route template), `cats_evaluations_total` by band,
@@ -337,7 +391,10 @@ scored (or `url` is itself a stale feed), `source.stale` is `true` and
 `stale feed (newest item YYYY-MM-DD)`. Score and band are unchanged.
 
 `FeedNotFoundError` is raised if the host answers but no feed is found;
-`FeedFetchError` if the host (and every candidate path) is unreachable. As
+`FeedFetchError` if the host (and every candidate path) is unreachable.
+`UnsafeURLError` is raised if `url` is not http(s), or if it (or a redirect
+from it) resolves to a loopback, private or link-local address (threat model
+T9); pass `allow_private=True` for deliberate local use. As
 with `score()`, `ValueError` is raised if the feed yields zero usable
 messages after normalisation. The domain-provenance penalty (see
 [architecture.md](architecture.md#domain-provenance-penalty-engine-14)) is

@@ -3,6 +3,11 @@
 > **Regulation (EU) 2024/1689** ("AI Act"). Working folder for CATS conformity
 > artefacts.
 >
+> The newest document here, [`post_market_monitoring_art72.md`](post_market_monitoring_art72.md),
+> works from the Regulation as amended by **Regulation (EU) 2026/1744** (Digital
+> Omnibus on AI). Its effect on the other documents and on timelines is to be
+> verified by counsel (`TODO` legal).
+>
 > ⚠️ **This is not legal advice.** These documents are engineering-facing
 > templates mapping what CATS implements onto the Regulation. They must be
 > reviewed against the [consolidated text on EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng)
@@ -60,11 +65,16 @@ counsel.** See [`classification.md`](classification.md).
 | [`risk_management_art9.md`](risk_management_art9.md) | Art. 9 | Draft template |
 | [`data_governance_art10.md`](data_governance_art10.md) | Art. 10 | Draft template |
 | [`post_market_monitoring_art72.md`](post_market_monitoring_art72.md) | Art. 72 / Annex IV point 9 | Draft plan; thresholds and owner TODO |
+| [`accuracy_declaration.md`](accuracy_declaration.md) | Art. 15 / Annex IV §6 | Generated from the future holdout (2026-08-30); provenance and sign-off TODO |
+| [`deployment_context_summary.md`](deployment_context_summary.md) | Input to Art. 6 / Annex III | Evidence, not a determination |
+| [`draft_recommendation_2026-07-24.md`](draft_recommendation_2026-07-24.md) | Art. 6 / Annex III | Non-binding draft; the decision stays with counsel |
 
-The accuracy/robustness declaration (Art. 15) inside Annex IV depends on the
-empirical validation tracked in [`../calibration.md`](../calibration.md) and
-the v2.0 roadmap target (AUC-ROC ≥ 0.78). Until that data exists, those
-sections carry the WP 4.1 "not empirically calibrated" caveat.
+The measured accuracy declaration (Art. 15) is
+[`accuracy_declaration.md`](accuracy_declaration.md), generated from the future
+holdout (`data/holdout_future.jsonl`, n=53: pairwise concordance 0.750, Spearman
++0.554); the validation itself is tracked in [`../calibration.md`](../calibration.md).
+The v2.0 roadmap target (AUC-ROC ≥ 0.78) is not yet met, and scores remain
+**ordinal**, not calibrated probabilities (WP 4.1/4.3).
 
 ---
 

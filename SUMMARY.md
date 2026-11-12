@@ -5,6 +5,7 @@
 * [Contributing to CATS](CONTRIBUTING.md)
 * [Code of Conduct](CODE_OF_CONDUCT.md)
 * [Security Policy](SECURITY.md)
+* [NOTICE — third-party attributions (draft)](NOTICE.md)
 * [Calibration input data](data/README.md)
   * [Fonti OSINT — Database Consolidato](data/Fonti_OSINT_CONSOLIDATO.md)
 * [Hugging Face demo](examples/demo/README.md)
@@ -29,6 +30,7 @@
 * [Signal diagnosis — ablation & leave-one-out (July 2026, roadmap item 7)](docs/signal_diagnosis_2026-07.md)
 * [Feed-health audit — July 2026](docs/feed_health_2026-07.md)
 * [Snapshot history audit — 13 September 2026](docs/snapshot_history_audit_2026-09.md)
+* [Coverage probe on the OSINT watchlist catalogue — 2026-11-09](docs/watchlist_probe_2026-11.md)
 * [Dataset expansion runbook — growing and maintaining the labelled registry](docs/dataset_expansion_runbook.md)
 
 ## Signal work & spikes
@@ -66,3 +68,4 @@
   * [CATS — Risk Management System (Art. 9)](docs/eu_ai_act/risk_management_art9.md)
   * [CATS — Deployment Context Summary (factual input for classification)](docs/eu_ai_act/deployment_context_summary.md)
   * [CATS — Draft Classification Recommendation (2026-07-24)](docs/eu_ai_act/draft_recommendation_2026-07-24.md)
+  * [CATS — Post-Market Monitoring Plan (Art. 72) — DRAFT](docs/eu_ai_act/post_market_monitoring_art72.md)

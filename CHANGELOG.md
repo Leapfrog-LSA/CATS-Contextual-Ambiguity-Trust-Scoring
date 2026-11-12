@@ -89,6 +89,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **Living documentation brought up to date.** An audit compared every
+  current-state document with the repository. It found 43 stale or wrong
+  statements, each re-verified before it was fixed.
+  - **Versions:** README now says v1.10; `SECURITY.md` supports 1.10.x; the
+    CI matrix and the Python 3.15 image are described.
+  - **Contributor setup:** the `cats_test` database that `make docker-up`
+    does not create is now documented; so are the 2 MiB guard, all the files
+    a new signal touches, and the `[mcp]` extra.
+  - **API:** `/health` and `/metrics` are served at the app root;
+    `/review/{trace_id}`, `context.url`, the `/explain` fields and every
+    `requires_review` trigger are documented.
+  - **Architecture and compliance** now state the current truth: TLS is a
+    template that is not enabled by default; the container runs as non-root
+    but is not read-only; the domain-penalty phase and the degraded-signal
+    guardrail are described. Both TLS and the read-only filesystem remain
+    open maintainer decisions.
+  - **Status documents:** the September roadmap has a November section;
+    the EU AI Act index now lists the accuracy declaration, and the measured
+    holdout figures replace "not validated" in Annex IV; the Zenodo checklist
+    names whitepaper v1.1; the pipeline-output section of `data/README.md`
+    is corrected; `SUMMARY.md` lists the new documents; the PR template
+    points at `data/labels.jsonl`.
+  - **Test counts:** `CLAUDE.md` now says 520 collected and 499 unit tests
+    passing.
 - **Catalogue dead-feed cleanup (`data/Fonti_OSINT.csv`, its consolidated
   `.md`).** The watchlist probe found 57 non-registry catalogue feeds dead or
   unparseable. Re-checked with the collector's own code:
