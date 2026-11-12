@@ -14,7 +14,8 @@ v5.25 adds three non-RSS data sources (FRED, Finnhub, AISStream) over v5.22 —
 the RSS-bearing set is unchanged, so `labels.jsonl` is identical under both.
 
 ## `ratings.csv` — distant-supervision reliability ratings
-`domain,rating` for **104 of the 310** unique RSS-bearing catalogue domains,
+`domain,rating` for **107** of the catalogue's unique RSS-bearing domains (104
+at the 2026-07-02 collection plus 3 Italian outlets added later),
 on the Media Bias/Fact Check *Factual Reporting* scale
 (`Very High | High | Mostly Factual | Mixed | Low | Very Low`) — use
 `--ratings data/ratings.csv --scale mbfc`.
@@ -35,8 +36,8 @@ on the Media Bias/Fact Check *Factual Reporting* scale
 
 ### Caveats (see also `docs/calibration.md`)
 - MBFC coverage skews to English-language and major international outlets:
-  the 104 matched domains under-represent the catalogue's Italian long tail.
-- The label distribution has **no Low/Very Low** sources (48 High,
+  the 107 matched domains under-represent the catalogue's Italian long tail.
+- The label distribution has **no Low/Very Low** sources (51 High,
   30 Mostly Factual, 24 Mixed, 2 Very High): calibration will mostly learn to
   rank the upper-middle of the scale. Adding a few known-unreliable feeds
   would widen the ordinal spread.
@@ -145,14 +146,25 @@ ranking against these human verdicts, the same validation role
 `data/labels.jsonl` plays for distant-supervision ratings but sourced from
 people instead.
 
-## Pipeline outputs (merged snapshots 2026-07-02/03/05)
-`labelled_sources.jsonl` = `merge_snapshots` over the three snapshots in
-`data/snapshots/` (50 sources / 3 426 messages), temporal 80/20 split
-(`train_sources` / `holdout_sources`), built datasets (`train.jsonl` /
-`holdout.jsonl`, `COHERENCE_BACKEND=sbert`) and `calibrated_weights.json`
-(spearman, seed 7, **v1.3.0 polarity-corrected engine** — weights calibrated
-under ≤ 1.2.x are invalid). Numbers and analysis in
-`docs/calibration_findings_2026-07.md`. ⚠️ Caveat: mainstream feeds publish
-hourly, disinfo sites sporadically, so the temporal split puts every low-label
-source in *train* — low-end discrimination is currently measured on the
-full-dataset diagnostic; validate against a **future** snapshot (tracked).
+## Pipeline outputs
+`data/snapshots/` now holds 67 snapshots (2026-07-02 → 2026-09-30; daily
+collection continues in the `cats-snapshots` data repo). The files here come
+from two different runs:
+
+- **July 3-snapshot run (merged snapshots 2026-07-02/03/05):**
+  `labelled_sources.jsonl` = `merge_snapshots` over those three snapshots
+  (50 sources / 3 426 messages), its temporal 80/20 split (`train_sources` /
+  `holdout_sources`) and the built `holdout.jsonl` (`COHERENCE_BACKEND=sbert`).
+  Numbers and analysis in `docs/calibration_findings_2026-07.md`. Caveat of
+  that run: mainstream feeds publish hourly, disinfo sites sporadically, so the
+  temporal split put every low-label source in *train*.
+- **August 2026 silence-retune cycle:** `train.jsonl` (56 sources),
+  `holdout_future.jsonl` (53 sources, a **future** holdout the calibrator never
+  saw) and `calibrated_weights.json` (spearman; `news` weights 0.410 / 0.042 /
+  0.543 / 0.006 for coherence / volatility / silence / gaming) are this run's
+  outputs, on the same 56/53-source split as the 07-28 baseline — see
+  [`docs/silence_retune_2026-08.md`](../docs/silence_retune_2026-08.md). The
+  future-holdout validation is recorded in
+  [`docs/calibration.md`](../docs/calibration.md) §3 (concordance 0.750,
+  Spearman +0.554); scores remain **ordinal**, not calibrated probabilities.
+  Weights calibrated under ≤ 1.2.x (before the polarity fix) are invalid.

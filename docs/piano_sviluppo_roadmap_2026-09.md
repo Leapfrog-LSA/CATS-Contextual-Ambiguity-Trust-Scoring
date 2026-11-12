@@ -2,8 +2,8 @@
 
 > Aggiornamento della [roadmap di luglio](piano_sviluppo_roadmap_2026-07.md)
 > allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026), **rivisto il
-> 4 ottobre 2026 alla v1.9.0, il 6 ottobre alla v1.9.1 e il 21 ottobre alla
-> v1.10.0** (stesso ENGINE 1.4:
+> 4 ottobre 2026 alla v1.9.0, il 6 ottobre alla v1.9.1, il 21 ottobre alla
+> v1.10.0 e il 12 novembre con il lavoro non ancora rilasciato** (stesso ENGINE 1.4:
 > nessun segnale, peso o banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
 > accanto a ciascuno; i punteggi CATS restano **ordinali**, non probabilità
 > calibrate (WP 4.1/4.3).
@@ -40,11 +40,12 @@ segnali.
 - **Protezioni attive:** avviso sulla lingua (rischio R3), soglia minima di
   evidenza (R5), suite di test avversariali.
 - **Qualità:**
-  - 455 test unitari verdi (4 saltati) e 17 di integrazione; copertura
-    unitaria 88% (al 4 ottobre), con `signals/coherence.py` al 100% e
-    `scoring/weights.py` al 98%;
-  - la CI esegue `lint`, `test` (su Python 3.11 e 3.14), `docker` e
-    `pip-audit` su ogni PR verso `main`; Dependabot apre le PR di
+  - 503 test unitari (499 verdi, 4 saltati) e 17 di integrazione, 520 in
+    tutto (al 12 novembre); copertura unitaria 88% (al 4 ottobre), con
+    `signals/coherence.py` al 100% e `scoring/weights.py` al 98%;
+  - la CI esegue `lint`, `large-files`, `test` (su Python 3.11, 3.14 e
+    3.15), `docker` e `pip-audit` su ogni PR verso `main`; immagine Docker
+    su Python 3.15 (#224); Dependabot apre le PR di
     aggiornamento ogni lunedì;
   - la pubblicazione su PyPI parte alla creazione di una GitHub Release.
 - **Dati:**
@@ -106,6 +107,33 @@ Tutto su PyPI (`cats-scoring` 1.10.0, 21 ottobre); dettagli in
   - **Documenti:** il registro dei rischi e l'Annex IV non dichiarano più
     un'autenticazione JWT che il codice non ha.
   - **Dipendenze:** uvicorn, cryptography, black 26, isort, pytest-asyncio 1.x.
+
+## Aggiornamento di novembre (non rilasciato)
+
+Lavoro su `main` dopo la v1.10.0, elencato in `[Unreleased]` nel
+[`CHANGELOG.md`](../CHANGELOG.md); stesso ENGINE 1.4, nessun segnale, peso o
+banda cambiato.
+
+- **Piattaforma:** immagine Docker su Python 3.15 (#224), CI su 3.11, 3.14 e
+  3.15; nuovo job CI `large-files` (e hook pre-commit) che rifiuta file sopra
+  i 2 MiB.
+- **Feed:** giro di feed-health 15 (7 novembre); pulizia dei feed morti nel
+  catalogo, che passa da 311 a 287 feed
+  ([`feed_health_2026-07.md`](feed_health_2026-07.md)).
+- **Diritti sui dati (bozze):** `NOTICE.md` e `DATA_LICENSE`, l'inventario
+  dei testi (`research/text_inventory.py`) e il controllo delle riserve TDM
+  (`research/tdm_reservation_check.py`). Riportano segnali, non conclusioni
+  legali: la base giuridica resta una decisione umana (vedi *Rischi
+  principali*).
+- **Sonda sul catalogo della watchlist**
+  ([`watchlist_probe_2026-11.md`](watchlist_probe_2026-11.md)): 852 feed
+  valutati su 1.088, senza errori; non è un test di accuratezza. Seguiti
+  aperti: l'83% dei feed finisce in `medium`; i 6 `high` sono artefatti da un
+  solo messaggio (documentato, la correzione aspetta la prossima
+  ricalibrazione); la penalità di dominio colpisce 6 testate legittime senza
+  la tabella Tranco.
+- **Conformità:** bozza tecnica del piano di monitoraggio post-market
+  (Art. 72), con soglie, cadenze e responsabile lasciati come TODO umani.
 
 ## Fase 1 — breve termine (0–4 settimane): chiudere il lavoro aperto
 
@@ -212,9 +240,10 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
     (dichiarazioni sul TLS, vedi Fase 1; la dichiarazione sul JWT è corretta
     il 9 ottobre).
   - [ ] Pen-test esterno.
-- [ ] Bozza tecnica del piano di monitoraggio post-market (Art. 72) — **M** —
-  le soglie le decide un umano. Metriche candidate: distribuzione delle bande,
-  quota di `requires_review`, quota di input non italiano.
+- [x] Bozza tecnica del piano di monitoraggio post-market (Art. 72) —
+  [`eu_ai_act/post_market_monitoring_art72.md`](eu_ai_act/post_market_monitoring_art72.md),
+  7 novembre; soglie, cadenze e responsabile restano TODO umani, i punti
+  legali vanno verificati da un legale.
 - [ ] **Vincolo:** nessuno spike su nuovi segnali fino a metà dicembre 2026. Si
   riapre solo con più dati **e** un utente che lo chieda.
 
@@ -267,8 +296,10 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   nell'alto rischio. Affermazioni di conformità non verificate (descrizione del
   repo, TLS) sono un rischio legale e reputazionale.
 - **Diritti sui dati:** gli snapshot pubblici ridistribuiscono testi di feed di
-  terzi, e nessun documento indica ancora su quale base giuridica — decisione
-  umana.
+  terzi. La questione è ora documentata in bozza in `NOTICE.md` e
+  `DATA_LICENSE` (con l'inventario dei testi e i segnali di riserva TDM), ma
+  la base giuridica e la scelta se tenere pubblici i testi restano decisioni
+  umane/legali.
 - **Adozione:** 0 etichette umane e nessun utente esterno. Se la Fase 2 non
   porta dati, la ricalibrazione di gennaio avrà poco di nuovo su cui lavorare.
 - **Operativo:** un solo maintainer, e automazioni che si possono disattivare

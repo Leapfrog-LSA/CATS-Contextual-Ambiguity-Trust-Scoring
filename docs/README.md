@@ -53,7 +53,7 @@
 | Document | What it covers |
 |---|---|
 | [compliance.md](compliance.md) | GDPR + EU AI Act summary mapping |
-| [eu_ai_act/](eu_ai_act/README.md) | Conformity scaffold: classification (pending, legal), Annex IV draft, Art. 9 risk register, Art. 10 data governance |
+| [eu_ai_act/](eu_ai_act/README.md) | Conformity scaffold: classification (pending, legal), Annex IV draft, Art. 9 risk register, Art. 10 data governance, Art. 72 post-market monitoring plan (draft), accuracy declaration |
 
 ## Planning
 

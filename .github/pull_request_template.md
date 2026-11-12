@@ -13,7 +13,7 @@
 - [ ] `make lint` passes (black, isort, flake8, mypy)
 - [ ] `make test` passes (or `pytest tests/unit/` if integration services aren't available)
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` (if user-facing)
-- [ ] No `cats/labels.jsonl` / weight-table changes without the recalibration + future-holdout revalidation CLAUDE.md requires (if applicable)
+- [ ] No `data/labels.jsonl` / weight-table (`data/calibrated_weights.json`) changes without the recalibration + future-holdout revalidation CLAUDE.md requires (if applicable)
 
 ## Related issues
 
