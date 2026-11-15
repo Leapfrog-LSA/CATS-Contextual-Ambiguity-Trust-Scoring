@@ -1,14 +1,11 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
+from cats.scoring.disclaimers import EXPLAIN_DISCLAIMER
 from cats.scoring.engine import DOMAIN_PENALTY_WEIGHT, NEGATIVE_POLARITY, reliability_value
 from cats.signals.types import SignalResult
 
-# A-01: WP 4.1/4.3 disclaimer
-_DISCLAIMER = (
-    "Scores are ordinal rankings of source reliability patterns, not absolute "
-    "probabilities. NLP accuracy ~55-62%, parameters not empirically calibrated "
-    "(WP 4.1). Not suitable as sole basis for autonomous decisions (WP 4.3)."
-)
+# A-01: WP 4.1/4.3 disclaimer (text lives in cats.scoring.disclaimers)
+_DISCLAIMER = EXPLAIN_DISCLAIMER
 
 
 def generate_explanation(
@@ -16,7 +13,22 @@ def generate_explanation(
     band: str,
     signals: List[SignalResult],
     weights: Dict[str, float],
+    *,
+    silence_observable: Optional[bool] = None,
 ) -> Dict:
+    """Decompose a trust score into per-signal contributions.
+
+    ``primary_driver`` is the signal with the largest contribution to the
+    weighted score: a decomposition, not a verdict. ``silence_observable`` is
+    an optional, presentation-only hint from a caller that knows the observed
+    history span (``cats.lite``): when False the ``silence`` entry gains
+    ``"observable": False`` (its 0 is a property of a window too short to
+    contain a gap above the threshold, not of the source). When it is given,
+    and the primary driver is unobservable or has zero confidence, a
+    ``driver_note`` says the largest contribution comes from missing evidence.
+    Left as None (e.g. GET /explain, which does not know the span) the output
+    has neither key. Nothing here changes the score, band or signal values.
+    """
     # domain-provenance is a post-aggregation penalty, not a weighted signal, so
     # it is decomposed separately from the behavioural weighted mean.
     behavioural = [s for s in signals if s.name != "domain_provenance"]
@@ -44,6 +56,10 @@ def generate_explanation(
         for s in behavioural
     ]
     primary_driver = max(weighted, key=lambda name: weighted[name]) if weighted else None
+    if silence_observable is False:
+        for detail in details:
+            if detail["signal"] == "silence":
+                detail["observable"] = False
     explanation = {
         "trust_score": round(score, 2),
         "band": band,
@@ -58,6 +74,15 @@ def generate_explanation(
         ),
         "disclaimer": _DISCLAIMER,
     }
+    if silence_observable is not None and primary_driver is not None:
+        driver_detail = next(d for d in details if d["signal"] == primary_driver)
+        driver_signal = next(s for s in behavioural if s.name == primary_driver)
+        if driver_detail.get("observable") is False or driver_signal.confidence <= 0:
+            explanation["driver_note"] = (
+                f"The largest contribution comes from '{primary_driver}', which was not "
+                "observed or not measured on this history: the score mostly reflects "
+                "missing evidence, not observed behaviour."
+            )
     if domain is not None and domain.confidence > 0:
         penalty = DOMAIN_PENALTY_WEIGHT * domain.value
         explanation["domain_penalty"] = {

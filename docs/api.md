@@ -185,7 +185,25 @@ GDPR Art. 14/22 — explainability endpoint.
 (`coherence`) and `100 - value` for a `negative` one (`volatility`, `silence`,
 `gaming`). `score_share_pct` is each signal's share of the weighted score (a
 linear-model attribution), and `primary_driver` is the signal that contributed
-the most — both surface *why* a source got its score.
+the most — both surface *why* a source got its score. `primary_driver` is the
+largest contribution, not a verdict on the source.
+
+`cats.lite.score`, the `cats score` CLI and the MCP tools add two optional,
+presentation-only fields to their explanation (the score, band and signal
+values are unchanged):
+
+- **`observable: false`** on the `silence` entry of `signals`, when the
+  observed history spans no more than the silence threshold (96 h) or has
+  fewer than two messages: `silence` cannot fire on such a window, so its 0
+  is missing evidence, not quiet behaviour. The key is absent otherwise.
+- **`driver_note`** — when `primary_driver` is an unobservable or
+  zero-confidence signal: the largest contribution then comes from missing
+  evidence. `cats.lite.compare_feeds` / `compare_sources` rows carry the
+  matching `silence_observable` (`false`, `true`, or `null` if unknown).
+
+`GET /explain/{trace_id}` does **not** report `observable` or `driver_note`:
+it rebuilds the signals from the stored value/confidence only, and the
+observed history span is not persisted.
 
 Two optional blocks can appear in `explanation`:
 
