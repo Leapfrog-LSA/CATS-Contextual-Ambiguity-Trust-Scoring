@@ -8,6 +8,34 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **NewsGuard criteria compared with CATS**
+  (`docs/newsguard_criteria_comparison_2026-11.md`). A desk study of
+  NewsGuard's nine published criteria: which ones CATS could measure
+  automatically, a phased plan, and open questions for counsel. It uses no
+  NewsGuard data and changes no score.
+  - **Findings:** half of NewsGuard's points need human judgement. The
+    transparency criteria (bylines, ownership, responsible editor) are the
+    automatable part, as a one-sided penalty in a later, validated cycle.
+  - **Licence:** NewsGuard's data is licensed, so its use is a legal
+    question.
+  - **Coverage measured on the registry feeds:** 72 of 99 parsed feeds sign
+    at least some items, and 65 of 99 carry `<category>` labels.
+
+### Changed
+- **The RSS collector keeps more feed fields in `metadata`.** No signal reads
+  them yet; they are stored because a feed's history cannot be fetched later.
+  - **`title_len`:** the title is the first `title_len` characters of `text`.
+  - **`authors`:** pseudonymous author IDs (16 hex digits of SHA-256 over the
+    normalised byline), never names.
+  - **`categories`:** `<category>` labels.
+  - **No scoring change:** `Message.text`, signals, weights and bands are
+    unchanged (ENGINE 1.4). A test checks that scores are identical with and
+    without the new metadata.
+  - **Cost:** about +12% snapshot size.
+  - **Personal data:** a question about the pseudonymous IDs is added to
+    `DATA_LICENSE` §3 (e).
+
 ## [1.11.0] — 2026-11-15
 
 Platform and data-rights release.

@@ -71,7 +71,11 @@ balance before investing in message collection.
 The registry already carries each source's `rss` feed (from the catalogue).
 `cats.calibration.collect_rss` fetches those feeds (RSS 2.0 / RSS 1.0 / Atom),
 turns each entry into a timestamped message (title + summary, HTML stripped,
-dates normalised to ISO-8601 UTC) and emits the labelled sources:
+dates normalised to ISO-8601 UTC) and emits the labelled sources. Each
+message's `metadata` also keeps `link`, `title_len`, pseudonymous `authors`
+IDs and `categories` when the feed has them. No signal reads these fields
+yet; see
+[`newsguard_criteria_comparison_2026-11.md`](newsguard_criteria_comparison_2026-11.md).
 
 ```bash
 python -m cats.calibration.collect_rss \

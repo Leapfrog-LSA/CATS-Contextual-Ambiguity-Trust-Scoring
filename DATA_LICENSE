@@ -120,6 +120,12 @@ public, and before any Zenodo deposit that includes them:
   e) Personal data in the texts. What is the GDPR Art. 6 lawful basis? Do
      the national exemptions adopted under GDPR Art. 85 apply (in Italy,
      D.Lgs. 196/2003 artt. 136 ff.)?
+     Snapshots collected after 2026-11-15 also hold, per message, pseudonymous
+     author IDs (first 16 hex digits of an unsalted SHA-256 of the byline) and
+     the feed's category labels, which can name people. Pseudonymised data is
+     still personal data (GDPR Art. 4(5), Recital 26). Is storing them
+     covered by the same basis, and is the hash enough minimisation?
+     (docs/newsguard_criteria_comparison_2026-11.md)
 
   f) What to do now. The options include:
        - keep the texts as they are;

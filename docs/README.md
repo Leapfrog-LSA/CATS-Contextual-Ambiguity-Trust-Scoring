@@ -40,6 +40,7 @@
 |---|---|
 | [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (15 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
 | [watchlist_probe_2026-11.md](watchlist_probe_2026-11.md) | Coverage/robustness probe over the 1,088 RSS feeds of the OSINT watchlist catalogue (aggregates only, no source names, not an accuracy test): reachability, evidence, band spread by language, and the one-message `high` artefact |
+| [newsguard_criteria_comparison_2026-11.md](newsguard_criteria_comparison_2026-11.md) | NewsGuard's nine published criteria compared with CATS (no NewsGuard data, no scoring change): what is automatable, measured byline/category coverage on the registry feeds, phased plan, open questions for counsel |
 | [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
 ## Observatory
