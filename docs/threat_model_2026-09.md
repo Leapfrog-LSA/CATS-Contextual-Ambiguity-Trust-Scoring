@@ -317,8 +317,8 @@ publishing.
 
 > **Status (9 Oct 2026): JWT and version fixed; TLS and contact open.**
 > - JWT: the R8 row and Annex IV now say Bearer API-key auth, with no JWT.
-> - `SECURITY.md` lists 1.10.x, the current release line (re-checked
->   12 Nov 2026; it must be bumped with each release).
+> - `SECURITY.md` lists 1.11.x, the current release line (re-checked
+>   15 Nov 2026; it must be bumped with each release).
 > - Contact (15 Nov 2026): the email address was removed from every document;
 >   `SECURITY.md` now points to GitHub private vulnerability reporting, which
 >   the maintainer must enable in the repository settings.

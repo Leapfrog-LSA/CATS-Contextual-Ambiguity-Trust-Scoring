@@ -8,6 +8,35 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.11.0] — 2026-11-15
+
+Platform and data-rights release.
+- **Platform:** the Docker image runs Python 3.15; CI tests on 3.11, 3.14 and
+  3.15; a new `large-files` CI job and pre-commit hook refuse files over
+  2 MiB.
+- **Feeds:** feed-health round 15, Il Corriere della Sera collecting again,
+  and a dead-feed cleanup of the catalogue (311 → 287 feeds; the label
+  registry is unchanged).
+- **Data rights (drafts, not legal determinations):** `NOTICE.md`,
+  `DATA_LICENSE`, the text inventory and the TDM reservation check. Every
+  open legal question stays a TODO for the maintainer and counsel.
+- **Documentation:** the living docs brought up to date, the draft EU AI Act
+  Art. 72 post-market monitoring plan, the watchlist coverage probe, and the
+  contact email replaced by GitHub channels.
+
+No change to signals, weights or bands (ENGINE 1.4). Scores stay ordinal,
+not calibrated probabilities (WP 4.1/4.3).
+
+**Upgrading a deployment:**
+- **Python:** the image base moves from `python:3.14-slim` to
+  `python:3.15-slim`. Rebuild the image (`docker compose build`); a pip
+  install still needs Python 3.11 or later.
+- **RAM (unchanged since 1.10.0, repeated for hosts upgrading from 1.9.x or
+  earlier):** the bundled `docker-compose.yml` starts **2 workers**, each about
+  1.1 GB for the spaCy model. On a host with less than about 3 GB free for the
+  app, set `WEB_CONCURRENCY=1` in `.env`.
+- **Database:** no new migrations.
+
 ### Added
 - **TDM reservation check** (`research/tdm_reservation_check.py`). For each
   publisher in `data/labels.jsonl`, it collects the machine-readable signals

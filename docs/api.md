@@ -254,7 +254,7 @@ Deep health check — returns status of API, Redis, PostgreSQL, NLP model.
 {
   "status": "healthy",
   "checks": { "api": "ok", "redis": "ok", "database": "ok", "nlp": "ok" },
-  "version": "1.10.0"
+  "version": "1.11.0"
 }
 ```
 

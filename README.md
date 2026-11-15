@@ -161,7 +161,7 @@ Beyond the zero-infrastructure library, CATS also ships a full multi-tenant Fast
 
 ## Roadmap
 
-CATS has shipped through v1.10 (calibrated weights, the domain-provenance penalty, the language/evidence guardrails, the CLI with `cats compare`, the MCP server and SSRF-safe feed fetching, then feed discovery on HTML "RSS" pages, the stale-feed flag and multi-worker deployment); active work is on adoption (a public demo, first users, human labels) before any further signal changes. Full plan: [docs/piano_sviluppo_roadmap_2026-09.md](docs/piano_sviluppo_roadmap_2026-09.md).
+CATS has shipped through v1.11 (calibrated weights, the domain-provenance penalty, the language/evidence guardrails, the CLI with `cats compare`, the MCP server and SSRF-safe feed fetching, then feed discovery on HTML "RSS" pages, the stale-feed flag and multi-worker deployment, then the Python 3.15 image and the data-rights drafts); active work is on adoption (a public demo, first users, human labels) before any further signal changes. Full plan: [docs/piano_sviluppo_roadmap_2026-09.md](docs/piano_sviluppo_roadmap_2026-09.md).
 
 ***
 

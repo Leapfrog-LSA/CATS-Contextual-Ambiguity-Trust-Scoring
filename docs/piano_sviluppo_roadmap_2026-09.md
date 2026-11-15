@@ -3,7 +3,7 @@
 > Aggiornamento della [roadmap di luglio](piano_sviluppo_roadmap_2026-07.md)
 > allo stato della **v1.7.0 / ENGINE 1.4** (25 settembre 2026), **rivisto il
 > 4 ottobre 2026 alla v1.9.0, il 6 ottobre alla v1.9.1, il 21 ottobre alla
-> v1.10.0 e il 12 novembre con il lavoro non ancora rilasciato** (stesso ENGINE 1.4:
+> v1.10.0, il 12 novembre e il 15 novembre alla v1.11.0** (stesso ENGINE 1.4:
 > nessun segnale, peso o banda cambiato). Le voci già chiuse a luglio non sono ripetute. I numeri vengono dai documenti citati
 > accanto a ciascuno; i punteggi CATS restano **ordinali**, non probabilità
 > calibrate (WP 4.1/4.3).
@@ -108,10 +108,10 @@ Tutto su PyPI (`cats-scoring` 1.10.0, 21 ottobre); dettagli in
     un'autenticazione JWT che il codice non ha.
   - **Dipendenze:** uvicorn, cryptography, black 26, isort, pytest-asyncio 1.x.
 
-## Aggiornamento di novembre (non rilasciato)
+## Aggiornamento di novembre (v1.11.0)
 
-Lavoro su `main` dopo la v1.10.0, elencato in `[Unreleased]` nel
-[`CHANGELOG.md`](../CHANGELOG.md); stesso ENGINE 1.4, nessun segnale, peso o
+Lavoro su `main` dopo la v1.10.0, rilasciato come v1.11.0 (sezione
+`[1.11.0]` del [`CHANGELOG.md`](../CHANGELOG.md)); stesso ENGINE 1.4, nessun segnale, peso o
 banda cambiato.
 
 - **Piattaforma:** immagine Docker su Python 3.15 (#224), CI su 3.11, 3.14 e
