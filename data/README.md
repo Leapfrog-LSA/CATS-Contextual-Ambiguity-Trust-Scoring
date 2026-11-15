@@ -136,7 +136,12 @@ object per line:
 `cats_band`/`human_band` must be one of the five CATS bands, `cats_band`
 must match `determine_band(cats_score)`, and `issue_url` is required when
 `provenance` is `"issue"`. `provenance` is one of `issue | demo |
-api_contest`.
+api_contest | blind_panel`.
+
+`blind_panel` records are not disagreements with a score someone saw: they
+are bands given without seeing the CATS score. Their CATS fields
+(`cats_score`, `cats_band`, `engine_version`, `cats_version`) are filled in
+afterwards, and `provenance` keeps them distinct from the other records.
 
 **Use is validation-only, and always will be: never signal input.** These
 are human disagreements with a score, not ground truth — feeding them into
@@ -168,3 +173,15 @@ from two different runs:
   [`docs/calibration.md`](../docs/calibration.md) §3 (concordance 0.750,
   Spearman +0.554); scores remain **ordinal**, not calibrated probabilities.
   Weights calibrated under ≤ 1.2.x (before the polarity fix) are invalid.
+
+Record shape. The committed signal datasets (`train.jsonl`,
+`holdout_future.jsonl`, `holdout.jsonl`) carry only `source_type`, `signals`
+and `label`. Datasets built with the current
+`python -m cats.calibration.build_dataset` also carry a top-level
+`diagnostics` block (`source_id`, `n_messages`, `span_hours`,
+`signal_confidence`, `language`). It is diagnostics only — ignored by
+`load_dataset`, calibration and evaluation, and it holds no message text. The
+`language` value comes from a heuristic that only tells Italian from
+`other` / `unknown` (uncertain). The committed files have **not** been
+regenerated with it; `research/holdout_composition.py` counts them as language
+`unknown`.
