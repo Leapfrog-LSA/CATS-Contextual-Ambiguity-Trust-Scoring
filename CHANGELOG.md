@@ -9,6 +9,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Related-work draft** (`docs/related_work.md`), linked only from
+  `docs/README.md` as a draft. An English rendering of whitepaper v1.1 §1.4:
+  the four objects (source, claim, support, dependence), prior methods, the
+  Admiralty Code A–F axis, why no LLM produces the score, and the gap CATS
+  fills. Adds a "What CATS does not see" box that points to the README limits
+  and adds two points: recall 0.333 on the 06-Jul-2026 future holdout, and
+  fake news on ordinary domains. Every external reference is marked *to be
+  verified on the primary source*; none is taken from outside the whitepaper
+  or the repository. Documentation only: no score, band or weight changes.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.
