@@ -25,6 +25,7 @@ from cats.lite import (
     score_feed,
 )
 from cats.scoring.disclaimers import CLI_NOTE
+from cats.signals.silence import threshold_for
 
 _NOTE = CLI_NOTE
 _SIGNALS = ("coherence", "volatility", "silence", "gaming")
@@ -49,7 +50,7 @@ def _review_reason(result: dict) -> str:
     return review_reason(result) or "low-confidence signal(s)"
 
 
-def _format_human(result: dict, url: Optional[str]) -> str:
+def _format_human(result: dict, url: Optional[str], source_type: str = "default") -> str:
     lines = []
     source = result.get("source")
     if source:
@@ -72,7 +73,12 @@ def _format_human(result: dict, url: Optional[str]) -> str:
             None,
         )
         if share is not None:
-            lines.append(f"Driver     {driver} (share {share}%)")
+            lines.append(f"Driver     {driver} (largest contribution, {share}% of score)")
+        silence = next((d for d in explanation.get("signals") or [] if d.get("signal") == "silence"), None)
+        if silence is not None and silence.get("observable") is False:
+            lines.append(f"           silence not observable: window <= {threshold_for(source_type):g} h")
+        if explanation.get("driver_note"):
+            lines.append(f"           {explanation['driver_note']}")
 
     signals_line = " · ".join(f"{name} {value}" for name, value in result["signals"].items())
     lines.append(f"Signals    {signals_line}")
@@ -156,7 +162,7 @@ def _run_score(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
-        print(_format_human(result, args.url))
+        print(_format_human(result, args.url, args.source_type))
     return 0
 
 
@@ -170,7 +176,7 @@ def _load_url_list(path: str) -> List[str]:
     return urls
 
 
-def _format_compare(rows: List[dict], errors: List[dict]) -> str:
+def _format_compare(rows: List[dict], errors: List[dict], source_type: str = "default") -> str:
     def cell(value: object) -> str:
         return "-" if value is None else str(value)
 
@@ -188,7 +194,7 @@ def _format_compare(rows: List[dict], errors: List[dict]) -> str:
                 row["url"],
                 f"{row['trust_score']:.2f}",
                 row["band"],
-                cell(row["primary_driver"]),
+                cell(row["primary_driver"]) + ("*" if row.get("silence_observable") is False else ""),
                 *(cell(row["signals"].get(name)) for name in _SIGNALS),
                 str(row["messages"]),
                 ", ".join(flags) or "-",
@@ -202,6 +208,12 @@ def _format_compare(rows: List[dict], errors: List[dict]) -> str:
     ]
     lines.insert(1, "  ".join("-" * w for w in widths))
 
+    if any(row.get("silence_observable") is False for row in rows):
+        lines.append("")
+        lines.append(
+            f"*  silence not observable: window <= {threshold_for(source_type):g} h "
+            "(its 0 is missing evidence; Driver = largest contribution, not a verdict)"
+        )
     if any("coherence" in row["degraded_signals"] for row in rows):
         lines.append("")
         lines.append(
@@ -252,7 +264,7 @@ def _run_compare(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:
-        print(_format_compare(payload["ranked"], payload["errors"]))
+        print(_format_compare(payload["ranked"], payload["errors"], payload.get("source_type") or "default"))
     return 0 if payload["ranked"] else 3
 
 

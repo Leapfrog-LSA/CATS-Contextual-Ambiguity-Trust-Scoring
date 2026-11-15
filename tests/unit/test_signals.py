@@ -189,3 +189,22 @@ class TestSilenceThresholds:
         assert strict.value == 100.0
         assert lax.value == 0.0
         assert strict.metadata["threshold_h"] == 1.0
+
+
+class TestSilenceObservable:
+    def test_none_span_is_not_observable(self):
+        from cats.signals.silence import silence_observable
+
+        assert silence_observable(None, "news") is False
+
+    def test_span_exactly_at_threshold_is_not_observable(self):
+        from cats.signals.silence import silence_observable, threshold_for
+
+        assert silence_observable(threshold_for("news"), "news") is False
+        assert silence_observable(96.0, "default") is False
+
+    def test_span_above_threshold_is_observable(self):
+        from cats.signals.silence import silence_observable
+
+        assert silence_observable(96.5, "news") is True
+        assert silence_observable(500.0, "unknown_type") is True

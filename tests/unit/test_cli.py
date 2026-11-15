@@ -51,7 +51,30 @@ def test_score_human_output_contains_score_and_band(monkeypatch, capsys):
     assert exit_code == 0
     assert "Score" in captured.out
     assert "medium_high" in captured.out
-    assert "Driver     silence (share 46.0%)" in captured.out
+    assert "Driver     silence (largest contribution, 46.0% of score)" in captured.out
+
+
+def test_score_human_output_shows_unobservable_silence_and_driver_note(monkeypatch, capsys):
+    result = json.loads(json.dumps(_RESULT))
+    result["explanation"]["signals"][0]["observable"] = False
+    result["explanation"]["driver_note"] = "The largest contribution comes from 'silence' (missing evidence)."
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    exit_code = main(["score", "https://esempio.it"])
+
+    out = capsys.readouterr().out
+    assert exit_code == 0
+    assert "silence not observable: window <= 96 h" in out
+    assert "The largest contribution comes from 'silence' (missing evidence)." in out
+
+
+def test_score_human_output_without_new_fields_has_no_note(monkeypatch, capsys):
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: dict(_RESULT))
+
+    main(["score", "https://esempio.it"])
+
+    out = capsys.readouterr().out
+    assert "not observable" not in out
 
 
 def test_score_json_is_valid_and_has_trust_score(monkeypatch, capsys):
@@ -320,6 +343,20 @@ def test_compare_flags_review_domain_and_missing_model(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "yes" in out and "domain" in out
     assert "python -m spacy download it_core_news_lg" in out
+
+
+def test_compare_marks_driver_when_silence_not_observable(monkeypatch, capsys):
+    short = _scored(60.0)
+    short["explanation"]["signals"][0]["observable"] = False
+    table = {"https://short.example": short, "https://long.example": _scored(50.0, band="medium")}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table])
+
+    out = capsys.readouterr().out
+    rows = {line.split()[1]: line.split()[4] for line in out.splitlines() if line.lstrip()[:1].isdigit()}
+    assert rows == {"https://short.example": "silence*", "https://long.example": "silence"}
+    assert "*  silence not observable: window <= 96 h" in out
 
 
 def test_compare_reads_urls_from_file_and_dedupes(monkeypatch, tmp_path, capsys):
