@@ -33,6 +33,15 @@ Never losing data
   accident) and the run exits non-zero. Union the two with
   :mod:`cats.calibration.merge_snapshots`, exactly as for a same-day collision.
 
+Private repository
+------------------
+The data repository is private since 2026-11-15, so an anonymous download
+gets 404. Export a GitHub token that can read it, in ``CATS_SNAPSHOTS_TOKEN``
+(or ``GITHUB_TOKEN`` / ``GH_TOKEN``); it is sent as an ``Authorization``
+header to ``raw.githubusercontent.com`` only, never logged. A fine-grained
+personal access token with read-only *Contents* access to that one
+repository is enough.
+
 Usage::
 
     python -m cats.calibration.fetch_snapshots            # or: make snapshots-download
@@ -48,7 +57,7 @@ import re
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Mapping, Optional, Sequence, Tuple
 
 import httpx
 import structlog
@@ -62,6 +71,7 @@ DEFAULT_TIMEOUT = 60.0
 DEFAULT_MAX_BYTES = 50_000_000
 MANIFEST = "SHA256SUMS"
 RAW_BASE = "https://raw.githubusercontent.com"
+TOKEN_ENV_VARS = ("CATS_SNAPSHOTS_TOKEN", "GITHUB_TOKEN", "GH_TOKEN")
 
 _REPO_RE = re.compile(r"^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$")
 _REF_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
@@ -117,8 +127,27 @@ def _raw_url(repo: str, ref: str, path: str) -> str:
     return f"{RAW_BASE}/{repo}/{ref}/{path}"
 
 
-def _get(client: httpx.Client, url: str, max_bytes: int) -> bytes:
-    resp = client.get(url)
+def token_from_env(environ: Optional[Mapping[str, str]] = None) -> Optional[str]:
+    """First non-empty token among :data:`TOKEN_ENV_VARS`, or ``None``."""
+    env = os.environ if environ is None else environ
+    for name in TOKEN_ENV_VARS:
+        value = (env.get(name) or "").strip()
+        if value:
+            return value
+    return None
+
+
+def _get(client: httpx.Client, url: str, max_bytes: int, token: Optional[str] = None) -> bytes:
+    # The token goes to the raw-content host only. httpx also drops the
+    # Authorization header if a redirect leaves that origin.
+    headers = {"Authorization": f"token {token}"} if token and url.startswith(RAW_BASE + "/") else None
+    resp = client.get(url, headers=headers)
+    if resp.status_code == 404 and not token:
+        raise httpx.HTTPStatusError(
+            f"404 for {url}: the data repository is private; export a read token in " f"{' or '.join(TOKEN_ENV_VARS)}",
+            request=resp.request,
+            response=resp,
+        )
     resp.raise_for_status()
     if len(resp.content) > max_bytes:
         raise ValueError(f"{url} exceeds {max_bytes} bytes")
@@ -148,8 +177,13 @@ def fetch_snapshots(
     client: Optional[httpx.Client] = None,
     max_bytes: int = DEFAULT_MAX_BYTES,
     timeout: float = DEFAULT_TIMEOUT,
+    token: Optional[str] = None,
 ) -> FetchStats:
-    """Mirror the data repository's snapshots into ``dest``; see the module docstring."""
+    """Mirror the data repository's snapshots into ``dest``; see the module docstring.
+
+    ``token`` (a GitHub token able to read ``repo``) is needed for a private
+    data repository; :func:`main` reads it from :data:`TOKEN_ENV_VARS`.
+    """
     if not _REPO_RE.match(repo):
         raise ValueError(f"invalid repository {repo!r} (expected owner/name)")
     if not _REF_RE.match(ref) or ".." in ref:
@@ -160,7 +194,7 @@ def fetch_snapshots(
     stats = FetchStats()
     try:
         try:
-            manifest = _get(http, _raw_url(repo, ref, MANIFEST), max_bytes).decode("utf-8")
+            manifest = _get(http, _raw_url(repo, ref, MANIFEST), max_bytes, token).decode("utf-8")
         except httpx.HTTPError as exc:
             raise ManifestError(f"could not fetch {MANIFEST} from {repo}@{ref}: {exc}") from exc
         entries = parse_manifest(manifest)
@@ -173,11 +207,13 @@ def fetch_snapshots(
                     stats.unchanged.append(name)
                     continue
                 remote = target.with_name(name + ".remote")
-                _write_verified(_get(http, _raw_url(repo, ref, f"snapshots/{name}"), max_bytes), expected, remote)
+                _write_verified(
+                    _get(http, _raw_url(repo, ref, f"snapshots/{name}"), max_bytes, token), expected, remote
+                )
                 stats.conflicts.append(name)
                 logger.warning("snapshot_conflict_kept_local", file=name, remote_copy=str(remote))
                 continue
-            _write_verified(_get(http, _raw_url(repo, ref, f"snapshots/{name}"), max_bytes), expected, target)
+            _write_verified(_get(http, _raw_url(repo, ref, f"snapshots/{name}"), max_bytes, token), expected, target)
             stats.downloaded.append(name)
             logger.info("snapshot_downloaded", file=name)
     finally:
@@ -201,7 +237,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        stats = fetch_snapshots(args.dest, repo=args.repo, ref=args.ref, max_bytes=args.max_bytes, timeout=args.timeout)
+        stats = fetch_snapshots(
+            args.dest,
+            repo=args.repo,
+            ref=args.ref,
+            max_bytes=args.max_bytes,
+            timeout=args.timeout,
+            token=token_from_env(),
+        )
     except (ManifestError, ValueError, httpx.HTTPError) as exc:
         logger.error("fetch_snapshots_failed", error=str(exc))
         return 1

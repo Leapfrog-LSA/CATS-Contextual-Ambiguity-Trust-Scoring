@@ -144,3 +144,50 @@ def test_main_exit_codes(tmp_path, monkeypatch):
 
     monkeypatch.setattr(fs.httpx, "Client", real_client)
     assert fs.main(["--dest", str(tmp_path), "--repo", "not-a-repo"]) == 1
+
+
+def _header_client(routes: Dict[str, bytes], seen: list, require: str | None = None) -> httpx.Client:
+    def handler(request: httpx.Request) -> httpx.Response:
+        auth = request.headers.get("authorization")
+        seen.append(auth)
+        if require is not None and auth != require:
+            return httpx.Response(404)
+        body = routes.get(str(request.url))
+        return httpx.Response(404) if body is None else httpx.Response(200, content=body)
+
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_token_is_sent_to_the_raw_host(tmp_path):
+    seen: list = []
+    client = _header_client(_routes({NAME_A: SNAP_A}), seen, require="token s3cret")
+    stats = fs.fetch_snapshots(tmp_path, client=client, token="s3cret")
+    assert stats.downloaded == [NAME_A]
+    assert seen == ["token s3cret", "token s3cret"]
+
+
+def test_no_token_sends_no_header_and_404_names_the_env_vars(tmp_path):
+    seen: list = []
+    client = _header_client(_routes({NAME_A: SNAP_A}), seen, require="token s3cret")
+    with pytest.raises(fs.ManifestError, match="CATS_SNAPSHOTS_TOKEN"):
+        fs.fetch_snapshots(tmp_path, client=client)
+    assert seen == [None]
+
+
+def test_token_from_env_order_and_blanks():
+    assert fs.token_from_env({}) is None
+    assert fs.token_from_env({"GH_TOKEN": "c", "GITHUB_TOKEN": "b"}) == "b"
+    assert fs.token_from_env({"CATS_SNAPSHOTS_TOKEN": " a ", "GITHUB_TOKEN": "b"}) == "a"
+    assert fs.token_from_env({"CATS_SNAPSHOTS_TOKEN": "  ", "GH_TOKEN": "c"}) == "c"
+
+
+def test_main_reads_the_token_from_the_environment(tmp_path, monkeypatch):
+    seen: list = []
+    mocked = _header_client(_routes({NAME_A: SNAP_A}), seen, require="token envtok")
+    real_client = httpx.Client
+    monkeypatch.setattr(fs.httpx, "Client", lambda *a, **k: real_client(transport=mocked._transport))
+    for name in fs.TOKEN_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("CATS_SNAPSHOTS_TOKEN", "envtok")
+    assert fs.main(["--dest", str(tmp_path)]) == 0
+    assert (tmp_path / NAME_A).read_bytes() == SNAP_A
