@@ -45,8 +45,13 @@ It holds every text in this repository's files but about 360 (the combined
 count is 243,707 distinct texts). Deciding about the texts here therefore
 means deciding about `cats-snapshots` too.
 
-- **TODO (maintainer):** decide whether the raw texts stay public. The
-  questions to settle first are in `DATA_LICENSE` §3.
+- **Status (2026-11-15):** `cats-snapshots` is now **private**. Two limits:
+  - the texts in this repository's own data files (`data/snapshots/*.jsonl`,
+    `data/*_sources.jsonl`) are still public;
+  - copies made while `cats-snapshots` was public (clones, forks, caches) are
+    not recalled.
+- **TODO (maintainer):** decide whether the raw texts in this repository stay
+  public. The questions to settle first are in `DATA_LICENSE` §3.
 - **TODO (legal):** whether a given text is protected at all (a short
   headline may not be), and who holds the rights, varies by publisher. Some
   sources in the inventory, for example `theconversation.com`,
@@ -86,5 +91,5 @@ in an installed environment, gives the full list.
 - Update this file whenever a data file, a downloaded model or a reference
   dataset is added, removed or replaced.
 - Refresh the figures in §1 with `python research/text_inventory.py`.
-- **TODO (maintainer):** if `cats-snapshots` stays public, give it its own
-  notice, because it carries the same third-party texts.
+- `cats-snapshots` has its own `NOTICE.md` and `DATA_LICENSE`, and is private
+  since 2026-11-15. Keep the two notices consistent.

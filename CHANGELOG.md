@@ -9,6 +9,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`fetch_snapshots` works with the private data repository.**
+  `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
+  `make snapshots-download` now gets 404.
+  - **Token:** the command reads a GitHub token from `CATS_SNAPSHOTS_TOKEN`
+    (or `GITHUB_TOKEN` / `GH_TOKEN`) and sends it only to
+    `raw.githubusercontent.com`.
+  - **Without a token:** the 404 names those variables.
+  - **Docs:** `docs/calibration.md` explains the read-only token.
+  - **Status notes:** `NOTICE.md` and `DATA_LICENSE` record that the data
+    repository is private, and that the texts in this repository's own data
+    files are still public.
 - **NewsGuard criteria compared with CATS**
   (`docs/newsguard_criteria_comparison_2026-11.md`). A desk study of
   NewsGuard's nine published criteria: which ones CATS could measure

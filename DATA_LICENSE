@@ -79,7 +79,8 @@ This project cannot relicense these files.
 
   data/labelled_sources.jsonl, data/train_sources.jsonl,
   data/holdout_sources.jsonl, data/snapshots/*.jsonl,
-  and the Leapfrog-LSA/cats-snapshots repository.
+  and the Leapfrog-LSA/cats-snapshots repository (private since 2026-11-15;
+  the files listed here, in this public repository, are not).
 
 These files contain headlines, summaries and, for some feeds, full article
 bodies, copied from the publishers' public RSS feeds. This project grants NO

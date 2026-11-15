@@ -120,7 +120,14 @@ and a local file that differs is **never overwritten** — the remote version is
 saved next to it as `<name>.remote` and the command exits non-zero, so you can
 union the two with `merge_snapshots`:
 
+The data repository is **private** since 2026-11-15, so the download needs a
+GitHub token that can read it. A fine-grained personal access token with
+read-only *Contents* access to `Leapfrog-LSA/cats-snapshots` is enough.
+Export it as `CATS_SNAPSHOTS_TOKEN` (`GITHUB_TOKEN` and `GH_TOKEN` also work).
+Without it, the command stops with a 404 that names these variables.
+
 ```bash
+export CATS_SNAPSHOTS_TOKEN=...   # read-only token for the data repository
 make snapshots-download        # = python -m cats.calibration.fetch_snapshots
 # pin a data-repo commit for a reproducible run:
 python -m cats.calibration.fetch_snapshots --ref <commit-sha>
