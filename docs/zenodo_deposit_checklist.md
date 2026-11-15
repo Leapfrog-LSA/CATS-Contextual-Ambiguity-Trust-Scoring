@@ -53,11 +53,11 @@ record and the GitHub record agree:
 | Title | CATS — Contextual Ambiguity & Trust Scoring: Whitepaper Tecnico v1.1 |
 | Authors | `Leapfrog-LSA` (match `CITATION.cff`; add an ORCID per author if/when individual authors are attributed instead of the org) |
 | Description | Adapt the abstract already in `CITATION.cff`: "Trust intelligence scoring for OSINT sources: behavioural reliability analysis (narrative coherence, sentiment volatility, temporal silence, gaming detection) with empirical weight calibration, GDPR Art. 13-22 endpoints and EU AI Act documentation." Add one line noting the whitepaper is in Italian and that it documents the method independent of a specific engine version. |
-| Version | `1.1` (the whitepaper's own version — do **not** put the software version (currently `1.10.0`) here; they version independently) |
+| Version | `1.1` (the whitepaper's own version — do **not** put the software version (currently `1.11.0`) here; they version independently) |
 | Language | Italian (`ita`) |
 | License | MIT (matches repo `LICENSE`) — Zenodo's license picker has MIT natively |
 | Keywords | `OSINT`, `trust-scoring`, `source-reliability`, `disinformation`, `EU-AI-Act`, `GDPR` (copy verbatim from `CITATION.cff` so the two records are keyword-consistent) |
-| Related/alternate identifiers | Add the GitHub repo as "is supplement to": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring`; add the GitHub Release that is current at deposit time (see `CITATION.cff` `version`; today `v1.10.0`) as "references": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/releases/tag/v1.10.0` |
+| Related/alternate identifiers | Add the GitHub repo as "is supplement to": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring`; add the GitHub Release that is current at deposit time (see `CITATION.cff` `version`; today `v1.11.0`) as "references": `https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/releases/tag/v1.11.0` |
 | Access right | Open access |
 | Publication date | Date of actual deposit (not the `.docx` file's original date) |
 | Funding | None known — leave blank unless the maintainer has a grant to declare |
