@@ -9,6 +9,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Popularity-table status in every result.** `cats.lite.score` results and
+  `/evaluate` / `/batch` responses carry a `domain_popularity` block:
+  whether the local Tranco table (`data/tranco_top1m.csv`) is loaded, its row
+  count, and its version read from a hand-written `data/tranco_top1m.meta.json`
+  next to it (`list_id`, `list_date`, `downloaded_at`; git-ignored, never
+  committed). New read-only `popularity_table_status()` in
+  `cats/signals/domain_provenance.py`. The single-result CLI output adds one
+  `Warning` line when the table is not loaded.
+  - **No score change:** score, band, weights, the domain penalty and
+    `requires_review` are unchanged; the block is not persisted on the
+    `TrustScore` row (no migration).
+  - **Side effect:** the first call in a process now loads the table once even
+    when no URL is scored (and logs `domain_popularity_unavailable` once
+    without it).
+  - **Docs:** `docs/architecture.md`, `docs/api.md`, `data/README.md`.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.

@@ -93,6 +93,12 @@ def _format_human(result: dict, url: Optional[str]) -> str:
         )
     if language["detected"] == "other":
         lines.append("Warning    Input does not look Italian: the default NLP stack is Italian-optimised (WP 4.1).")
+    domain_popularity = result.get("domain_popularity")
+    if domain_popularity is not None and not domain_popularity.get("loaded"):
+        lines.append(
+            "Warning    Domain popularity table not loaded: "
+            "the Tranco popularity checks of domain provenance are inactive."
+        )
     if result["signals"].get("domain_provenance", 0) > 0:
         reasons = []
         if explanation and explanation.get("domain_penalty"):

@@ -52,7 +52,9 @@ def score_source(url: str, source_type: str = "default") -> Dict:
 
     Returns a dict with ``trust_score`` (0-100), ``band`` (``high`` down to
     ``very_low``), ``requires_human_review``, per-signal ``signals``,
-    ``language``/``evidence`` flags, a full ``explanation`` (which signal
+    ``language``/``evidence`` flags, a ``domain_popularity`` block (whether
+    the local Tranco popularity table is loaded and its version; reporting
+    only, never affects the score), a full ``explanation`` (which signal
     drove the score and why), a ``source`` block (feed URL, message count,
     time span), and a ``disclaimer``. Raises an error if the host is
     unreachable, no feed can be found, or the feed has no usable messages.

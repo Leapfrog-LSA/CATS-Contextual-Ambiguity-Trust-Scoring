@@ -38,6 +38,9 @@ class EvaluateResponse(BaseModel):
     # Evidence summary (risk R5): message count vs the configured minimum;
     # insufficient evidence forces requires_review, never changes the score.
     evidence: Optional[Dict[str, Any]] = None
+    # Popularity-table status: whether the local Tranco table is loaded and its
+    # version file. Reporting only — never affects score, band or requires_review.
+    domain_popularity: Optional[Dict[str, Any]] = None
 
 
 class BatchEvaluateRequest(BaseModel):

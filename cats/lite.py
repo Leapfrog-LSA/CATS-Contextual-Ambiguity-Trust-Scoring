@@ -74,7 +74,7 @@ from cats.scoring.explainer import generate_explanation  # noqa: E402
 from cats.scoring.weights import get_dynamic_weights  # noqa: E402
 from cats.signals import coherence  # noqa: E402
 from cats.signals.coherence import compute_coherence  # noqa: E402
-from cats.signals.domain_provenance import compute_domain_provenance  # noqa: E402
+from cats.signals.domain_provenance import compute_domain_provenance, popularity_table_status  # noqa: E402
 from cats.signals.gaming import compute_gaming  # noqa: E402
 from cats.signals.silence import compute_silence  # noqa: E402
 from cats.signals.types import SignalResult  # noqa: E402
@@ -494,13 +494,18 @@ def score(
     penalty is applied (impersonation/clone red-flags only lower the score).
 
     Returns ``{trust_score, band, requires_human_review, signals,
-    degraded_signals, language, evidence, explanation}``. ``language`` flags
+    degraded_signals, language, evidence, domain_popularity, explanation}``.
+    ``language`` flags
     non-Italian input (the NLP stack is Italian-optimised — risk R3);
     ``evidence`` reports the message count vs ``CATS_MIN_EVIDENCE_MESSAGES``
     (risk R5) — an insufficient history forces ``requires_human_review`` but
     never changes the score. ``degraded_signals`` names signals that were not
     measured (e.g. ``coherence`` without the spaCy model): they enter the score
     at their neutral value, so a non-empty list also forces review.
+    ``domain_popularity`` reports whether the local Tranco popularity table is
+    loaded (``loaded``, ``entries``) and its hand-written version file
+    (``version``, ``None`` when absent) — reporting only: it never changes the
+    score, the band or ``requires_human_review``.
     """
     if load_nlp:
         init_nlp()
@@ -536,6 +541,7 @@ def score(
         "degraded_signals": degraded_signals(signals),
         "language": language.as_dict(),
         "evidence": evidence,
+        "domain_popularity": popularity_table_status(),
     }
     if explain:
         explanation = generate_explanation(value, band, signals, w)

@@ -52,6 +52,8 @@ gaming when it is wired in.
 
 from __future__ import annotations
 
+import json
+import os
 from urllib.parse import urlparse
 
 import structlog
@@ -62,6 +64,8 @@ logger = structlog.get_logger()
 
 _popularity_table = None  # type: dict | None
 _popularity_load_attempted = False
+_popularity_version = None  # type: dict | None
+_popularity_version_load_attempted = False
 
 # Cheap/rare TLDs favoured by clone networks — the exact set Doppelganger used
 # (data/disinfo_sources.csv), MINUS four real ccTLDs moved to AMBIGUOUS_CCTLDS
@@ -146,6 +150,65 @@ def _load_popularity_table() -> "dict | None":
         logger.warning("domain_popularity_unavailable", error=str(exc))
         _popularity_table = None
     return _popularity_table
+
+
+def _popularity_version_path() -> str:
+    """Path of the hand-written version file next to the popularity table.
+
+    Same directory and base name as ``settings.domain_popularity_path``, with
+    the ``.meta.json`` suffix (``data/tranco_top1m.csv`` ->
+    ``data/tranco_top1m.meta.json``).
+    """
+    from cats.core.config import settings
+
+    return os.path.splitext(str(settings.domain_popularity_path))[0] + ".meta.json"
+
+
+def _load_popularity_version() -> "dict | None":
+    """Lazily read the popularity table's version file once; cache the result.
+
+    The file is a JSON object written by hand by whoever downloads the list;
+    the keys ``list_id``, ``list_date`` and ``downloaded_at`` are reported as
+    free-form strings (their format is not validated). A missing, unreadable,
+    non-JSON or non-object file degrades to ``None`` — never raises.
+    """
+    global _popularity_version, _popularity_version_load_attempted
+    if _popularity_version is not None or _popularity_version_load_attempted:
+        return _popularity_version
+    _popularity_version_load_attempted = True
+    path = _popularity_version_path()
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = json.load(handle)
+        if not isinstance(data, dict):
+            raise ValueError("version file is not a JSON object")
+        _popularity_version = {
+            key: (None if data.get(key) is None else str(data.get(key)))
+            for key in ("list_id", "list_date", "downloaded_at")
+        }
+        logger.info("domain_popularity_version_loaded", path=path)
+    except FileNotFoundError:
+        logger.info("domain_popularity_version_missing", path=path)
+        _popularity_version = None
+    except Exception as exc:
+        logger.warning("domain_popularity_version_unavailable", path=path, error=str(exc))
+        _popularity_version = None
+    return _popularity_version
+
+
+def popularity_table_status() -> dict:
+    """Read-only status of the local popularity table, for response reporting.
+
+    Returns ``{"loaded": bool, "entries": int | None, "version": dict | None}``.
+    ``version`` is read from the ``.meta.json`` file next to the table and is
+    ``None`` whenever the table itself is not loaded. Reporting only: it never
+    feeds the score, the band or the human-review decision. Calling it loads
+    the table (once per process) if it was not loaded yet.
+    """
+    table = _load_popularity_table()
+    if table is None:
+        return {"loaded": False, "entries": None, "version": None}
+    return {"loaded": True, "entries": len(table), "version": _load_popularity_version()}
 
 
 def _is_unranked(host: str) -> bool:
