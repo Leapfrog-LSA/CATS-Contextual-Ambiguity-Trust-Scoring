@@ -20,6 +20,7 @@ Driver     silence (share 39.8%)
 Signals    coherence 20.42 · volatility 7.41 · silence 0.0 · gaming 39.0 · domain_provenance 0.0
 Language   italian (1.0)      Evidence  28 ≥ 3 ✓
 Note       Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md.
+Feedback   Score looks wrong? https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/issues/new?template=score_feedback.yml
 ```
 
 `COHERENCE_BACKEND=sbert` is not decoration: [why](#the-coherence-backend-matters).
@@ -174,6 +175,12 @@ CATS has shipped through v1.11 (calibrated weights, the domain-provenance penalt
 Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
 dev setup, code standards, and the checklist for adding a new signal. Please
 also read the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+If a score looks wrong for a source, use the
+["Score feedback" issue form](https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/issues/new?template=score_feedback.yml)
+(the same link `cats score`, `cats compare`, the MCP server and the demo show).
+A maintainer reviews it; it never changes a score automatically. See
+[CONTRIBUTING.md](CONTRIBUTING.md#reporting-a-score-disagreement).
 
 If CATS is useful to you, **consider starring the repo ⭐** — it helps others
 doing OSINT/disinformation work find it.

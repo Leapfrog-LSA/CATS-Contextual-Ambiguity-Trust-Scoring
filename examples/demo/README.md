@@ -41,6 +41,9 @@ Opens on `http://127.0.0.1:7860`.
 
 - **No analytics or user-data collection** — the rate limiter only ever
   holds a request-count-per-session in memory, never the URLs scored.
+- **No feedback sent from the demo** — the "Score looks wrong?" link only
+  opens the GitHub "Score feedback" issue form; it carries nothing about the
+  source you scored, and the demo itself sends or stores nothing.
 - **No auth, no persistence** — this is the zero-infrastructure `cats.lite`
   path, same as the CLI; the audited, GDPR-compliant deployment is the
   separate FastAPI service (see the top-level [README](../../README.md)).

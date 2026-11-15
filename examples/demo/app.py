@@ -21,6 +21,13 @@ from cats.lite import FeedFetchError, FeedNotFoundError, score_feed
 
 _REPO_URL = "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring"
 
+# Built here rather than imported from cats.lite: the Space installs
+# cats-scoring from PyPI, so a name newer than the last release would break it.
+# A plain link to the GitHub issue form: nothing about the scored source is
+# put in it, and the demo itself sends or stores nothing.
+_FEEDBACK_URL = _REPO_URL + "/issues/new?template=score_feedback.yml"
+_FEEDBACK_MD = f"Score looks wrong? [Report it on GitHub]({_FEEDBACK_URL})."
+
 _DISCLAIMER = (
     "**Ordinal score, not a probability.** CATS ranks a source's behavioural reliability "
     "patterns over time — it does not fact-check content and is not a substitute for human "
@@ -65,7 +72,7 @@ def _format_result(result: dict) -> Tuple[str, str, str, str, str]:
 
     warnings = []
     if result["requires_human_review"]:
-        warnings.append("⚠️ **Human review recommended** for this score.")
+        warnings.append(f"⚠️ **Human review recommended** for this score. {_FEEDBACK_MD}")
     language = result["language"]
     if language["detected"] == "other":
         warnings.append(
@@ -129,6 +136,7 @@ def build_demo() -> gr.Blocks:
         )
 
         gr.Markdown(f"[CATS on GitHub]({_REPO_URL})")
+        gr.Markdown(_FEEDBACK_MD)
         gr.Markdown(_DISCLAIMER)
 
     return demo

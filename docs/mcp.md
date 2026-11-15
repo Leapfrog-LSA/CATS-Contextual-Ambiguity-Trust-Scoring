@@ -64,7 +64,7 @@ Scores a source directly from its URL — fetches (and autodiscovers, if
 needed) its RSS/Atom feed, then runs the CATS signal pipeline. Same
 autodiscovery behaviour as `cats.lite.score_feed`/`cats score <url>`. Returns
 `score()`'s result plus a `source` block (feed URL, message count, time
-span) and a `disclaimer`. In `explanation`, `primary_driver` is the signal
+span), a `disclaimer` and a `feedback_url` (see [Caveats](#caveats)). In `explanation`, `primary_driver` is the signal
 with the largest contribution, not a verdict; the `silence` entry carries
 `observable: false` when the window spans 96 h or less (or has fewer than two
 messages), and `driver_note` appears when the driver is such an unobserved or
@@ -75,8 +75,8 @@ zero-confidence signal.
 Scores a source from an already-collected list of
 `{"timestamp": ISO-8601, "text": str}` messages — use this when the source
 isn't a public feed. `url`, if given, enables the domain-provenance penalty.
-Returns `score()`'s result plus a `disclaimer`, with the same `observable`
-flag and optional `driver_note` in `explanation`.
+Returns `score()`'s result plus a `disclaimer` and a `feedback_url`, with the
+same `observable` flag and optional `driver_note` in `explanation`.
 
 ### `compare_sources(urls, source_type="default")`
 
@@ -90,7 +90,7 @@ unknown), raw `signals`, `messages`, `requires_human_review`, `review_reason`,
 `fallback` is `true` when SBERT was configured but NER measured coherence, so
 the score is not comparable with an SBERT install). It also returns `errors`, the
 sources that could not be scored, with the reason; they never stop the
-comparison. A `note` and a `disclaimer` complete the response. More than 10
+comparison. A `note`, a `disclaimer` and a `feedback_url` complete the response. More than 10
 URLs, or fewer than 2 distinct ones, is refused: each source costs a feed
 fetch plus NLP. The ranking describes publishing behaviour, not
 truthfulness, and holds only within one call.
@@ -99,7 +99,7 @@ truthfulness, and holds only within one call.
 
 Static reference: the trust-score band table (`high` down to `very_low`,
 with the recommended action for each) and the ordinal-score disclaimer. No
-scoring is performed.
+scoring is performed, so there is no `feedback_url`.
 
 ## Caveats
 
@@ -112,3 +112,11 @@ URLs that resolve to non-public addresses (threat model T9). A short window
 missing evidence, so relay `driver_note` / `observable: false` rather than
 presenting the driver as a finding. See [architecture.md](architecture.md)
 and the top-level [README](../README.md) for the full picture.
+
+`score_source`, `score_messages` and `compare_sources` also return
+`feedback_url`, the public GitHub "Score feedback" issue form
+(`.github/ISSUE_TEMPLATE/score_feedback.yml`). A client can offer it when the
+user disputes a score. Reporting is voluntary and nothing is sent by the
+server. A maintainer reviews each report, and a report never changes a score.
+With the reporter's consent, a case may be recorded for validation only (see
+[CONTRIBUTING.md](../CONTRIBUTING.md#reporting-a-score-disagreement)).
