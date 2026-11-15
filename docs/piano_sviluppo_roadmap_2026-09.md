@@ -273,6 +273,69 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   - Criterio di uscita: concordanza ≥ 0,78 su un holdout futuro ≥ 100 fonti e
     recall della coda bassa in miglioramento. Se non è soddisfatto, nuovo
     tentativo in primavera.
+  - **Candidate da valutare (non approvate).** Annotate il 15 novembre 2026,
+    con la descrizione controllata sul codice di `main`. Ogni voce è una
+    **proposta in attesa di decisione del maintainer**; nessuna ha codice.
+    Tutte cambiano i punteggi, quindi ognuna richiede ricalibrazione,
+    ri-validazione sull'holdout futuro e bump di `ENGINE_VERSION`.
+    - **Coerenza con meno di 2 messaggi** — *proposta in attesa di decisione
+      del maintainer.* Oggi entrambi i backend (`_ner_coherence` e
+      `_sbert_coherence` in `cats/signals/coherence.py`) restituiscono
+      `value=100.0` con `confidence=0.0` e `reason: "insufficient_messages"`.
+      Proposta: portare quel valore di ripiego a 50, lasciando la confidenza
+      a 0. È una mitigazione parziale del caso "feed quasi vuoto che risulta
+      alto", non la sua chiusura: con meno di 2 messaggi anche `silence`,
+      `volatility` (sotto 3 messaggi) e `gaming` (sotto 5) restituiscono 0,
+      che invertito vale 100 sull'asse di affidabilità. Il ramo
+      `nlp_unavailable` del backend NER restituisce già 50.
+    - **Confidenza nell'aggregazione** — *proposta in attesa di decisione del
+      maintainer.* Oggi `aggregate_score` (`cats/scoring/engine.py`) fa la
+      media pesata dei valori sull'asse di affidabilità e non usa la
+      confidenza (la usa solo `apply_domain_penalty`, per saltare un dominio
+      non valutato). Confrontare l'aggregazione attuale con due varianti:
+      peso effettivo = peso × confidenza, rinormalizzato; oppure valore
+      avvicinato a un neutro in proporzione a 1 − confidenza. Dipende dalla
+      registrazione della confidenza nei dataset (blocco 2 del piano di
+      novembre): su `main` le righe di `data/train.jsonl` e
+      `data/holdout_future.jsonl` hanno solo `source_type`, `signals` e
+      `label`, senza confidenza.
+    - **Silenzio con istante di riferimento** — *proposta in attesa di
+      decisione del maintainer.* Oggi `compute_silence`
+      (`cats/signals/silence.py`) conta solo gli intervalli tra messaggi
+      consecutivi oltre la soglia (96 h per tutti i tipi di fonte); il tempo
+      trascorso dall'ultimo messaggio non entra. Variante: un istante di
+      riferimento esplicito e opzionale, che aggiunge l'intervallo
+      dall'ultimo messaggio a quell'istante, con la stessa soglia di 96 h.
+      Resta aperto da dove prendere l'istante di riferimento nei dataset.
+    - **Volatilità con backend BERT** — *proposta in attesa di decisione del
+      maintainer.* Il backend esiste già: `compute_volatility` usa
+      `sentiment_polarity` (`cats/signals/sentiment.py`), che con
+      `SENTIMENT_BACKEND=bert` usa un modello transformers italiano e, se
+      mancano dipendenze o modello, ripiega su TextBlob (il default). Proposta:
+      misurarlo contro le etichette a parità di backend di coerenza. Va
+      chiarito con il maintainer se il vincolo di metà dicembre sui nuovi
+      segnali copre anche questa misura.
+    - **Pesi distinti per backend di coerenza (SBERT e NER)** — *proposta in
+      attesa di decisione del maintainer.* Oggi `data/calibrated_weights.json`
+      ha una sola tabella per gruppo di tipo di fonte (`default`, `news`),
+      calibrata con il backend SBERT; `cats/scoring/weights.py` non distingue
+      il backend. La regola di arresto va dichiarata prima della misura.
+    - **Vista Admiralty A–F** — *proposta in attesa di decisione del
+      maintainer.* È già una voce di questa fase (più sotto). Nota: la
+      mappatura va definita sui nomi delle fasce (`high`, `medium_high`,
+      `medium`, `low`, `very_low`, da `determine_band`), non sulle soglie
+      numeriche, che possono spostarsi con la ricalibrazione; è una
+      convenzione di visualizzazione da approvare.
+  - **Punto aperto per il maintainer — concordanza 0,750 o 0,755.** Il
+    `README.md` (sezioni "The coherence backend matters" e "Honest limits") confronta
+    il ≈0,62 del backend NER con una concordanza calibrata di **0,750**;
+    `docs/signal_diagnosis_2026-07.md` riporta per l'aggregato calibrato
+    **0,755** (Spearman +0,553) e confronta lo stesso ≈0,62 con 0,755.
+    Secondo `docs/calibration.md`, 0,755 è la validazione originale del 6
+    luglio e 0,750 il valore attuale dopo le correzioni di agosto, ma il
+    documento di luglio non lo dice. Nessuno dei due numeri è stato
+    modificato: decidere se annotare la data del dato nel documento di
+    diagnosi o allineare il confronto.
 - [ ] Release v2.0 — **M** — dipende dalla ricalibrazione; la GitHub Release
   (che pubblica su PyPI) richiede la conferma del maintainer.
   - `ENGINE_VERSION` 2.0 e changelog di rottura (punteggi non comparabili);

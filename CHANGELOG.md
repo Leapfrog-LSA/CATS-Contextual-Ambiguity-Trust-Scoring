@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Roadmap: candidates for the January 2027 recalibration**
+  (`docs/piano_sviluppo_roadmap_2026-09.md`, Phase 3). A list titled
+  "Candidate da valutare (non approvate)", each item a proposal awaiting the
+  maintainer's decision, with its description checked against the code:
+  coherence fallback value with fewer than 2 messages (100 today, proposed
+  50), confidence in aggregation, silence with a reference instant, volatility
+  with the existing BERT sentiment backend, weights per coherence backend, and
+  the Admiralty A–F view mapped on band names. Every item would need
+  recalibration, future-holdout re-validation and an `ENGINE_VERSION` bump;
+  none has code. Documentation only: no score, band or weight changes.
+  - **Open point:** `README.md` quotes concordance 0.750, while
+    `docs/signal_diagnosis_2026-07.md` quotes 0.755. Neither number is
+    changed; the maintainer decides how to reconcile them.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.
