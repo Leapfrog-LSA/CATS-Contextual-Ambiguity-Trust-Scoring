@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from cats.signals.types import SignalResult
 
@@ -110,6 +110,29 @@ def degraded_signals(signals: List[SignalResult]) -> List[str]:
     and ``requires_human_review`` forces review.
     """
     return [s.name for s in signals if (s.metadata or {}).get("reason") in DEGRADED_REASONS]
+
+
+def coherence_backend_status(signals: List[SignalResult], configured_backend: str) -> Dict[str, Union[str, bool, None]]:
+    """Which backend actually measured ``coherence``, vs the configured one.
+
+    Returns ``{"configured", "effective", "fallback"}``. ``effective`` is the
+    coherence result's ``metadata["backend"]`` (``"ner"`` or ``"sbert"``), or
+    ``None`` when coherence is absent or was not measured (``nlp_unavailable`` /
+    ``insufficient_messages`` results carry only a ``reason``). ``fallback`` is
+    True only when ``"sbert"`` was configured but NER did the measuring (SBERT
+    unavailable or failed at inference), so the score is not comparable with an
+    install where SBERT ran.
+
+    Reporting only: the score, band, weights and ``requires_human_review`` are
+    NOT affected, and this is not a degraded signal (``DEGRADED_REASONS``).
+    """
+    coherence = next((s for s in signals if s.name == "coherence"), None)
+    effective = (coherence.metadata or {}).get("backend") if coherence is not None else None
+    return {
+        "configured": configured_backend,
+        "effective": effective,
+        "fallback": configured_backend == "sbert" and effective == "ner",
+    }
 
 
 def requires_human_review(

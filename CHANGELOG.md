@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **SBERT -> NER coherence fallback is now visible in the output.** Reporting
+  only: no score, band, weight or review rule changes; ENGINE 1.4 unchanged.
+  - **What:** new `coherence_backend: {configured, effective, fallback}`
+    (`cats.scoring.engine.coherence_backend_status`). `fallback` is `true` when
+    `COHERENCE_BACKEND=sbert` is configured but coherence was measured with
+    NER (SBERT unavailable or failed); before, only a log warning said so.
+  - **Where:** `cats.lite.score()` (plus `coherence_backend_warning` in the
+    explanation), `compare_feeds` rows, the CLI (`Warning` line in `score` and
+    `compare`, field in `--json`), the MCP tools, and the `/evaluate` and
+    `/batch` responses (`EvaluateResponse.coherence_backend`, not persisted).
+  - **Not changed:** the fallback does not force `requires_human_review` and
+    is not a degraded signal. Known limit: with fewer than 2 messages or no
+    spaCy model, `effective` is `null` and `fallback` is `false`.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.

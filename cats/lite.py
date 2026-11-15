@@ -65,6 +65,7 @@ from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
     aggregate_score,
     apply_domain_penalty,
+    coherence_backend_status,
     degraded_signals,
     determine_band,
     evidence_summary,
@@ -88,6 +89,12 @@ _DEGRADED_WARNING = (
     "Some signals were not measured and entered the score at a neutral value, so the score "
     "and band are not comparable with a full install. For coherence, install the Italian "
     "spaCy model: python -m spacy download it_core_news_lg"
+)
+
+_COHERENCE_BACKEND_WARNING = (
+    "COHERENCE_BACKEND=sbert is configured but coherence was measured with NER (SBERT unavailable "
+    "or failed), so the score is not comparable with an SBERT install. Fix: "
+    "pip install -r requirements-sbert.txt"
 )
 
 _WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml", "/rss/")
@@ -421,7 +428,8 @@ def compare_feeds(
     Returns ``{source_type, ranked, errors, note}``. Each ``ranked`` row is
     compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``,
     raw ``signals``, ``messages``, ``requires_human_review``,
-    ``review_reason``, ``degraded_signals``, ``domain_red_flag``. The scores
+    ``review_reason``, ``degraded_signals``, ``domain_red_flag``,
+    ``coherence_backend`` (see :func:`score`; ``None`` if absent). The scores
     are ordinal and comparable only within one call (see ``note``).
     """
     rows: List[Dict] = []
@@ -445,6 +453,7 @@ def compare_feeds(
                 "review_reason": review_reason(result),
                 "degraded_signals": result.get("degraded_signals") or [],
                 "domain_red_flag": result["signals"].get("domain_provenance", 0) > 0,
+                "coherence_backend": result.get("coherence_backend"),
             }
         )
     rows.sort(key=lambda r: r["trust_score"], reverse=True)
@@ -494,13 +503,18 @@ def score(
     penalty is applied (impersonation/clone red-flags only lower the score).
 
     Returns ``{trust_score, band, requires_human_review, signals,
-    degraded_signals, language, evidence, explanation}``. ``language`` flags
+    degraded_signals, coherence_backend, language, evidence, explanation}``. ``language`` flags
     non-Italian input (the NLP stack is Italian-optimised — risk R3);
     ``evidence`` reports the message count vs ``CATS_MIN_EVIDENCE_MESSAGES``
     (risk R5) — an insufficient history forces ``requires_human_review`` but
     never changes the score. ``degraded_signals`` names signals that were not
     measured (e.g. ``coherence`` without the spaCy model): they enter the score
     at their neutral value, so a non-empty list also forces review.
+    ``coherence_backend`` is ``{configured, effective, fallback}``: ``fallback``
+    is true when ``COHERENCE_BACKEND=sbert`` is configured but coherence was
+    measured with NER (SBERT unavailable or failed); the explanation then adds
+    ``coherence_backend_warning``. Reporting only: it never changes the score,
+    the band or ``requires_human_review``.
     """
     if load_nlp:
         init_nlp()
@@ -526,6 +540,7 @@ def score(
 
     language = detect_language(msgs)
     evidence = evidence_summary(behavioural, len(msgs), settings.min_evidence_messages)
+    backend_status = coherence_backend_status(signals, settings.coherence_backend)
     result = {
         "trust_score": round(value, 2),
         "band": band,
@@ -534,6 +549,7 @@ def score(
         ),
         "signals": {s.name: round(s.value, 2) for s in signals},
         "degraded_signals": degraded_signals(signals),
+        "coherence_backend": backend_status,
         "language": language.as_dict(),
         "evidence": evidence,
     }
@@ -546,5 +562,7 @@ def score(
             )
         if result["degraded_signals"]:
             explanation["degraded_warning"] = _DEGRADED_WARNING
+        if backend_status["fallback"]:
+            explanation["coherence_backend_warning"] = _COHERENCE_BACKEND_WARNING
         result["explanation"] = explanation
     return result

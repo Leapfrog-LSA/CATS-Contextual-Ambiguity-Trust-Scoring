@@ -79,7 +79,9 @@ Scores 2 to 10 sources from their URLs (duplicates dropped) and ranks them
 by trust score, with the same pipeline as `cats compare`. Returns `ranked`:
 compact rows with `rank`, `url`, `trust_score`, `band`, `primary_driver`,
 raw `signals`, `messages`, `requires_human_review`, `review_reason`,
-`degraded_signals` and `domain_red_flag`. It also returns `errors`, the
+`degraded_signals`, `domain_red_flag` and `coherence_backend` (its
+`fallback` is `true` when SBERT was configured but NER measured coherence, so
+the score is not comparable with an SBERT install). It also returns `errors`, the
 sources that could not be scored, with the reason; they never stop the
 comparison. A `note` and a `disclaimer` complete the response. More than 10
 URLs, or fewer than 2 distinct ones, is refused: each source costs a feed

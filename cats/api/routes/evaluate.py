@@ -34,6 +34,7 @@ from cats.scoring.engine import (
     ENGINE_VERSION,
     aggregate_score,
     apply_domain_penalty,
+    coherence_backend_status,
     determine_band,
     evidence_summary,
     requires_human_review,
@@ -138,6 +139,8 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
         ],
         language=language.as_dict(),
         evidence=evidence,
+        # Reporting only (not persisted, never changes score/band/review).
+        coherence_backend=coherence_backend_status(signals, settings.coherence_backend),
     )
 
 

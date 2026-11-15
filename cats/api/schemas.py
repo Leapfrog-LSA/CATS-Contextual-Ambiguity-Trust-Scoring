@@ -38,6 +38,11 @@ class EvaluateResponse(BaseModel):
     # Evidence summary (risk R5): message count vs the configured minimum;
     # insufficient evidence forces requires_review, never changes the score.
     evidence: Optional[Dict[str, Any]] = None
+    # Coherence backend actually used vs the configured one:
+    # {configured, effective, fallback}; fallback is true when "sbert" is
+    # configured but NER measured coherence. Reporting only: it never changes
+    # the score, band or requires_review.
+    coherence_backend: Optional[Dict[str, Any]] = None
 
 
 class BatchEvaluateRequest(BaseModel):
