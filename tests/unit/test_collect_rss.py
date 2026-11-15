@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from cats.calibration.collect_rss import attach_messages, main, parse_feed, parse_timestamp, strip_html
+from cats.calibration.collect_rss import attach_messages, author_id, main, parse_feed, parse_timestamp, strip_html
 
 RSS2 = """<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
@@ -70,7 +70,7 @@ def test_parse_feed_rss2():
     assert len(msgs) == 2  # the dateless item is dropped
     assert msgs[0]["timestamp"] == "2026-06-01T08:00:00Z"
     assert msgs[0]["text"] == "Prima notizia. Dettagli della prima notizia."
-    assert msgs[0]["metadata"] == {"link": "https://example.com/1"}
+    assert msgs[0]["metadata"] == {"link": "https://example.com/1", "title_len": 13}
     assert msgs[1]["timestamp"] == "2026-06-02T07:30:00Z"
     assert msgs[1]["text"] == "Seconda notizia"
 
@@ -79,13 +79,13 @@ def test_parse_feed_atom():
     msgs = parse_feed(ATOM)
     assert len(msgs) == 2
     assert msgs[0]["text"] == "Post uno. Riassunto del post uno."
-    assert msgs[0]["metadata"] == {"link": "https://example.com/a1"}
+    assert msgs[0]["metadata"] == {"link": "https://example.com/a1", "title_len": 8}
     assert msgs[1]["timestamp"] == "2026-06-02T09:00:00Z"
 
 
 def test_parse_feed_rdf_dc_date():
     msgs = parse_feed(RDF)
-    assert msgs == [{"timestamp": "2026-06-03T12:00:00Z", "text": "Voce RDF"}]
+    assert msgs == [{"timestamp": "2026-06-03T12:00:00Z", "text": "Voce RDF", "metadata": {"title_len": 8}}]
 
 
 def test_parse_feed_description_repeating_title_is_not_duplicated():
@@ -94,6 +94,75 @@ def test_parse_feed_description_repeating_title_is_not_duplicated():
         "Prima notizia con altri dettagli.",
     )
     assert parse_feed(xml)[0]["text"] == "Prima notizia con altri dettagli."
+
+
+def test_parse_feed_title_is_always_the_text_prefix():
+    repeated = RSS2.replace(
+        "&lt;p&gt;Dettagli   della &lt;b&gt;prima&lt;/b&gt; notizia.&lt;/p&gt;",
+        "Prima notizia con altri dettagli.",
+    )
+    for xml in (RSS2, ATOM, RDF, repeated):
+        for msg in parse_feed(xml):
+            n = msg["metadata"]["title_len"]
+            assert n > 0 and len(msg["text"]) >= n
+
+
+TRANSPARENCY = """<?xml version="1.0"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel>
+  <item>
+    <title>Editoriale del giorno</title>
+    <pubDate>Mon, 01 Jun 2026 08:00:00 GMT</pubDate>
+    <dc:creator><![CDATA[ Mario   Rossi ]]></dc:creator>
+    <dc:creator>Anna Bianchi</dc:creator>
+    <dc:creator>mario rossi</dc:creator>
+    <category>Opinioni</category>
+    <category><![CDATA[<b>Politica</b>]]></category>
+    <category>Opinioni</category>
+  </item>
+  <item>
+    <title>Notizia firmata via email</title>
+    <pubDate>Tue, 02 Jun 2026 08:00:00 GMT</pubDate>
+    <author>mario.rossi@example.com (Mario Rossi)</author>
+  </item>
+</channel></rss>"""
+
+
+def test_parse_feed_keeps_pseudonymous_authors_and_categories():
+    first, second = parse_feed(TRANSPARENCY)
+    mario, anna = author_id("Mario Rossi"), author_id("Anna Bianchi")
+    assert first["metadata"]["authors"] == [mario, anna]  # deduplicated, order kept
+    assert first["metadata"]["categories"] == ["Opinioni", "Politica"]
+    assert second["metadata"]["authors"] == [mario]  # "email (Name)" → same person
+    assert "categories" not in second["metadata"]
+    assert "Mario" not in json.dumps([first, second])  # no names stored
+    assert first["text"] == "Editoriale del giorno"  # text is unchanged
+
+
+def test_parse_feed_atom_author_name_and_category_term():
+    xml = ATOM.replace(
+        "<published>2026-06-01T10:00:00Z</published>",
+        "<published>2026-06-01T10:00:00Z</published>"
+        '<author><name>Redazione</name></author><category term="cronaca" label="Cronaca"/>',
+    )
+    meta = parse_feed(xml)[0]["metadata"]
+    assert meta["authors"] == [author_id("redazione")]
+    assert meta["categories"] == ["Cronaca"]
+
+
+def test_author_id_normalises_and_rejects_empty():
+    assert author_id("  <b>Mario</b>   ROSSI ") == author_id("mario rossi")
+    assert len(author_id("Mario Rossi")) == 16
+    assert author_id("only@example.com") is None
+    assert author_id("   ") is None
+
+
+def test_metadata_does_not_change_scores():
+    from cats.lite import score
+
+    msgs = parse_feed(TRANSPARENCY) + parse_feed(RSS2) + parse_feed(ATOM)
+    bare = [{"timestamp": m["timestamp"], "text": m["text"]} for m in msgs]
+    with_meta, without = score(msgs, explain=False), score(bare, explain=False)
+    assert with_meta == without
 
 
 def test_parse_feed_rejects_dtd_bad_xml_and_empty_feeds():

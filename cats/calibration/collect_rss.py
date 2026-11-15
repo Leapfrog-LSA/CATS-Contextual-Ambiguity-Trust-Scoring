@@ -14,6 +14,21 @@ Feed handling
 * Each entry becomes ``{"timestamp": <ISO-8601 UTC>, "text": title [+ summary]}``.
   HTML markup in titles/summaries is stripped; entries without a parseable
   date or any text are dropped (the pipeline normaliser would reject them).
+* ``metadata`` records, when the feed provides them, fields that no signal
+  reads today. They are kept so that a later, separately validated
+  transparency check (see ``docs/newsguard_criteria_comparison_2026-11.md``)
+  has a history to work on: a feed only exposes its recent window, so
+  anything not stored now is lost.
+
+  - ``link``: the entry URL.
+  - ``title_len``: length of the title. The title is always the first
+    ``title_len`` characters of ``text``, so it is not stored twice.
+  - ``authors``: pseudonymous author IDs, never names (data minimisation).
+    Each is the first 16 hex digits of SHA-256 over the normalised byline
+    (:func:`author_id`). The hash is unsalted on purpose, so a later study can
+    still recognise generic bylines ("Redazione", "Staff") by hashing them.
+  - ``categories``: the entry's ``<category>`` labels (section or tag
+    names), HTML stripped, deduplicated, capped.
 * Defensive parsing: responses are capped at ``--max-bytes`` and documents
   carrying a DTD (``<!DOCTYPE``) are rejected outright.
 
@@ -56,6 +71,7 @@ Then::
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -87,6 +103,12 @@ DEFAULT_USER_AGENT = "CATS-calibration-collector/1.0 (+https://github.com/Leapfr
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
+_EMAIL_RE = re.compile(r"\S+@\S+")
+_PAREN_NAME_RE = re.compile(r"\(([^()]+)\)")
+
+MAX_AUTHORS = 10
+MAX_CATEGORIES = 20
+MAX_CATEGORY_CHARS = 100
 
 
 # ── Entry extraction ────────────────────────────────────────────────────────
@@ -116,6 +138,50 @@ def parse_timestamp(raw: str) -> Optional[str]:
 
 def _localname(tag: str) -> str:
     return tag.rsplit("}", 1)[-1].lower()
+
+
+def author_id(byline: str) -> Optional[str]:
+    """Pseudonymous ID for a byline: 16 hex digits of SHA-256 of its normalised form.
+
+    The byline is HTML-stripped, reduced to the name in an RSS
+    ``"email (Name)"`` value, stripped of e-mail addresses, case-folded and
+    whitespace-collapsed. Returns ``None`` when nothing is left.
+    """
+    text = strip_html(byline)
+    paren = _PAREN_NAME_RE.search(text)
+    if paren and _EMAIL_RE.search(text):
+        text = paren.group(1)
+    text = _WS_RE.sub(" ", _EMAIL_RE.sub(" ", text)).strip().casefold()
+    if not text:
+        return None
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _entry_authors(entry: ElementTree.Element) -> List[str]:
+    """Author IDs from ``dc:creator``, RSS ``<author>`` and Atom ``<author><name>``, in order."""
+    ids: List[str] = []
+    for child in entry:
+        if _localname(child.tag) not in ("creator", "author"):
+            continue
+        names = [g.text or "" for g in child if _localname(g.tag) == "name"]  # Atom
+        for raw in names or [child.text or ""]:
+            aid = author_id(raw)
+            if aid and aid not in ids and len(ids) < MAX_AUTHORS:
+                ids.append(aid)
+    return ids
+
+
+def _entry_categories(entry: ElementTree.Element) -> List[str]:
+    """``<category>`` labels: RSS element text or Atom ``term``/``label`` attribute."""
+    labels: List[str] = []
+    for child in entry:
+        if _localname(child.tag) != "category":
+            continue
+        raw = child.text or child.get("label") or child.get("term") or ""
+        label = strip_html(raw)[:MAX_CATEGORY_CHARS]
+        if label and label not in labels and len(labels) < MAX_CATEGORIES:
+            labels.append(label)
+    return labels
 
 
 def _entry_fields(entry: ElementTree.Element) -> Dict[str, str]:
@@ -159,6 +225,7 @@ def parse_feed(xml_text: str) -> List[dict]:
                 if ts:
                     break
         title = strip_html(f.get("title", ""))
+        title_len = len(title)
         summary = strip_html(f.get("description") or f.get("summary") or f.get("content") or "")
         if summary and title and summary.lower().startswith(title.lower()):
             title = ""  # some feeds repeat the title inside the description
@@ -166,9 +233,22 @@ def parse_feed(xml_text: str) -> List[dict]:
         if not ts or not text:
             continue
         msg: dict = {"timestamp": ts, "text": text}
+        metadata: dict = {}
         link = f.get("link")
         if link:
-            msg["metadata"] = {"link": link}
+            metadata["link"] = link
+        if title_len:
+            # The title is the first title_len characters of text either way:
+            # "title. summary", the title alone, or a summary that starts with it.
+            metadata["title_len"] = title_len
+        authors = _entry_authors(entry)
+        if authors:
+            metadata["authors"] = authors
+        categories = _entry_categories(entry)
+        if categories:
+            metadata["categories"] = categories
+        if metadata:
+            msg["metadata"] = metadata
         messages.append(msg)
     return messages
 
