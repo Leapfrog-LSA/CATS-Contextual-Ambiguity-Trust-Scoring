@@ -9,6 +9,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`human_labels` accepts `provenance: "blind_panel"`.** The validator in
+  `cats/calibration/human_labels.py` now allows a fourth provenance value for
+  bands given by a person who had not seen the CATS score; the CATS fields are
+  filled in afterwards. All other rules are unchanged (every field still
+  required, `cats_band` must match `determine_band(cats_score)`, `issue_url`
+  only for `issue`). Schema documented in the module docstring and
+  `data/README.md`. Validation-only: no records added, no score, band or
+  weight changes.
+- **Related-work draft** (`docs/related_work.md`), linked only from
+  `docs/README.md` as a draft. An English rendering of whitepaper v1.1 §1.4:
+  the four objects (source, claim, support, dependence), prior methods, the
+  Admiralty Code A–F axis, why no LLM produces the score, and the gap CATS
+  fills. Adds a "What CATS does not see" box that points to the README limits
+  and adds two points: recall 0.333 on the 06-Jul-2026 future holdout, and
+  fake news on ordinary domains. Every external reference is marked *to be
+  verified on the primary source*; none is taken from outside the whitepaper
+  or the repository. Documentation only: no score, band or weight changes.
 - **Roadmap: candidates for the January 2027 recalibration**
   (`docs/piano_sviluppo_roadmap_2026-09.md`, Phase 3). A list titled
   "Candidate da valutare (non approvate)", each item a proposal awaiting the
