@@ -67,8 +67,11 @@ pip install -r requirements-sbert.txt   # pulls torch + transformers, ~2 GB
 export COHERENCE_BACKEND=sbert
 ```
 
-It falls back to NER *silently* when the model is unavailable — check the logs
-for `sbert_loaded` to confirm it took effect.
+It falls back to NER when the model is unavailable. The result says so:
+`coherence_backend.fallback` is `true` in `cats.lite`, `cats compare` rows
+and the `/evaluate` response, and the CLI prints a warning. The logs also show
+`sbert_loaded` when SBERT took effect. The fallback never changes the score;
+it means the score is not comparable with an SBERT install.
 [Measurement](docs/signal_diagnosis_2026-07.md).
 
 Or as a library:

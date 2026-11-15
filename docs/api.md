@@ -69,13 +69,14 @@ Size, rate and error behaviour for every endpoint: [Limits and errors](#limits-a
   "band": "medium_high",
   "requires_review": false,
   "signals": [
-    { "name": "coherence", "value": 68.2, "confidence": 0.8, "metadata": {"pairs": 5} },
+    { "name": "coherence", "value": 68.2, "confidence": 0.8, "metadata": {"pairs": 5, "backend": "ner"} },
     { "name": "volatility", "value": 41.0, "confidence": 0.6, "metadata": {"threshold": 0.3} },
     { "name": "silence",    "value": 20.0, "confidence": 0.7, "metadata": {"threshold_h": 96.0, "source_type": "social"} },
     { "name": "gaming",     "value": 15.3, "confidence": 0.9, "metadata": {"token_count": 420} }
   ],
   "language": { "detected": "italian", "confidence": 0.85, "marker_ratio": 0.23, "latin_script_ratio": 1.0 },
-  "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 }
+  "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 },
+  "coherence_backend": { "configured": "ner", "effective": "ner", "fallback": false }
 }
 ```
 
@@ -95,6 +96,15 @@ or `band`, and they are not persisted — `/explain` does not report them):
   treat `score` and `band` as not informative. The score itself is not
   penalised yet: that is a signal change, deferred to the next recalibration
   cycle (risk R5).
+
+**`coherence_backend`** — the configured coherence backend
+(`COHERENCE_BACKEND`), the one that actually measured coherence (`effective`,
+from the coherence signal's `metadata.backend`; `null` when coherence was not
+measured) and `fallback`. `fallback: true` means `sbert` was configured but
+coherence was measured with NER (SBERT unavailable or failed), so the score is
+not comparable with an SBERT install; fix with
+`pip install -r requirements-sbert.txt`. Reporting only: it never changes
+`score` or `band`, does not set `requires_review`, and is not persisted.
 
 `requires_review` is `true` when any of these holds:
 
@@ -143,7 +153,7 @@ would be far larger than that, so for big histories send fewer items per call.
 ```
 
 Each item has the same shape as an `/evaluate` response, including the
-`language` and `evidence` guardrail blocks.
+`language` and `evidence` guardrail blocks and `coherence_backend`.
 
 ---
 

@@ -4,6 +4,7 @@ from cats.scoring.engine import (
     DOMAIN_PENALTY_WEIGHT,
     aggregate_score,
     apply_domain_penalty,
+    coherence_backend_status,
     degraded_signals,
     determine_band,
     requires_human_review,
@@ -99,6 +100,41 @@ class TestDegradedSignals:
         # insufficient_messages is covered by the evidence check, not this flag
         short = SignalResult(name="silence", value=0.0, confidence=0.0, metadata={"reason": "insufficient_messages"})
         assert degraded_signals([short, _signal("coherence", 70)]) == []
+
+
+class TestCoherenceBackendStatus:
+    def _coherence(self, metadata):
+        return SignalResult(name="coherence", value=40.0, confidence=1.0, metadata=metadata)
+
+    def test_sbert_configured_ner_measured_is_fallback(self):
+        status = coherence_backend_status([self._coherence({"backend": "ner"})], "sbert")
+        assert status == {"configured": "sbert", "effective": "ner", "fallback": True}
+
+    def test_sbert_configured_sbert_measured_is_not_fallback(self):
+        status = coherence_backend_status([self._coherence({"backend": "sbert"})], "sbert")
+        assert status == {"configured": "sbert", "effective": "sbert", "fallback": False}
+
+    def test_ner_configured_is_not_fallback(self):
+        status = coherence_backend_status([self._coherence({"backend": "ner"})], "ner")
+        assert status == {"configured": "ner", "effective": "ner", "fallback": False}
+
+    def test_metadata_with_only_reason_is_not_fallback(self):
+        status = coherence_backend_status([self._coherence({"reason": "insufficient_messages"})], "sbert")
+        assert status == {"configured": "sbert", "effective": None, "fallback": False}
+
+    def test_metadata_none_is_not_fallback(self):
+        status = coherence_backend_status([self._coherence(None)], "sbert")
+        assert status == {"configured": "sbert", "effective": None, "fallback": False}
+
+    def test_coherence_absent_is_not_fallback(self):
+        status = coherence_backend_status([_signal("silence", 5)], "sbert")
+        assert status == {"configured": "sbert", "effective": None, "fallback": False}
+
+    def test_fallback_does_not_force_review(self):
+        signals = [self._coherence({"backend": "ner"}), _signal("silence", 5, confidence=0.9)]
+        assert coherence_backend_status(signals, "sbert")["fallback"] is True
+        assert requires_human_review(85, "high", signals) is False
+        assert degraded_signals(signals) == []
 
 
 class TestWeights:

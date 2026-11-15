@@ -98,6 +98,12 @@ def _format_human(result: dict, url: Optional[str], source_type: str = "default"
             "Warning    coherence was NOT measured (Italian spaCy model not loaded) and counts as a neutral 50: "
             "the score is not comparable with a full install. Fix: python -m spacy download it_core_news_lg"
         )
+    if (result.get("coherence_backend") or {}).get("fallback"):
+        lines.append(
+            "Warning    COHERENCE_BACKEND=sbert is configured but coherence was measured with NER "
+            "(SBERT unavailable or failed): the score is not comparable with an SBERT install. "
+            "Fix: pip install -r requirements-sbert.txt"
+        )
     if language["detected"] == "other":
         lines.append("Warning    Input does not look Italian: the default NLP stack is Italian-optimised (WP 4.1).")
     if result["signals"].get("domain_provenance", 0) > 0:
@@ -219,6 +225,13 @@ def _format_compare(rows: List[dict], errors: List[dict], source_type: str = "de
         lines.append(
             "Warning  coherence was NOT measured (Italian spaCy model not loaded) and counts as a neutral 50. "
             "Fix: python -m spacy download it_core_news_lg"
+        )
+    if any((row.get("coherence_backend") or {}).get("fallback") for row in rows):
+        lines.append("")
+        lines.append(
+            "Warning  COHERENCE_BACKEND=sbert is configured but coherence was measured with NER "
+            "(SBERT unavailable or failed): scores are not comparable with an SBERT install. "
+            "Fix: pip install -r requirements-sbert.txt"
         )
     if errors:
         lines.append("")

@@ -105,7 +105,9 @@ def compare_sources(urls: List[str], source_type: str = "default") -> Dict:
     source's window was too short for silence to fire, so that 0 is missing
     evidence; True when observable; None if unknown), raw ``signals``,
     ``messages``, ``requires_human_review``, ``review_reason``,
-    ``degraded_signals``, ``domain_red_flag``), ``errors`` (sources that could
+    ``degraded_signals``, ``domain_red_flag``, ``coherence_backend`` with
+    ``fallback`` true when SBERT was configured but NER measured coherence, so
+    the score is not comparable with an SBERT install), ``errors`` (sources that could
     not be scored, with the reason; they do not stop the comparison), a
     ``note`` and a ``disclaimer``. The ranking describes publishing behaviour,
     not truthfulness, and holds only within this call: tell the user so rather
