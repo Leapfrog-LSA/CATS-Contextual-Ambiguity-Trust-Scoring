@@ -98,6 +98,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - **Data-protection requests and the proposed takedown route:** through
     GitHub as well. Whether a dedicated private channel is needed is left as
     a TODO for the maintainer.
+- **Roadmap: the maintainer's November decisions are recorded.** In
+  `docs/piano_sviluppo_roadmap_2026-09.md`:
+  - the constraint of no new signals until mid-December is confirmed;
+  - the contact email is removed, and reports go through GitHub;
+  - sources with an explicit TDM reservation are not suspended;
+  - the code licence stays MIT for now and will be decided later with
+    counsel;
+  - the watchlist's catalogue becomes the source of truth, with the method
+    still to be decided;
+  - the legal items are deferred.
 - **Living documentation brought up to date.** An audit compared every
   current-state document with the repository. It found 43 stale or wrong
   statements, each re-verified before it was fixed.
