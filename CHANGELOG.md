@@ -39,6 +39,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - **Open point:** `README.md` quotes concordance 0.750, while
     `docs/signal_diagnosis_2026-07.md` quotes 0.755. Neither number is
     changed; the maintainer decides how to reconcile them.
+- **Uncertainty and paired comparison in the eval harness**
+  (`cats/calibration/evaluate.py`). New optional flags
+  `--bootstrap-replicates`, `--bootstrap-level`, `--bootstrap-seed` and
+  `--compare-weights PATH|static`.
+  - **Interval:** percentile bootstrap over dataset rows for concordance,
+    Spearman and the `unreliable` recall. Undefined replicates are excluded and
+    counted per metric, never scored as 0.
+  - **Paired comparison:** the same resampled rows are applied to two weight
+    tables. The output is the interval of their difference.
+  - **No defaults:** replicates and level must both be passed. Without the new
+    flags the text and `--json` output are byte-for-byte unchanged.
+  - **No score changes:** scores, bands, weights and signals are all as before.
+    This only measures.
+- **January 2027 validation protocol** (`docs/calibration.md`). A draft
+  section that fixes how the recalibration will be judged. It lists the open
+  decisions, each marked *to be decided by the maintainer*. The maintainer
+  completes and dates it before 12 January 2027.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.

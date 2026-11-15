@@ -6,13 +6,18 @@ from cats.calibration.dataset import LabeledSample
 from cats.calibration.evaluate import (
     BAND_ORDER,
     EvalReport,
+    _bootstrap_indices,
     _class_metrics,
+    _concordance_or_none,
+    bootstrap_metrics,
     evaluate_dataset,
     is_unreliable,
     load_weights_file,
     main,
+    paired_bootstrap_comparison,
     static_weights_for,
 )
+from cats.calibration.objective import predict_scores
 
 
 def _samples():
@@ -211,3 +216,152 @@ def test_main_reports_macro_f1_in_both_formats(capsys):
     payload = json.loads(capsys.readouterr().out)
     assert "macro_f1" in payload
     assert [r["label"] for r in payload["per_class"]] == ["unreliable", "reliable"]
+
+
+# --------------------------------------------------------------------------- #
+# Uncertainty (bootstrap) and paired comparison.
+# Replicate counts and levels below are test fixtures, not recommendations.
+# --------------------------------------------------------------------------- #
+
+
+def _monotone_samples(labels):
+    # Only coherence varies and equals the label, so predictions are strictly
+    # monotone in the label under any non-negative weighting.
+    return [
+        LabeledSample(
+            source_type="news",
+            signals={"coherence": lbl, "volatility": 50, "silence": 50, "gaming": 50},
+            label=lbl,
+        )
+        for lbl in labels
+    ]
+
+
+def _by_metric(rows):
+    return {r.metric: r for r in rows}
+
+
+def test_bootstrap_same_seed_same_interval():
+    w = static_weights_for(["news", "social"])
+    a = bootstrap_metrics(_samples(), w, replicates=50, level=0.8, seed=3)
+    b = bootstrap_metrics(_samples(), w, replicates=50, level=0.8, seed=3)
+    assert a == b
+
+
+def test_bootstrap_lower_not_above_upper():
+    rows = bootstrap_metrics(_samples(), static_weights_for(["news", "social"]), replicates=40, level=0.8, seed=1)
+    assert [r.metric for r in rows] == ["concordance", "spearman", "recall_unreliable"]
+    for r in rows:
+        assert r.defined + r.excluded == 40
+        if r.defined:
+            assert r.lower is not None and r.upper is not None
+            assert r.lower <= r.upper
+
+
+def test_bootstrap_perfectly_ordered_concordance_is_one_in_every_defined_replicate():
+    samples = _monotone_samples([10, 25, 45, 60, 75, 90])
+    w = static_weights_for(["news"])
+    preds = predict_scores(samples, w)
+    labels = [s.label for s in samples]
+    defined = 0
+    for idx in _bootstrap_indices(len(samples), 60, seed=5):
+        v = _concordance_or_none([preds[i] for i in idx], [labels[i] for i in idx])
+        if v is not None:
+            defined += 1
+            assert v == pytest.approx(1.0)
+    rows = _by_metric(bootstrap_metrics(samples, w, replicates=60, level=0.8, seed=5))
+    assert rows["concordance"].defined == defined
+    assert rows["concordance"].lower == rows["concordance"].upper == pytest.approx(1.0)
+
+
+def test_concordance_undefined_replicate_is_excluded_not_zero():
+    # A replicate with a single distinct label has no comparable pair.
+    assert _concordance_or_none([1.0, 2.0], [50.0, 50.0]) is None
+    samples = _monotone_samples([30, 70])
+    rows = _by_metric(bootstrap_metrics(samples, static_weights_for(["news"]), replicates=40, level=0.8, seed=2))
+    conc = rows["concordance"]
+    # With 2 rows, about half the replicates draw the same row twice.
+    assert conc.excluded > 0
+    assert conc.defined + conc.excluded == 40
+    assert conc.lower == pytest.approx(1.0)  # never pulled down by a fake 0
+
+
+def test_paired_comparison_with_itself_is_exactly_zero():
+    w = static_weights_for(["news", "social"])
+    pc = paired_bootstrap_comparison(_samples(), w, w, replicates=30, level=0.8, seed=4)
+    for d in pc.metrics:
+        if d.point_difference is not None:
+            assert d.point_difference == 0.0
+        if d.defined:
+            assert d.lower == 0.0 and d.upper == 0.0
+
+
+def test_recall_without_unreliable_labels_is_excluded_in_every_replicate():
+    samples = _monotone_samples([45, 55, 70, 85, 95])  # no label below 40
+    rows = _by_metric(bootstrap_metrics(samples, static_weights_for(["news"]), replicates=25, level=0.8, seed=0))
+    rec = rows["recall_unreliable"]
+    assert rec.point is None
+    assert rec.defined == 0 and rec.excluded == 25
+    assert rec.lower is None and rec.upper is None
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"replicates": 0, "level": 0.9}, {"replicates": 10, "level": 0.0}, {"replicates": 10, "level": 1.0}],
+)
+def test_bootstrap_rejects_bad_parameters(kwargs):
+    with pytest.raises(ValueError):
+        bootstrap_metrics(_samples(), static_weights_for(["news", "social"]), seed=0, **kwargs)
+
+
+_UNC_ARGS = ["--bootstrap-replicates", "30", "--bootstrap-level", "0.8", "--bootstrap-seed", "7"]
+
+
+def test_main_with_uncertainty_prints_section(capsys):
+    argv = ["--dataset", "examples/calibration_sample.jsonl", *_UNC_ARGS, "--compare-weights", "static"]
+    assert main(argv) == 0
+    out = capsys.readouterr().out
+    assert "Uncertainty:" in out and "percentile bootstrap" in out
+    assert "replicates      : 30" in out and "seed            : 7" in out and "level           : 0.8" in out
+    assert "excluded" in out and "Paired comparison" in out
+    # Same seed -> identical output on a second run.
+    assert main(argv) == 0
+    assert capsys.readouterr().out == out
+
+
+def test_main_with_uncertainty_json_key(capsys):
+    argv = ["--dataset", "examples/calibration_sample.jsonl", *_UNC_ARGS, "--compare-weights", "static", "--json"]
+    assert main(argv) == 0
+    payload = json.loads(capsys.readouterr().out)
+    unc = payload["uncertainty"]
+    assert unc["replicates"] == 30 and unc["seed"] == 7 and unc["level"] == 0.8
+    assert "percentile" in unc["method"]
+    assert [m["metric"] for m in unc["metrics"]] == ["concordance", "spearman", "recall_unreliable"]
+    assert all("excluded" in m for m in unc["metrics"])
+    # Static compared against static: every defined difference is exactly 0.
+    for d in unc["paired_comparison"]["metrics"]:
+        assert d["point_difference"] in (0.0, None)
+
+
+def test_main_without_uncertainty_has_no_key(capsys):
+    assert main(["--dataset", "examples/calibration_sample.jsonl", "--json"]) == 0
+    assert "uncertainty" not in json.loads(capsys.readouterr().out)
+    assert main(["--dataset", "examples/calibration_sample.jsonl"]) == 0
+    assert "Uncertainty" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        ["--bootstrap-replicates", "10"],
+        ["--bootstrap-level", "0.9"],
+        ["--bootstrap-seed", "1"],
+        ["--compare-weights", "static"],
+        ["--bootstrap-replicates", "10", "--bootstrap-level", "90"],
+        ["--bootstrap-replicates", "0", "--bootstrap-level", "0.9"],
+    ],
+)
+def test_main_uncertainty_requires_replicates_and_level(extra):
+    with pytest.raises(SystemExit) as exc:
+        main(["--dataset", "examples/calibration_sample.jsonl", *extra])
+    assert exc.value.code == 2
