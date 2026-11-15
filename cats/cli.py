@@ -24,9 +24,10 @@ from cats.lite import (
     score,
     score_feed,
 )
+from cats.scoring.disclaimers import CLI_NOTE
 from cats.signals.silence import threshold_for
 
-_NOTE = "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
+_NOTE = CLI_NOTE
 _SIGNALS = ("coherence", "volatility", "silence", "gaming")
 
 

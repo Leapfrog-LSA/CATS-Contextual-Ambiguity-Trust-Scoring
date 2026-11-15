@@ -85,3 +85,69 @@ def test_main_produces_loadable_dataset(tmp_path):
 def test_main_errors_on_missing_input(tmp_path, capsys):
     with pytest.raises(SystemExit):
         main(["--input", str(tmp_path / "nope.jsonl"), "--out", str(tmp_path / "o.jsonl")])
+
+
+# --- diagnostics block -------------------------------------------------------
+
+_DIAGNOSTIC_KEYS = {"source_id", "n_messages", "span_hours", "signal_confidence", "language"}
+
+
+def test_build_record_exposes_diagnostics():
+    from cats.pipeline.language import detect_language
+    from cats.pipeline.normalizer import normalize_messages
+
+    record = build_record(
+        {"source_id": "rss:example", "source_type": "news", "label": 85, "messages": _MESSAGES},
+        default_source_type="social",
+    )
+    assert list(record) == ["source_type", "signals", "label", "diagnostics"]
+    diag = record["diagnostics"]
+    assert set(diag) == _DIAGNOSTIC_KEYS
+    assert diag["n_messages"] == 3
+    assert diag["span_hours"] == 2.0
+    assert diag["language"] == detect_language(normalize_messages(_MESSAGES)).detected
+    assert diag["language"] in {"italian", "other", "unknown"}
+    assert set(diag["signal_confidence"]) == set(SIGNAL_NAMES)
+    assert all(0.0 <= c <= 1.0 for c in diag["signal_confidence"].values())
+    # No message text leaks into diagnostics.
+    dumped = json.dumps(diag, ensure_ascii=False)
+    assert not any(m["text"] in dumped for m in _MESSAGES)
+
+
+def test_build_record_diagnostics_source_id_present_or_null():
+    with_id = build_record({"source_id": "rss:acme", "label": 50, "messages": _MESSAGES}, default_source_type="news")
+    without_id = build_record({"label": 50, "messages": _MESSAGES}, default_source_type="news")
+    assert with_id["diagnostics"]["source_id"] == "rss:acme"
+    assert without_id["diagnostics"]["source_id"] is None
+
+
+def test_build_record_diagnostics_span_null_with_single_message():
+    record = build_record({"label": 50, "messages": _MESSAGES[:1]}, default_source_type="news")
+    assert record["diagnostics"]["n_messages"] == 1
+    assert record["diagnostics"]["span_hours"] is None
+
+
+def test_build_record_signals_match_compute_signals():
+    record = build_record({"source_type": "news", "label": 70, "messages": _MESSAGES}, default_source_type="social")
+    assert record["signals"] == compute_signals(_MESSAGES, "news")
+
+
+def test_main_writes_diagnostics_and_stays_loadable(tmp_path):
+    src = tmp_path / "sources.jsonl"
+    src.write_text(
+        "\n".join(
+            json.dumps({"source_id": f"s{i}", "source_type": st, "label": lbl, "messages": _MESSAGES})
+            for i, (st, lbl) in enumerate([("news", 80), ("social", 35)])
+        ),
+        encoding="utf-8",
+    )
+    out = tmp_path / "train.jsonl"
+    assert main(["--input", str(src), "--out", str(out), "--no-init-nlp"]) == 0
+    rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert all(set(r["diagnostics"]) == _DIAGNOSTIC_KEYS for r in rows)
+    assert [r["diagnostics"]["source_id"] for r in rows] == ["s0", "s1"]
+    samples = load_dataset(out)
+    assert len(samples) == 2
+    for s in samples:
+        assert set(vars(s)) == {"source_type", "signals", "label"}
+        assert set(s.signals) == set(SIGNAL_NAMES)

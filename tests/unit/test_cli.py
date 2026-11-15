@@ -390,3 +390,9 @@ def test_compare_exit_3_when_nothing_scored(monkeypatch, capsys):
 
     assert main(["compare", *table]) == 3
     assert "Not scored (2):" in capsys.readouterr().out
+
+
+def test_cli_note_text_unchanged():
+    from cats.cli import _NOTE
+
+    assert _NOTE == "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."

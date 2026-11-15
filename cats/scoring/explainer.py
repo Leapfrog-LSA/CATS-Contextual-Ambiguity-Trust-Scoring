@@ -1,14 +1,11 @@
 from typing import Dict, List, Optional
 
+from cats.scoring.disclaimers import EXPLAIN_DISCLAIMER
 from cats.scoring.engine import DOMAIN_PENALTY_WEIGHT, NEGATIVE_POLARITY, reliability_value
 from cats.signals.types import SignalResult
 
-# A-01: WP 4.1/4.3 disclaimer
-_DISCLAIMER = (
-    "Scores are ordinal rankings of source reliability patterns, not absolute "
-    "probabilities. NLP accuracy ~55-62%, parameters not empirically calibrated "
-    "(WP 4.1). Not suitable as sole basis for autonomous decisions (WP 4.3)."
-)
+# A-01: WP 4.1/4.3 disclaimer (text lives in cats.scoring.disclaimers)
+_DISCLAIMER = EXPLAIN_DISCLAIMER
 
 
 def generate_explanation(

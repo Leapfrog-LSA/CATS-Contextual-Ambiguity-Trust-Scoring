@@ -157,3 +157,13 @@ def test_unobservable_silence_that_is_not_the_driver_has_no_note():
     assert result["primary_driver"] == "coherence"
     assert {d["signal"]: d for d in result["signals"]}["silence"]["observable"] is False
     assert "driver_note" not in result
+
+
+def test_disclaimer_reflects_calibration_status():
+    signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
+    disclaimer = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})["disclaimer"]
+    assert disclaimer.startswith("Scores are ordinal rankings of source reliability patterns")
+    for required in ("ordinal", "WP 4.1", "WP 4.3", "CATS_WEIGHTS_FILE"):
+        assert required in disclaimer
+    assert "not empirically calibrated" not in disclaimer
+    assert "validated" not in disclaimer.lower()

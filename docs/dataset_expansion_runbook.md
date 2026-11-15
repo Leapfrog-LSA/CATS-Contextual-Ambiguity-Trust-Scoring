@@ -153,7 +153,7 @@ python -m cats.calibration.collect_rss \
   --user-agent "Mozilla/5.0 (X11; Linux x86_64) CATS-calibration/1.0"
 
 # 3. Confirm the new feeds are healthy BEFORE calibrating (network).
-python research/feed_health_audit.py   # the new sources should be 'ok', not dead/not-xml
+python research/feed_health_audit.py   # the new sources should be 'ok', not dead/not-xml/stale
 
 # 4. Merge all snapshots into cumulative histories.
 python -m cats.calibration.merge_snapshots \
@@ -177,6 +177,60 @@ python -m cats.calibration.build_dataset --input data/holdout_sources.jsonl --ou
 - Italian sources present across the label bands (not clustered only in the low
   tail), and no dead feeds among the new sources (`research/feed_health_audit.py`).
 - ≥ 100 sources with collected text.
+
+### Composition by label x language (descriptive, not an exit criterion)
+
+`research/holdout_composition.py --dataset <file>.jsonl` counts a dataset's
+records per label x detected language (`italian` / `other` / `unknown`), how
+many sources have at least one signal confidence below 1, and the min / median
+/ max of `n_messages`. It reads the `diagnostics` block that
+`cats.calibration.build_dataset` now writes; it changes no score, band, weight
+or dataset. The language detector (`cats.pipeline.language.detect_language`)
+only tells Italian from *other* or *uncertain*.
+
+The committed datasets (`data/train.jsonl`, `data/holdout_future.jsonl`,
+`data/holdout.jsonl`) predate `diagnostics`, so the script counts every record
+in them as language `unknown`: the language split of the current pool is **not
+known** from these files and is not estimated here. Only the per-label totals
+below come from running the script (`data/holdout_future.jsonl`, 53 records,
+all without diagnostics; `data/train.jsonl`, 56 records, all without
+diagnostics).
+
+| Label | Language | Current count `holdout_future.jsonl` | Current count `train.jsonl` | Minimum | Missing |
+|---:|---|---:|---:|---|---|
+| 10 | not known (all `unknown`) | 12 | 13 | da decidere (maintainer) | da decidere (maintainer) |
+| 30 | not known (all `unknown`) | 3 | 3 | da decidere (maintainer) | da decidere (maintainer) |
+| 50 | not known (all `unknown`) | 3 | 4 | da decidere (maintainer) | da decidere (maintainer) |
+| 70 | not known (all `unknown`) | 13 | 13 | da decidere (maintainer) | da decidere (maintainer) |
+| 85 | not known (all `unknown`) | 21 | 22 | da decidere (maintainer) | da decidere (maintainer) |
+| 95 | not known (all `unknown`) | 1 | 1 | da decidere (maintainer) | da decidere (maintainer) |
+
+The per-cell minimum, and whether it becomes a binding exit criterion, is a
+maintainer decision; the exit criteria above are unchanged. A per-language
+count needs datasets rebuilt with `build_dataset` (which requires the source
+input of the August 2026 run and a check that the four signals match the
+committed ones — not done).
+
+### Stale feeds (proposta, da confermare dal maintainer)
+
+*Proposal, to be confirmed by the maintainer — not a binding criterion.*
+`research/feed_health_audit.py` already classifies a feed as `stale` when it
+answers and parses correctly but its own newest item is older than
+`STALE_AFTER_DAYS`. The checkpoint of 2026-08-21
+([`docs/calibration_findings_2026-08-21.md`](calibration_findings_2026-08-21.md))
+found 15 of the 95 merged sources stale, 8 of them label-10, and recommended
+"fix or replace" them. Whether a `stale` new source should be kept out of the
+labelled pool, and what to do with the stale sources already in it (repair,
+replace, keep), is for the maintainer to decide; how many of those 15 have
+since been fixed is not verified. No source is removed by this runbook.
+
+### The feed-health check concerns the whole pool
+
+With the `message` axis (the default of `cats.calibration.split`) every
+source's history is cut at a shared cutoff, so a source appears on **both**
+sides — earlier messages in train, later ones in the holdout. A dead or stale
+feed therefore affects calibration and validation alike: the feed-health check
+of step 3 applies to the pool, not only to the holdout.
 
 Only then is it sound to recalibrate (with the diagnosis inputs — volatility
 threshold, silence 96 h, gaming redesign) and re-validate on the new future
