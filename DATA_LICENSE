@@ -132,11 +132,11 @@ public, and before any Zenodo deposit that includes them:
      repository.
 
 Takedown (PROPOSED, not yet in force): while this is unsettled, a publisher
-who wants its texts removed could write to technical@cats-system.org, and
-the texts would be removed from the current tree. Removing them from git
-history needs the purge in (f).
-TODO (maintainer): confirm that this address receives mail (also open in
-docs/piano_sviluppo_roadmap_2026-09.md), then confirm or change this route.
+who wants its texts removed could open an issue on this repository, and the
+texts would be removed from the current tree. Removing them from git history
+needs the purge in (f).
+TODO (maintainer): confirm or change this route; decide whether publishers need
+a private channel instead of a public issue.
 
 
 4. CHANGES
