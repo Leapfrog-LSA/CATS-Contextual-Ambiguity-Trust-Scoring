@@ -72,6 +72,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     feeds, and why the feed-health check concerns the whole pool under the
     `message` split axis. `docs/calibration.md` and `data/README.md` describe
     the `diagnostics` block and the language detector's limits.
+- **Read-only diff of the CATS catalogue against the watchlist catalogue**
+  (`research/catalog_watchlist_diff.py`, report
+  `docs/catalog_watchlist_diff_2026-11.md`). The script compares
+  `data/Fonti_OSINT.csv` and `data/labels.jsonl` with a local copy of the
+  watchlist's `Fonti_OSINT.csv`, by normalised host and by normalised feed URL.
+  - **Read-only:** it uses no network and writes nothing under `data/`. It
+    computes no score, and it ignores the registry's `label` field.
+  - **The roadmap's 55:** the script counts ten candidate definitions of a
+    "diverging registry source". On watchlist commit `7a79ac0` none gives 55,
+    so the report calls the figure not reproducible.
+  - **Open for the maintainer:** the alignment rules and which watchlist commit
+    to pin. The report lists them without a recommendation.
+  - **Tests:** `tests/unit/test_catalog_watchlist_diff.py`.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.
