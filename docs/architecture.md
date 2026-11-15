@@ -229,6 +229,19 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
   is `null` and `fallback` is `false`; covering that case would require a
   change to `cats/signals/coherence.py`.
 
+A third block, **`domain_popularity`** (`domain_provenance.popularity_table_status`),
+reports whether the local Tranco popularity table (`data/tranco_top1m.csv`,
+`settings.domain_popularity_path`) is loaded: `{loaded, entries, version}`, where
+`version` holds `list_id` / `list_date` / `downloaded_at` read as free-form
+strings from a hand-written file next to the table (same name, `.meta.json`
+suffix, git-ignored) and is `null` when that file is missing or malformed or the
+table is not loaded. It is a reporting flag only: it does not change the score,
+the band or `requires_review`, it is not persisted on the `TrustScore` row, and
+it is not a risk-register item. It is present on every `cats.lite` result and
+`/evaluate` (and `/batch`) response, so the first call in a process loads the
+table once even when no URL is scored. For what a missing table changes, see
+the ccTLD tradeoff paragraph in *Domain-provenance penalty* above.
+
 ## Security Design
 
 | Control | Implementation |

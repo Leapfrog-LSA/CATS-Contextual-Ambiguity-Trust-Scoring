@@ -77,6 +77,54 @@ def test_no_url_keeps_four_signals():
     assert set(result["signals"]) == {"coherence", "volatility", "silence", "gaming"}
 
 
+def _popularity_state(monkeypatch, csv_path):
+    import cats.signals.domain_provenance as dp
+    from cats.core.config import settings
+
+    monkeypatch.setattr(dp, "_popularity_table", None)
+    monkeypatch.setattr(dp, "_popularity_load_attempted", False)
+    monkeypatch.setattr(dp, "_popularity_version", None)
+    monkeypatch.setattr(dp, "_popularity_version_load_attempted", False)
+    monkeypatch.setattr(settings, "domain_popularity_path", str(csv_path))
+
+
+def test_domain_popularity_block_without_table(monkeypatch, tmp_path):
+    _popularity_state(monkeypatch, tmp_path / "missing.csv")
+    result = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
+    assert result["domain_popularity"] == {"loaded": False, "entries": None, "version": None}
+
+
+def test_domain_popularity_block_reports_version(monkeypatch, tmp_path):
+    csv_path = tmp_path / "tranco_top1m.csv"
+    csv_path.write_text("1,corriere.it\n2,ansa.it\n", encoding="utf-8")
+    (tmp_path / "tranco_top1m.meta.json").write_text(
+        '{"list_id": "TEST1", "list_date": "2026-11-01", "downloaded_at": "2026-11-02"}', encoding="utf-8"
+    )
+    _popularity_state(monkeypatch, csv_path)
+    block = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)["domain_popularity"]
+    assert block["loaded"] is True
+    assert block["entries"] == 2
+    assert block["version"]["list_id"] == "TEST1"
+    assert block["version"]["list_date"] == "2026-11-01"
+
+
+@pytest.mark.parametrize("url", [None, "https://ilcorrispondente.blogspot.com", "https://www.corriere.it"])
+def test_version_file_does_not_change_score(monkeypatch, tmp_path, url):
+    csv_path = tmp_path / "tranco_top1m.csv"
+    csv_path.write_text("1,corriere.it\n", encoding="utf-8")
+    keys = ("trust_score", "band", "signals", "requires_human_review")
+
+    _popularity_state(monkeypatch, csv_path)
+    without = score(_MESSAGES, source_type="news", load_nlp=False, explain=False, url=url)
+    (tmp_path / "tranco_top1m.meta.json").write_text('{"list_id": "TEST1"}', encoding="utf-8")
+    _popularity_state(monkeypatch, csv_path)
+    with_version = score(_MESSAGES, source_type="news", load_nlp=False, explain=False, url=url)
+
+    assert without["domain_popularity"]["version"] is None
+    assert with_version["domain_popularity"]["version"]["list_id"] == "TEST1"
+    assert {k: without[k] for k in keys} == {k: with_version[k] for k in keys}
+
+
 # ── score_feed ────────────────────────────────────────────────────────────
 
 

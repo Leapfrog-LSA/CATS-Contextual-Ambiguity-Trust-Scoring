@@ -151,6 +151,25 @@ ranking against these human verdicts, the same validation role
 `data/labels.jsonl` plays for distant-supervision ratings but sourced from
 people instead.
 
+## `tranco_top1m.csv` and `tranco_top1m.meta.json` — local popularity table (not committed)
+Both files are git-ignored and absent from a fresh checkout. `make
+tranco-download` fetches the table (`rank,domain` per line); the
+domain-provenance penalty reads it from `settings.domain_popularity_path`. Licensing:
+see [`NOTICE.md`](../NOTICE.md).
+
+The optional version file sits next to the table, with the same base name and
+the `.meta.json` suffix. Whoever downloads the list writes it by hand; nothing
+generates it. It is a JSON object; the keys below are reported as free-form
+strings in the `domain_popularity.version` block of `cats.lite` results and
+`/evaluate` responses (format not validated, missing keys are `null`):
+
+```json
+{ "list_id": "<list identifier>", "list_date": "<date of the list>", "downloaded_at": "<download time>" }
+```
+
+A missing or malformed version file only makes `version` `null`; the table
+still loads. Neither file changes any score.
+
 ## Pipeline outputs
 `data/snapshots/` now holds 67 snapshots (2026-07-02 → 2026-09-30; daily
 collection continues in the `cats-snapshots` data repo). The files here come

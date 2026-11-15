@@ -186,6 +186,28 @@ def test_score_domain_red_flag_line(monkeypatch, capsys):
     assert "Domain red flags: suspicious_tld" in captured.out
 
 
+@pytest.mark.parametrize(
+    "block, expected",
+    [
+        (None, False),
+        ({"loaded": False, "entries": None, "version": None}, True),
+        ({"loaded": True, "entries": 2, "version": None}, False),
+        ({"loaded": True, "entries": 2, "version": {"list_id": "TEST1"}}, False),
+    ],
+)
+def test_score_popularity_table_warning_only_when_not_loaded(monkeypatch, capsys, block, expected):
+    result = dict(_RESULT)
+    if block is not None:
+        result["domain_popularity"] = block
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    exit_code = main(["score", "https://esempio.it"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert ("Domain popularity table not loaded" in captured.out) is expected
+
+
 def test_score_feed_not_found_exit_code_3(monkeypatch, capsys):
     def _raise(*a, **k):
         raise FeedNotFoundError("no feed found")

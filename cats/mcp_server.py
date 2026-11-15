@@ -53,7 +53,9 @@ def score_source(url: str, source_type: str = "default") -> Dict:
 
     Returns a dict with ``trust_score`` (0-100), ``band`` (``high`` down to
     ``very_low``), ``requires_human_review``, per-signal ``signals``,
-    ``language``/``evidence`` flags, a full ``explanation`` (per-signal
+    ``language``/``evidence`` flags, a ``domain_popularity`` block (whether
+    the local Tranco popularity table is loaded and its version; reporting
+    only, never affects the score), a full ``explanation`` (per-signal
     contributions; ``primary_driver`` is the signal with the largest
     contribution, not a verdict), a ``source`` block (feed URL, message count,
     time span), and a ``disclaimer``. When the observed window spans no more

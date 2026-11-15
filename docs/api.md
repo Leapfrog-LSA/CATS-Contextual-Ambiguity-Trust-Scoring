@@ -76,7 +76,8 @@ Size, rate and error behaviour for every endpoint: [Limits and errors](#limits-a
   ],
   "language": { "detected": "italian", "confidence": 0.85, "marker_ratio": 0.23, "latin_script_ratio": 1.0 },
   "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 },
-  "coherence_backend": { "configured": "ner", "effective": "ner", "fallback": false }
+  "coherence_backend": { "configured": "ner", "effective": "ner", "fallback": false },
+  "domain_popularity": { "loaded": false, "entries": null, "version": null }
 }
 ```
 
@@ -115,6 +116,15 @@ not comparable with an SBERT install; fix with
 - the band is `low` or `very_low`;
 - any signal has confidence below 0.3 and the score is under 50.
 
+A third block, **`domain_popularity`**, reports the local Tranco popularity
+table used by the domain-provenance penalty: `loaded` (bool), `entries` (row
+count, `null` when not loaded) and `version` (`list_id` / `list_date` /
+`downloaded_at` from the hand-written `.meta.json` file next to the table, or
+`null`). It is a reporting flag only: it never changes `score`, `band` or
+`requires_review`, and it is not persisted, so `/explain` does not report it.
+For what a missing table changes, see *Domain-provenance penalty* in
+[`docs/architecture.md`](architecture.md).
+
 ---
 
 ## POST /batch
@@ -146,14 +156,14 @@ would be far larger than that, so for big histories send fewer items per call.
 {
   "count": 2,
   "results": [
-    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...], "language": {...}, "evidence": {...} },
+    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...], "language": {...}, "evidence": {...}, "domain_popularity": {...} },
     { "trace_id": "...", "score": 41.0, "band": "medium",      "requires_review": true,  "signals": [...], "language": {...}, "evidence": {...} }
   ]
 }
 ```
 
 Each item has the same shape as an `/evaluate` response, including the
-`language` and `evidence` guardrail blocks and `coherence_backend`.
+`language` and `evidence` guardrail blocks, `coherence_backend` and the `domain_popularity` flag.
 
 ---
 
