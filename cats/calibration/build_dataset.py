@@ -6,6 +6,25 @@ The calibrator (:mod:`cats.calibration`) consumes records of the shape::
      "signals": {"coherence": 71.2, "volatility": 30.0, "silence": 10.0, "gaming": 12.0},
      "label": 85.0}
 
+Records written by this module also carry one extra top-level key,
+``diagnostics``, *after* the three above (never inside ``signals``)::
+
+    {"source_type": "news",
+     "signals": {...},
+     "label": 85.0,
+     "diagnostics": {"source_id": "twitter:acme",       # null if the input had none
+                     "n_messages": 3,                    # after normalisation
+                     "span_hours": 2.0,                  # first->last message; null if < 2
+                     "signal_confidence": {"coherence": 0.0, "volatility": 1.0,
+                                           "silence": 0.5, "gaming": 1.0},
+                     "language": "italian"}}             # italian | other | unknown
+
+``diagnostics`` is read-only bookkeeping: :func:`cats.calibration.dataset.load_dataset`,
+calibration and evaluation ignore it, so it never weights, filters or excludes a
+sample. It carries no message text. ``language`` is the ``detected`` field of
+:func:`cats.pipeline.language.detect_language`, a heuristic that only tells
+Italian from "other" or "uncertain" (``unknown``).
+
 Producing the ``signals`` block by hand is impractical: the four values come
 out of the same pipeline that ``/evaluate`` runs. This module bridges the gap.
 Given *labelled sources* — each a list of timestamped messages plus a
@@ -24,7 +43,8 @@ Input format (``--input``), one source per record, ``.json`` (array or
         {"timestamp": "2026-01-01T09:00:00Z", "text": "..."}
      ]}
 
-``source_id`` is optional (used only for diagnostics). ``source_type`` is
+``source_id`` is optional (used only for diagnostics: it is copied to
+``diagnostics.source_id``, null when absent). ``source_type`` is
 optional and falls back to ``--source-type``. ``label`` must be numeric.
 
 Usage::
@@ -43,17 +63,19 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import structlog
 
 from cats.core.config import settings
+from cats.pipeline.language import detect_language
 from cats.pipeline.normalizer import normalize_messages
 from cats.signals.coherence import compute_coherence
 from cats.signals.gaming import compute_gaming
 from cats.signals.silence import compute_silence
-from cats.signals.types import SignalResult
+from cats.signals.types import Message, SignalResult
 from cats.signals.volatility import compute_volatility
 
 logger = structlog.get_logger()
@@ -86,22 +108,62 @@ def _read_source_records(path: Path) -> List[dict]:
     raise ValueError("JSON input must be a list or an object with a 'sources' list")
 
 
+def _run_signals(messages: List[dict], source_type: str) -> Tuple[List[Message], List[SignalResult]]:
+    """Normalise once and run the four signals (coherence, volatility, silence, gaming).
+
+    Returns the normalised messages and the full :class:`SignalResult` list, so
+    callers can read values *and* confidences without normalising twice.
+    Raises ``ValueError`` if no message survives normalisation.
+    """
+    msgs = normalize_messages(messages)
+    if not msgs:
+        raise ValueError("no valid messages after normalisation")
+    results: List[SignalResult] = [
+        compute_coherence(msgs),
+        compute_volatility(msgs),
+        compute_silence(msgs, source_type),
+        compute_gaming(msgs),
+    ]
+    return msgs, results
+
+
+def _signal_values(results: List[SignalResult]) -> Dict[str, float]:
+    return {s.name: round(s.value, 4) for s in results}
+
+
 def compute_signals(messages: List[dict], source_type: str) -> Dict[str, float]:
     """Run the 4-signal pipeline for one source, mirroring ``/evaluate``.
 
     ``messages`` is a list of ``{"timestamp", "text", ["metadata"]}`` dicts.
     Returns the signal-name -> value mapping the calibrator expects.
     """
-    msgs = normalize_messages(messages)
-    if not msgs:
-        raise ValueError("no valid messages after normalisation")
-    signals: List[SignalResult] = [
-        compute_coherence(msgs),
-        compute_volatility(msgs),
-        compute_silence(msgs, source_type),
-        compute_gaming(msgs),
-    ]
-    return {s.name: round(s.value, 4) for s in signals}
+    _, results = _run_signals(messages, source_type)
+    return _signal_values(results)
+
+
+def _span_hours(msgs: List[Message]) -> Optional[float]:
+    """Hours between the first and last normalised message; None with fewer than two.
+
+    Mirrors :func:`cats.calibration.split.record_span_hours` (``msgs`` is already
+    sorted by :func:`normalize_messages`).
+    """
+    if len(msgs) < 2:
+        return None
+    first = datetime.fromisoformat(msgs[0].timestamp)
+    last = datetime.fromisoformat(msgs[-1].timestamp)
+    return (last - first).total_seconds() / 3600.0
+
+
+def _diagnostics(source: dict, msgs: List[Message], results: List[SignalResult]) -> dict:
+    """Per-source diagnostics: identity, volume, window, confidences, language. No text."""
+    source_id = source.get("source_id")
+    return {
+        "source_id": str(source_id) if source_id is not None else None,
+        "n_messages": len(msgs),
+        "span_hours": _span_hours(msgs),
+        "signal_confidence": {s.name: float(s.confidence) for s in results},
+        "language": detect_language(msgs).detected,
+    }
 
 
 def build_record(source: dict, default_source_type: str) -> dict:
@@ -117,8 +179,13 @@ def build_record(source: dict, default_source_type: str) -> dict:
     if not isinstance(messages, list) or not messages:
         raise ValueError("missing or empty 'messages'")
     source_type = str(source.get("source_type") or default_source_type)
-    signals = compute_signals(messages, source_type)
-    return {"source_type": source_type, "signals": signals, "label": label}
+    msgs, results = _run_signals(messages, source_type)
+    return {
+        "source_type": source_type,
+        "signals": _signal_values(results),
+        "label": label,
+        "diagnostics": _diagnostics(source, msgs, results),
+    }
 
 
 def build_dataset(

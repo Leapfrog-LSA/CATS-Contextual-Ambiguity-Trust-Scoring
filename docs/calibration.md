@@ -207,6 +207,20 @@ python -m cats.calibration.build_dataset \
     # --no-init-nlp          # skip spaCy load (coherence -> neutral/0-confidence)
 ```
 
+Each output record carries `source_type`, `signals` and `label` exactly as
+before, plus one extra top-level key, `diagnostics` (never inside `signals`):
+`source_id` (from the input, `null` when absent), `n_messages` (after
+normalisation), `span_hours` (first to last message, `null` with fewer than
+two), `signal_confidence` (per-signal `SignalResult.confidence`) and
+`language` (`italian` / `other` / `unknown`, from
+`cats.pipeline.language.detect_language`). It is **diagnostics only**:
+`load_dataset`, calibration and `cats.calibration.evaluate` ignore it, so it
+never weights, filters or excludes a sample, and it holds no message text. The
+language detector is a function-word heuristic that only separates Italian
+from "other" or "uncertain" (`unknown`). `research/holdout_composition.py`
+counts a dataset's label x language mix from it; records without
+`diagnostics` (all datasets committed before it existed) count as `unknown`.
+
 `source_id` is optional (diagnostics only); records missing a `label` or
 `messages` are skipped with a warning. The spaCy NER model is loaded once up
 front so coherence runs at full fidelity — run `make nlp-download` first, or
