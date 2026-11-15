@@ -19,10 +19,11 @@ import structlog
 from cats.lite import compare_feeds as _compare_feeds
 from cats.lite import score as _score
 from cats.lite import score_feed as _score_feed
+from cats.scoring.disclaimers import MCP_DISCLAIMER
 
 # WP 4.3: scores are ordinal rankings, not calibrated probabilities. Attached
 # to every tool response so an LLM client surfaces it, not just the docstrings.
-_DISCLAIMER = "Ordinal score, not a probability (WP 4.3)."
+_DISCLAIMER = MCP_DISCLAIMER
 
 # Each source costs a feed fetch plus NLP over its messages; an LLM client can
 # be prompted into long lists, so one call is capped (cf. threat model T1).

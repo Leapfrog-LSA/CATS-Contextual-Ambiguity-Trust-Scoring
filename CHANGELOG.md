@@ -34,6 +34,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     at least some items, and 65 of 99 carry `<category>` labels.
 
 ### Changed
+- **The `/explain` disclaimer matches the real calibration status.** It said
+  "parameters not empirically calibrated (WP 4.1)", but aggregation weights
+  are calibrated when a calibrated table is configured (`CATS_WEIGHTS_FILE`)
+  and band thresholds are not. The new text keeps the opening "Scores are
+  ordinal rankings of source reliability patterns" and the WP 4.1 / WP 4.3
+  references, and says the weights are static initial estimates unless
+  `CATS_WEIGHTS_FILE` is set and the band thresholds are not calibrated. The
+  wording is a proposal pending maintainer review.
+  - **One module for disclaimer strings:** `cats/scoring/disclaimers.py`. The
+    CLI note and the MCP disclaimer are built from it; their text is
+    unchanged character for character.
+  - **No score, band or weight changes.**
 - **The RSS collector keeps more feed fields in `metadata`.** No signal reads
   them yet; they are stored because a feed's history cannot be fetched later.
   - **`title_len`:** the title is the first `title_len` characters of `text`.

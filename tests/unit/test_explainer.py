@@ -93,3 +93,13 @@ def test_no_domain_penalty_block_without_domain_signal():
     signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
     result = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})
     assert "domain_penalty" not in result
+
+
+def test_disclaimer_reflects_calibration_status():
+    signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
+    disclaimer = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})["disclaimer"]
+    assert disclaimer.startswith("Scores are ordinal rankings of source reliability patterns")
+    for required in ("ordinal", "WP 4.1", "WP 4.3", "CATS_WEIGHTS_FILE"):
+        assert required in disclaimer
+    assert "not empirically calibrated" not in disclaimer
+    assert "validated" not in disclaimer.lower()
