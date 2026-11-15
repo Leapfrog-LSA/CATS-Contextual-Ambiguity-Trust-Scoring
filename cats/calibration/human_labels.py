@@ -21,13 +21,18 @@ Schema — one JSON object per line in ``data/human_labels.jsonl``::
       "human_band":     str,            # the band a human says is correct
       "reason":         str,            # free-text justification
       "date":           str,            # ISO-8601 date (YYYY-MM-DD)
-      "provenance":     str,            # "issue" | "demo" | "api_contest"
+      "provenance":     str,            # "issue" | "demo" | "api_contest" | "blind_panel"
       "issue_url":      str | None,     # required when provenance == "issue"
     }
 
 Both ``cats_band``/``human_band`` must be one of the five CATS bands, and
 ``cats_band`` must match ``determine_band(cats_score)`` — this module never
 invents a band, it only checks internal consistency of what was reported.
+
+``provenance == "blind_panel"`` marks a band given by a person who had not
+seen the CATS score. For these records ``cats_score``, ``cats_band``,
+``engine_version`` and ``cats_version`` are filled in after the judgement,
+when the record is added.
 """
 
 from __future__ import annotations
@@ -41,7 +46,7 @@ from typing import Dict, List, Optional, Union
 from cats.scoring.engine import determine_band
 
 _VALID_BANDS = {"high", "medium_high", "medium", "low", "very_low"}
-_VALID_PROVENANCE = {"issue", "demo", "api_contest"}
+_VALID_PROVENANCE = {"issue", "demo", "api_contest", "blind_panel"}
 
 _REQUIRED_FIELDS = (
     "source_url",

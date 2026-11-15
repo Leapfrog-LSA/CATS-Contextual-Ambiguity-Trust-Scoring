@@ -198,3 +198,32 @@ def test_load_skips_invalid_lines(tmp_path):
 
 def test_load_missing_file_returns_empty_list(tmp_path):
     assert load(tmp_path / "nope.jsonl") == []
+
+
+# ── provenance == "blind_panel" ──────────────────────────────────────────
+
+
+def test_blind_panel_record_is_valid_without_issue_url():
+    record = dict(_VALID_RECORD)
+    record["provenance"] = "blind_panel"
+    del record["issue_url"]
+    assert validate_record(record) == []
+
+
+def test_blind_panel_cats_band_must_match_determine_band():
+    record = dict(_VALID_RECORD)
+    record["provenance"] = "blind_panel"
+    del record["issue_url"]
+    record["cats_score"] = 90.0  # -> "high"
+    record["cats_band"] = "medium_high"  # mismatched on purpose
+    errors = validate_record(record)
+    assert any("does not match" in e for e in errors)
+
+
+def test_blind_panel_reason_must_be_non_empty():
+    record = dict(_VALID_RECORD)
+    record["provenance"] = "blind_panel"
+    del record["issue_url"]
+    record["reason"] = "   "
+    errors = validate_record(record)
+    assert any("reason" in e for e in errors)
