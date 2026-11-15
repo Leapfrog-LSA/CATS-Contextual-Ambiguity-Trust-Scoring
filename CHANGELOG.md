@@ -89,6 +89,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **No contact email in the documents.** The address was removed from
+  `README.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/compliance.md`,
+  `DATA_LICENSE` and the roadmap.
+  - **Security reports:** through GitHub private vulnerability reporting
+    (the *Security* tab), which the maintainer enables in the repository
+    settings.
+  - **Data-protection requests and the proposed takedown route:** through
+    GitHub as well. Whether a dedicated private channel is needed is left as
+    a TODO for the maintainer.
 - **Living documentation brought up to date.** An audit compared every
   current-state document with the repository. It found 43 stale or wrong
   statements, each re-verified before it was fixed.

@@ -55,4 +55,10 @@
 
 ## Contact
 
-GDPR queries: technical@cats-system.org
+GDPR queries about the CATS project: through GitHub. Use the repository's
+**Security** tab → **Report a vulnerability** for anything that should not be
+public. Deployers who run CATS on their own data are responsible for giving their
+own data-protection contact.
+
+> TODO (maintainer/legal): decide whether the project needs a dedicated private
+> channel for data-protection requests now that no email address is published.

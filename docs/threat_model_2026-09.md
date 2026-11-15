@@ -319,8 +319,10 @@ publishing.
 > - JWT: the R8 row and Annex IV now say Bearer API-key auth, with no JWT.
 > - `SECURITY.md` lists 1.10.x, the current release line (re-checked
 >   12 Nov 2026; it must be bumped with each release).
-> - Still open for their owners: the TLS 1.3 claim and the unverified contact
->   address.
+> - Contact (15 Nov 2026): the email address was removed from every document;
+>   `SECURITY.md` now points to GitHub private vulnerability reporting, which
+>   the maintainer must enable in the repository settings.
+> - Still open for its owner: the TLS 1.3 claim.
 
 ## Suggested order
 

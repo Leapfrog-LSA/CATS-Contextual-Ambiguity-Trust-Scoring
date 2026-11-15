@@ -13,8 +13,10 @@ Only the latest released version receives security fixes.
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Email: technical@cats-system.org  
-Subject: `[SECURITY] <brief description>`
+Report it privately through GitHub: open the repository's **Security** tab and
+choose **Report a vulnerability**
+([private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)).
+Only the maintainers can see the report.
 
 Please include:
 - Description of the vulnerability
