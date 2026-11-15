@@ -5,7 +5,7 @@ import structlog
 
 from cats import __version__
 from cats.cli import main
-from cats.lite import FeedFetchError, FeedNotFoundError, UnsafeURLError
+from cats.lite import FEEDBACK_URL, FeedFetchError, FeedNotFoundError, UnsafeURLError
 
 _RESULT = {
     "trust_score": 67.3,
@@ -353,3 +353,31 @@ def test_compare_exit_3_when_nothing_scored(monkeypatch, capsys):
 
     assert main(["compare", *table]) == 3
     assert "Not scored (2):" in capsys.readouterr().out
+
+
+def test_score_human_output_shows_feedback_link_and_json_does_not(monkeypatch, capsys):
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: dict(_RESULT))
+
+    assert main(["score", "https://esempio.it"]) == 0
+    human = capsys.readouterr().out
+    assert f"Feedback   Score looks wrong? {FEEDBACK_URL}" in human
+    assert FEEDBACK_URL.endswith("score_feedback.yml")
+
+    assert main(["score", "https://esempio.it", "--json"]) == 0
+    raw = capsys.readouterr().out
+    assert FEEDBACK_URL not in raw
+    assert set(json.loads(raw)) == set(_RESULT)
+
+
+def test_compare_human_output_shows_feedback_link_and_json_does_not(monkeypatch, capsys):
+    table = {"https://a.example": _scored(50.0, band="medium"), "https://b.example": _scored(70.0)}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    assert main(["compare", *table]) == 0
+    human = capsys.readouterr().out
+    assert f"Feedback  Score looks wrong? {FEEDBACK_URL}" in human
+
+    assert main(["compare", *table, "--json"]) == 0
+    raw = capsys.readouterr().out
+    assert FEEDBACK_URL not in raw
+    assert "feedback" not in json.loads(raw)

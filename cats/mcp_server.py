@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 import structlog
 
+from cats.lite import FEEDBACK_URL
 from cats.lite import compare_feeds as _compare_feeds
 from cats.lite import score as _score
 from cats.lite import score_feed as _score_feed
@@ -54,11 +55,18 @@ def score_source(url: str, source_type: str = "default") -> Dict:
     ``very_low``), ``requires_human_review``, per-signal ``signals``,
     ``language``/``evidence`` flags, a full ``explanation`` (which signal
     drove the score and why), a ``source`` block (feed URL, message count,
-    time span), and a ``disclaimer``. Raises an error if the host is
-    unreachable, no feed can be found, or the feed has no usable messages.
+    time span), a ``disclaimer`` and a ``feedback_url``. Raises an error if
+    the host is unreachable, no feed can be found, or the feed has no usable
+    messages.
+
+    ``feedback_url`` is the public GitHub issue form for reporting a score the
+    user disagrees with. Offer it when the user disputes a score: reporting is
+    voluntary, reviewed by a maintainer, never changes the score, and an
+    accepted case is used for validation only.
     """
     result = _score_feed(url, source_type=source_type)
     result["disclaimer"] = _DISCLAIMER
+    result["feedback_url"] = FEEDBACK_URL
     return result
 
 
@@ -72,11 +80,15 @@ def score_messages(messages: List[dict], source_type: str = "default", url: Opti
     ``url``, if given, enables the domain-provenance penalty (impersonation/
     clone domains only ever lower the score).
 
-    Returns the same shape as ``score_source`` minus the ``source`` block.
-    Raises an error if no messages remain after normalisation.
+    Returns the same shape as ``score_source`` minus the ``source`` block,
+    including ``disclaimer`` and ``feedback_url`` (the GitHub issue form for a
+    disputed score: voluntary, reviewed by a maintainer, never changes the
+    score, validation-only). Raises an error if no messages remain after
+    normalisation.
     """
     result = _score(messages, source_type=source_type, url=url)
     result["disclaimer"] = _DISCLAIMER
+    result["feedback_url"] = FEEDBACK_URL
     return result
 
 
@@ -93,7 +105,9 @@ def compare_sources(urls: List[str], source_type: str = "default") -> Dict:
     ``messages``, ``requires_human_review``, ``review_reason``,
     ``degraded_signals``, ``domain_red_flag``), ``errors`` (sources that could
     not be scored, with the reason; they do not stop the comparison), a
-    ``note`` and a ``disclaimer``. The ranking describes publishing behaviour,
+    ``note``, a ``disclaimer`` and a ``feedback_url`` (the GitHub issue form
+    for a disputed score: voluntary, reviewed by a maintainer, never changes
+    the score, validation-only). The ranking describes publishing behaviour,
     not truthfulness, and holds only within this call: tell the user so rather
     than presenting the top source as "true".
     """
@@ -104,6 +118,7 @@ def compare_sources(urls: List[str], source_type: str = "default") -> Dict:
         raise ValueError(f"compare_sources accepts at most {MAX_COMPARE_SOURCES} URLs per call, got {len(unique)}")
     result = _compare_feeds(unique, source_type=source_type)
     result["disclaimer"] = _DISCLAIMER
+    result["feedback_url"] = FEEDBACK_URL
     return result
 
 

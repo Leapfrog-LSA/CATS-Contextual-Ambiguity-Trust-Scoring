@@ -64,14 +64,14 @@ Scores a source directly from its URL — fetches (and autodiscovers, if
 needed) its RSS/Atom feed, then runs the CATS signal pipeline. Same
 autodiscovery behaviour as `cats.lite.score_feed`/`cats score <url>`. Returns
 `score()`'s result plus a `source` block (feed URL, message count, time
-span) and a `disclaimer`.
+span), a `disclaimer` and a `feedback_url` (see [Caveats](#caveats)).
 
 ### `score_messages(messages, source_type="default", url=None)`
 
 Scores a source from an already-collected list of
 `{"timestamp": ISO-8601, "text": str}` messages — use this when the source
 isn't a public feed. `url`, if given, enables the domain-provenance penalty.
-Returns `score()`'s result plus a `disclaimer`.
+Returns `score()`'s result plus a `disclaimer` and a `feedback_url`.
 
 ### `compare_sources(urls, source_type="default")`
 
@@ -81,7 +81,7 @@ compact rows with `rank`, `url`, `trust_score`, `band`, `primary_driver`,
 raw `signals`, `messages`, `requires_human_review`, `review_reason`,
 `degraded_signals` and `domain_red_flag`. It also returns `errors`, the
 sources that could not be scored, with the reason; they never stop the
-comparison. A `note` and a `disclaimer` complete the response. More than 10
+comparison. A `note`, a `disclaimer` and a `feedback_url` complete the response. More than 10
 URLs, or fewer than 2 distinct ones, is refused: each source costs a feed
 fetch plus NLP. The ranking describes publishing behaviour, not
 truthfulness, and holds only within one call.
@@ -90,7 +90,7 @@ truthfulness, and holds only within one call.
 
 Static reference: the trust-score band table (`high` down to `very_low`,
 with the recommended action for each) and the ordinal-score disclaimer. No
-scoring is performed.
+scoring is performed, so there is no `feedback_url`.
 
 ## Caveats
 
@@ -100,3 +100,11 @@ the default NLP stack is Italian-optimised; `score_source` and
 `compare_sources` need network access to fetch the sources' feeds, and refuse
 URLs that resolve to non-public addresses (threat model T9). See [architecture.md](architecture.md)
 and the top-level [README](../README.md) for the full picture.
+
+`score_source`, `score_messages` and `compare_sources` also return
+`feedback_url`, the public GitHub "Score feedback" issue form
+(`.github/ISSUE_TEMPLATE/score_feedback.yml`). A client can offer it when the
+user disputes a score. Reporting is voluntary and nothing is sent by the
+server. A maintainer reviews each report, and a report never changes a score.
+With the reporter's consent, a case may be recorded for validation only (see
+[CONTRIBUTING.md](../CONTRIBUTING.md#reporting-a-score-disagreement)).

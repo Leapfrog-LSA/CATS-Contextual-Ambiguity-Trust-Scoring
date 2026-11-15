@@ -16,6 +16,7 @@ from typing import List, Optional
 from cats import __version__
 from cats.lite import (
     COMPARE_NOTE,
+    FEEDBACK_URL,
     FeedFetchError,
     FeedNotFoundError,
     UnsafeURLError,
@@ -100,6 +101,7 @@ def _format_human(result: dict, url: Optional[str]) -> str:
         lines.append(f"Domain red flags: {', '.join(reasons) if reasons else 'present'}")
 
     lines.append(f"Note       {_NOTE}")
+    lines.append(f"Feedback   Score looks wrong? {FEEDBACK_URL}")
     return "\n".join(lines)
 
 
@@ -214,6 +216,7 @@ def _format_compare(rows: List[dict], errors: List[dict]) -> str:
             lines.append(f"  {err['url']}: {err['error']}")
     lines.append("")
     lines.append(f"Note  Signals are raw values (silence, volatility, gaming: higher = less reliable). {COMPARE_NOTE}")
+    lines.append(f"Feedback  Score looks wrong? {FEEDBACK_URL}")
     return "\n".join(lines)
 
 

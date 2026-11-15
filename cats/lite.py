@@ -386,6 +386,12 @@ COMPARE_NOTE = (
     "together, with the same source_type and install. A high rank is not a verdict."
 )
 
+# Public GitHub issue form for reporting a score you disagree with. Shown by the
+# CLI and MCP outputs only; never added to the dicts returned by this module.
+FEEDBACK_URL = (
+    "https://github.com/Leapfrog-LSA/CATS-Contextual-Ambiguity-Trust-Scoring/issues/new?template=score_feedback.yml"
+)
+
 
 def review_reason(result: Dict) -> Optional[str]:
     """Why ``result`` (from :func:`score`/:func:`score_feed`) requires human review, or ``None``."""

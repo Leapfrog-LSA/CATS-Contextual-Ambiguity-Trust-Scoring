@@ -53,3 +53,25 @@ def test_score_source_reports_rate_limit_message(monkeypatch):
     result = module.score_source("https://esempio.it", "default", request=None)
 
     assert "Rate limit" in result[-1]
+
+
+def test_feedback_link_shown_with_human_review_and_matches_library():
+    pytest.importorskip("gradio")
+    import cats.lite
+
+    module = _load_app_module("cats_demo_app_feedback")
+    result = {
+        "trust_score": 45.0,
+        "band": "medium",
+        "requires_human_review": True,
+        "signals": {"coherence": 50.0, "volatility": 40.0, "silence": 10.0, "gaming": 20.0},
+        "language": {"detected": "italian"},
+        "evidence": {"messages": 10, "min_messages": 3, "sufficient": True},
+        "explanation": {"primary_driver": "coherence", "methodology": ""},
+    }
+
+    formatted = module._format_result(result)
+
+    assert len(formatted) == 5
+    assert module._FEEDBACK_URL in formatted[-1]
+    assert module._FEEDBACK_URL == cats.lite.FEEDBACK_URL

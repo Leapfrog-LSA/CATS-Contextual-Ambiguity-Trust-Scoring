@@ -9,6 +9,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Link to the "Score feedback" issue form in the outputs.** The form
+  (`.github/ISSUE_TEMPLATE/score_feedback.yml`) was not shown anywhere.
+  - **CLI:** the human-readable output of `cats score` and `cats compare`
+    ends with a `Feedback` line. `--json` output is unchanged.
+  - **MCP:** `score_source`, `score_messages` and `compare_sources` return a
+    new `feedback_url` field; `explain_bands` is unchanged.
+  - **Demo:** a plain link (no data from the scored source) under the
+    results and next to "Human review recommended". It is built from the
+    demo's own repo URL, so the Space still works with the released package.
+  - **Library:** new constant `cats.lite.FEEDBACK_URL`; the dicts returned by
+    `score`, `score_feed` and `compare_feeds` are unchanged.
+  - Text and links only: scores, bands, weights and signals are unchanged.
+    Reports are reviewed by a maintainer; with the reporter's consent a case
+    may be recorded, for validation only.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.

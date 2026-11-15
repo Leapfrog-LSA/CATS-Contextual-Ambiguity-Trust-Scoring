@@ -2,6 +2,7 @@ import sys
 
 import pytest
 
+from cats.lite import FEEDBACK_URL
 from cats.mcp_server import (
     _BANDS,
     _DISCLAIMER,
@@ -171,6 +172,8 @@ def test_stdio_session_lists_and_calls_tools_with_a_clean_stdout():
     scored = json.loads(responses[4]["result"]["content"][0]["text"])
     assert not responses[4]["result"].get("isError")
     assert scored["disclaimer"] == _DISCLAIMER
+    assert scored["feedback_url"] == FEEDBACK_URL
+    assert "feedback_url" not in bands
     assert 0 <= scored["trust_score"] <= 100
 
 
@@ -215,3 +218,22 @@ def test_compare_sources_rejects_too_few_or_too_many(monkeypatch, urls):
     monkeypatch.setattr("cats.mcp_server._compare_feeds", lambda *a, **k: pytest.fail("must not score"))
     with pytest.raises(ValueError):
         compare_sources(urls)
+
+
+def test_scoring_tools_add_feedback_url_and_explain_bands_does_not(monkeypatch):
+    monkeypatch.setattr("cats.mcp_server._score_feed", lambda *a, **k: {"trust_score": 70.0})
+    monkeypatch.setattr("cats.mcp_server._score", lambda *a, **k: {"trust_score": 50.0})
+    monkeypatch.setattr("cats.mcp_server._compare_feeds", lambda *a, **k: {"ranked": [], "errors": [], "note": "n"})
+
+    results = [
+        score_source("https://esempio.it"),
+        score_messages(_MESSAGES),
+        compare_sources(["https://a.it", "https://b.it"]),
+    ]
+
+    for result in results:
+        assert result["feedback_url"] == FEEDBACK_URL
+        assert result["disclaimer"] == _DISCLAIMER
+    assert FEEDBACK_URL.endswith("score_feedback.yml")
+    assert "feedback_url" not in explain_bands()
+    assert set(explain_bands()) == {"bands", "disclaimer"}
