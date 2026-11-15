@@ -9,6 +9,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`human_labels` accepts `provenance: "blind_panel"`.** The validator in
+  `cats/calibration/human_labels.py` now allows a fourth provenance value for
+  bands given by a person who had not seen the CATS score; the CATS fields are
+  filled in afterwards. All other rules are unchanged (every field still
+  required, `cats_band` must match `determine_band(cats_score)`, `issue_url`
+  only for `issue`). Schema documented in the module docstring and
+  `data/README.md`. Validation-only: no records added, no score, band or
+  weight changes.
 - **Related-work draft** (`docs/related_work.md`), linked only from
   `docs/README.md` as a draft. An English rendering of whitepaper v1.1 §1.4:
   the four objects (source, claim, support, dependence), prior methods, the
