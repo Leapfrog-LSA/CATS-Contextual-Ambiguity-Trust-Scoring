@@ -9,6 +9,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Per-source diagnostics in calibration datasets, and a composition count.**
+  `cats.calibration.build_dataset` now writes a top-level `diagnostics` block
+  per record (`source_id`, `n_messages`, `span_hours`, per-signal
+  `signal_confidence`, detected `language`: `italian` / `other` / `unknown`).
+  `source_type`, `signals` and `label` are unchanged, and `load_dataset`,
+  calibration and evaluation ignore the new key: no score, band or weight
+  changes, and no committed dataset was regenerated.
+  - **Script:** `research/holdout_composition.py --dataset <file>` prints the
+    label x language counts, sources with a signal confidence below 1, and the
+    min / median / max message count. Read-only, no network. Records without
+    `diagnostics` (all committed datasets) count as `unknown`.
+  - **Docs:** `docs/dataset_expansion_runbook.md` adds a composition table
+    (minimum per cell left to the maintainer), a proposed note on `stale`
+    feeds, and why the feed-health check concerns the whole pool under the
+    `message` split axis. `docs/calibration.md` and `data/README.md` describe
+    the `diagnostics` block and the language detector's limits.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.
