@@ -22,6 +22,19 @@ def threshold_for(source_type: str) -> float:
     return SOURCE_TYPE_THRESHOLDS.get(source_type, SOURCE_TYPE_THRESHOLDS["default"])
 
 
+def silence_observable(span_hours: Optional[float], source_type: str) -> bool:
+    """Whether a history spanning ``span_hours`` can show a silence anomaly at all.
+
+    ``compute_silence`` counts inter-message gaps longer than
+    :func:`threshold_for`. A history whose first-to-last span is no longer than
+    that threshold cannot contain such a gap, and one with fewer than two
+    messages (``span_hours`` None) has no gaps: either way silence scores 0 by
+    construction, not because of how the source behaved. Pure helper for
+    presentation and reporting; it never changes the signal's value.
+    """
+    return span_hours is not None and span_hours > threshold_for(source_type)
+
+
 def compute_silence(
     messages: List[Message],
     source_type: str = "social",

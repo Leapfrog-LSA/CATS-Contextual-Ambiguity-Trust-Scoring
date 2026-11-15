@@ -40,6 +40,7 @@
 |---|---|
 | [feed_health_2026-07.md](feed_health_2026-07.md) | RSS feed-health audit + repair log (15 rounds: dead/stale/blocked feeds fixed, a curl fallback for client-fingerprint blocks, new sources registered); `research/feed_health_audit.py` |
 | [watchlist_probe_2026-11.md](watchlist_probe_2026-11.md) | Coverage/robustness probe over the 1,088 RSS feeds of the OSINT watchlist catalogue (aggregates only, no source names, not an accuracy test): reachability, evidence, band spread by language, and the one-message `high` artefact |
+| [catalog_watchlist_diff_2026-11.md](catalog_watchlist_diff_2026-11.md) | Read-only diff of CATS's catalogue and label registry against a local copy of the watchlist catalogue, by normalised host and feed (counts only, no scores, no labels); the roadmap's figure of 55 is not reproducible on the copy used; `research/catalog_watchlist_diff.py` |
 | [newsguard_criteria_comparison_2026-11.md](newsguard_criteria_comparison_2026-11.md) | NewsGuard's nine published criteria compared with CATS (no NewsGuard data, no scoring change): what is automatable, measured byline/category coverage on the registry feeds, phased plan, open questions for counsel |
 | [dataset_expansion_runbook.md](dataset_expansion_runbook.md) | Verified runbook to grow/maintain the labelled registry (with the labels.jsonl safety warning) |
 
@@ -63,6 +64,7 @@
 | [piano_sviluppo_roadmap_2026-07.md](piano_sviluppo_roadmap_2026-07.md) | Repo analysis, development plan and 15-point phased roadmap (July 2026, in Italian) |
 | [piano_sviluppo_roadmap_2026-09.md](piano_sviluppo_roadmap_2026-09.md) | Roadmap update (September 2026, in Italian): current state at v1.11.0 (updated 15 November), three phases to the January 2027 recalibration and v2.0, main risks |
 | [zenodo_deposit_checklist.md](zenodo_deposit_checklist.md) | Human checklist for converting the whitepaper to PDF and depositing it on Zenodo with a citable DOI |
+| [related_work.md](related_work.md) | Related work and positioning (English rendering of whitepaper v1.1 §1.4) and a "What CATS does not see" box — draft, references pending human verification |
 
 The technical whitepaper and the pipeline scheme (`cats_scheme.png`) also live
 in this folder. **`CATS_WhitePaper_Tecnico_v1.1.docx`** (September 2026, in

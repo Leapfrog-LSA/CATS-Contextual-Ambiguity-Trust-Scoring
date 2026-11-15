@@ -75,3 +75,15 @@ class TestEvaluateResponse:
         r = EvaluateResponse(**self._BASE, domain_popularity=block)
         assert r.domain_popularity == block
         assert r.model_dump()["domain_popularity"]["version"]["list_id"] == "TEST1"
+
+    def _base(self, **extra):
+        return EvaluateResponse(
+            trace_id="t", score=60.0, band="medium_high", requires_review=False, signals=[], **extra
+        )
+
+    def test_coherence_backend_defaults_to_none(self):
+        assert self._base().coherence_backend is None
+
+    def test_coherence_backend_accepted(self):
+        status = {"configured": "sbert", "effective": "ner", "fallback": True}
+        assert self._base(coherence_backend=status).coherence_backend == status

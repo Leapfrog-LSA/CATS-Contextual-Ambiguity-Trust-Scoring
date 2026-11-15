@@ -400,6 +400,66 @@ def test_measured_coherence_is_not_degraded(monkeypatch):
     assert "degraded_warning" not in result["explanation"]
 
 
+def _score_with_backend(monkeypatch, configured):
+    from cats.core.config import settings
+
+    measured = CoherenceResult(name="coherence", value=40.0, confidence=1.0, metadata={"backend": "ner"})
+    monkeypatch.setattr("cats.lite.compute_coherence", lambda msgs: measured)
+    monkeypatch.setattr(settings, "coherence_backend", configured)
+    return score(_MESSAGES, source_type="news", load_nlp=False)
+
+
+def test_sbert_fallback_is_reported_without_changing_the_score(monkeypatch):
+    as_ner = _score_with_backend(monkeypatch, "ner")
+    as_sbert = _score_with_backend(monkeypatch, "sbert")
+
+    for key in ("trust_score", "band", "requires_human_review", "degraded_signals", "signals"):
+        assert as_ner[key] == as_sbert[key]
+    assert as_ner["coherence_backend"] == {"configured": "ner", "effective": "ner", "fallback": False}
+    assert as_sbert["coherence_backend"] == {"configured": "sbert", "effective": "ner", "fallback": True}
+    assert "coherence_backend_warning" not in as_ner["explanation"]
+    assert "requirements-sbert.txt" in as_sbert["explanation"]["coherence_backend_warning"]
+    assert "degraded_warning" not in as_sbert["explanation"]
+
+
+def test_unmeasured_coherence_is_not_an_sbert_fallback(monkeypatch):
+    from cats.core.config import settings
+
+    short = CoherenceResult(name="coherence", value=50.0, confidence=0.0, metadata={"reason": "insufficient_messages"})
+    monkeypatch.setattr("cats.lite.compute_coherence", lambda msgs: short)
+    monkeypatch.setattr(settings, "coherence_backend", "sbert")
+    result = score(_MESSAGES, source_type="news", load_nlp=False)
+    assert result["coherence_backend"] == {"configured": "sbert", "effective": None, "fallback": False}
+    assert "coherence_backend_warning" not in result["explanation"]
+
+
+def test_compare_feeds_rows_carry_coherence_backend(monkeypatch):
+    from cats.lite import compare_feeds
+
+    status = {"configured": "sbert", "effective": "ner", "fallback": True}
+
+    def fake_score_feed(url, **kwargs):
+        result = {
+            "trust_score": 50.0,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0},
+            "degraded_signals": [],
+            "evidence": {"messages": 5, "min_messages": 3, "sufficient": True},
+            "explanation": {"primary_driver": "silence"},
+            "source": {"messages": 5},
+        }
+        if url == "https://a.example":
+            result["coherence_backend"] = status
+        return result
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://a.example", "https://b.example"])
+    rows = {r["url"]: r for r in out["ranked"]}
+    assert rows["https://a.example"]["coherence_backend"] == status
+    assert rows["https://b.example"]["coherence_backend"] is None
+
+
 def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
     from cats.lite import COMPARE_NOTE, FeedNotFoundError, compare_feeds
 
@@ -427,3 +487,76 @@ def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
         {"url": "https://gone.example", "error": "no RSS/Atom feed found for https://gone.example"}
     ]
     assert out["note"] == COMPARE_NOTE
+
+
+def _silence_entry(result):
+    return next(d for d in result["explanation"]["signals"] if d["signal"] == "silence")
+
+
+def _assert_score_unchanged_by_explain(messages):
+    with_explain = score(messages, source_type="news", load_nlp=False)
+    without = score(messages, source_type="news", load_nlp=False, explain=False)
+    for key in ("trust_score", "band", "requires_human_review", "signals"):
+        assert with_explain[key] == without[key]
+    assert with_explain["explanation"]["primary_driver"]
+    return with_explain
+
+
+def test_short_window_marks_silence_not_observable():
+    # _MESSAGES spans 25 h, below the 96 h silence threshold.
+    result = _assert_score_unchanged_by_explain(_MESSAGES)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_window_exactly_at_threshold_is_not_observable():
+    messages = [
+        {"timestamp": "2026-01-01T00:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-05T00:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_long_window_has_no_observable_key():
+    messages = [
+        {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-03T08:00:00Z", "text": "I sindacati commentano il piano del governo."},
+        {"timestamp": "2026-01-10T09:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert "observable" not in _silence_entry(result)
+
+
+def test_single_message_gets_driver_note():
+    messages = [{"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."}]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+    assert "missing evidence" in result["explanation"]["driver_note"]
+
+
+def test_compare_feeds_reports_silence_observable(monkeypatch):
+    from cats.lite import compare_feeds
+
+    def explanation_for(url):
+        if url == "https://short.example":
+            return {"primary_driver": "silence", "signals": [{"signal": "silence", "observable": False}]}
+        if url == "https://long.example":
+            return {"primary_driver": "coherence", "signals": [{"signal": "silence"}]}
+        return {"primary_driver": "silence"}
+
+    def fake_score_feed(url, **kwargs):
+        return {
+            "trust_score": 50.0,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0},
+            "degraded_signals": [],
+            "explanation": explanation_for(url),
+            "source": {"messages": 5},
+        }
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://short.example", "https://long.example", "https://bare.example"])
+    flags = {r["url"]: r["silence_observable"] for r in out["ranked"]}
+    assert flags == {"https://short.example": False, "https://long.example": True, "https://bare.example": None}
+    assert all("primary_driver" in r for r in out["ranked"])

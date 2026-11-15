@@ -41,6 +41,11 @@ class EvaluateResponse(BaseModel):
     # Popularity-table status: whether the local Tranco table is loaded and its
     # version file. Reporting only — never affects score, band or requires_review.
     domain_popularity: Optional[Dict[str, Any]] = None
+    # Coherence backend actually used vs the configured one:
+    # {configured, effective, fallback}; fallback is true when "sbert" is
+    # configured but NER measured coherence. Reporting only: it never changes
+    # the score, band or requires_review.
+    coherence_backend: Optional[Dict[str, Any]] = None
 
 
 class BatchEvaluateRequest(BaseModel):

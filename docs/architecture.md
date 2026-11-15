@@ -210,6 +210,24 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
   nlp_unavailable`, i.e. no spaCy model) forces `requires_review`. `cats.lite`
   lists it in `degraded_signals`; `/evaluate` shows it via the signal's
   `metadata.reason`.
+- **Silence observability** (`signals.silence.silence_observable`) — presentation
+  only: `cats.lite` explanations mark `silence` `observable: false` when the
+  history spans <= 96 h or has < 2 messages, and add a `driver_note` when the
+  primary driver (largest contribution) is unobserved or zero-confidence. The
+  span is not persisted, so `/explain` does not report it.
+- **Coherence backend** (`engine.coherence_backend_status`) —
+  `coherence_backend: {configured, effective, fallback}` in `cats.lite`
+  results, `compare_feeds` rows, the CLI (text warning and `--json`), the MCP
+  tools and the `/evaluate` and `/batch` responses. `fallback` is `true` only
+  when `COHERENCE_BACKEND=sbert` is configured but coherence was measured with
+  NER (SBERT unavailable or failed at inference); `cats.lite` explanations
+  then carry a `coherence_backend_warning`. Reporting only: it does not force
+  `requires_review` and is not a degraded signal. Not persisted, so `/explain`
+  does not report it. Known limit: when SBERT is configured but unavailable
+  *and* coherence was not measured at all (fewer than 2 messages, or no spaCy
+  model), the coherence result carries only `metadata.reason`, so `effective`
+  is `null` and `fallback` is `false`; covering that case would require a
+  change to `cats/signals/coherence.py`.
 
 A third block, **`domain_popularity`** (`domain_provenance.popularity_table_status`),
 reports whether the local Tranco popularity table (`data/tranco_top1m.csv`,

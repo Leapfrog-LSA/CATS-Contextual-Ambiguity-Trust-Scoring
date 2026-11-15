@@ -55,7 +55,9 @@ def _format_result(result: dict) -> Tuple[str, str, str, str, str]:
 
     explanation = result.get("explanation") or {}
     driver = explanation.get("primary_driver")
-    driver_md = f"**Primary driver:** {driver}" if driver else "_No explanation available._"
+    driver_md = f"**Primary driver (largest contribution):** {driver}" if driver else "_No explanation available._"
+    if explanation.get("driver_note"):
+        driver_md += f"\n\n_{explanation['driver_note']}_"
 
     signals_md = _signals_table(result["signals"])
 

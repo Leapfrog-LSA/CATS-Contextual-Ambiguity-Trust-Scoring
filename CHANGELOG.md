@@ -9,6 +9,115 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`human_labels` accepts `provenance: "blind_panel"`.** The validator in
+  `cats/calibration/human_labels.py` now allows a fourth provenance value for
+  bands given by a person who had not seen the CATS score; the CATS fields are
+  filled in afterwards. All other rules are unchanged (every field still
+  required, `cats_band` must match `determine_band(cats_score)`, `issue_url`
+  only for `issue`). Schema documented in the module docstring and
+  `data/README.md`. Validation-only: no records added, no score, band or
+  weight changes.
+- **Related-work draft** (`docs/related_work.md`), linked only from
+  `docs/README.md` as a draft. An English rendering of whitepaper v1.1 §1.4:
+  the four objects (source, claim, support, dependence), prior methods, the
+  Admiralty Code A–F axis, why no LLM produces the score, and the gap CATS
+  fills. Adds a "What CATS does not see" box that points to the README limits
+  and adds two points: recall 0.333 on the 06-Jul-2026 future holdout, and
+  fake news on ordinary domains. Every external reference is marked *to be
+  verified on the primary source*; none is taken from outside the whitepaper
+  or the repository. Documentation only: no score, band or weight changes.
+- **Roadmap: candidates for the January 2027 recalibration**
+  (`docs/piano_sviluppo_roadmap_2026-09.md`, Phase 3). A list titled
+  "Candidate da valutare (non approvate)", each item a proposal awaiting the
+  maintainer's decision, with its description checked against the code:
+  coherence fallback value with fewer than 2 messages (100 today, proposed
+  50), confidence in aggregation, silence with a reference instant, volatility
+  with the existing BERT sentiment backend, weights per coherence backend, and
+  the Admiralty A–F view mapped on band names. Every item would need
+  recalibration, future-holdout re-validation and an `ENGINE_VERSION` bump;
+  none has code. Documentation only: no score, band or weight changes.
+  - **Open point:** `README.md` quotes concordance 0.750, while
+    `docs/signal_diagnosis_2026-07.md` quotes 0.755. Neither number is
+    changed; the maintainer decides how to reconcile them.
+- **Uncertainty and paired comparison in the eval harness**
+  (`cats/calibration/evaluate.py`). New optional flags
+  `--bootstrap-replicates`, `--bootstrap-level`, `--bootstrap-seed` and
+  `--compare-weights PATH|static`.
+  - **Interval:** percentile bootstrap over dataset rows for concordance,
+    Spearman and the `unreliable` recall. Undefined replicates are excluded and
+    counted per metric, never scored as 0.
+  - **Paired comparison:** the same resampled rows are applied to two weight
+    tables. The output is the interval of their difference.
+  - **No defaults:** replicates and level must both be passed. Without the new
+    flags the text and `--json` output are byte-for-byte unchanged.
+  - **No score changes:** scores, bands, weights and signals are all as before.
+    This only measures.
+- **January 2027 validation protocol** (`docs/calibration.md`). A draft
+  section that fixes how the recalibration will be judged. It lists the open
+  decisions, each marked *to be decided by the maintainer*. The maintainer
+  completes and dates it before 12 January 2027.
+- **Per-source diagnostics in calibration datasets, and a composition count.**
+  `cats.calibration.build_dataset` now writes a top-level `diagnostics` block
+  per record (`source_id`, `n_messages`, `span_hours`, per-signal
+  `signal_confidence`, detected `language`: `italian` / `other` / `unknown`).
+  `source_type`, `signals` and `label` are unchanged, and `load_dataset`,
+  calibration and evaluation ignore the new key: no score, band or weight
+  changes, and no committed dataset was regenerated.
+  - **Script:** `research/holdout_composition.py --dataset <file>` prints the
+    label x language counts, sources with a signal confidence below 1, and the
+    min / median / max message count. Read-only, no network. Records without
+    `diagnostics` (all committed datasets) count as `unknown`.
+  - **Docs:** `docs/dataset_expansion_runbook.md` adds a composition table
+    (minimum per cell left to the maintainer), a proposed note on `stale`
+    feeds, and why the feed-health check concerns the whole pool under the
+    `message` split axis. `docs/calibration.md` and `data/README.md` describe
+    the `diagnostics` block and the language detector's limits.
+- **Read-only diff of the CATS catalogue against the watchlist catalogue**
+  (`research/catalog_watchlist_diff.py`, report
+  `docs/catalog_watchlist_diff_2026-11.md`). The script compares
+  `data/Fonti_OSINT.csv` and `data/labels.jsonl` with a local copy of the
+  watchlist's `Fonti_OSINT.csv`, by normalised host and by normalised feed URL.
+  - **Read-only:** it uses no network and writes nothing under `data/`. It
+    computes no score, and it ignores the registry's `label` field.
+  - **The roadmap's 55:** the script counts ten candidate definitions of a
+    "diverging registry source". On watchlist commit `7a79ac0` none gives 55,
+    so the report calls the figure not reproducible.
+  - **Open for the maintainer:** the alignment rules and which watchlist commit
+    to pin. The report lists them without a recommendation.
+  - **Tests:** `tests/unit/test_catalog_watchlist_diff.py`.
+- **Honest "Driver": the explanation says when `silence` was not observable.**
+  Presentation only: trust score, band, `requires_human_review`, weights and
+  signal values/confidences/metadata are unchanged.
+  - **Why:** `silence` counts gaps over 96 h, so a window of 96 h or less (or
+    fewer than 2 messages) scores 0 by construction, which inverts to a full
+    contribution and often becomes the `primary_driver`.
+  - **Library:** new pure helper `cats.signals.silence.silence_observable`
+    (now also used by `silence_blind_sources`, same results);
+    `generate_explanation` gains a keyword-only `silence_observable` hint.
+    `cats.lite.score` passes it, so the `silence` entry carries
+    `"observable": false` and a `driver_note` appears when the primary driver
+    is unobserved or zero-confidence. Without the hint (GET `/explain`) the
+    output is unchanged. `compare_feeds` rows gain `silence_observable`.
+  - **CLI / MCP / demo:** `cats score` prints the driver as the largest
+    contribution plus the note; `cats compare` marks such drivers with `*`
+    and a legend; MCP tool docstrings and the Gradio demo follow.
+  - **Proposed names, for maintainer review:** `observable`, `driver_note`,
+    `silence_observable` (row field, helper and parameter), and the wording
+    of the CLI lines. The README demo block still shows the old
+    `Driver ... (share ...)` line and was deliberately left unchanged.
+- **SBERT -> NER coherence fallback is now visible in the output.** Reporting
+  only: no score, band, weight or review rule changes; ENGINE 1.4 unchanged.
+  - **What:** new `coherence_backend: {configured, effective, fallback}`
+    (`cats.scoring.engine.coherence_backend_status`). `fallback` is `true` when
+    `COHERENCE_BACKEND=sbert` is configured but coherence was measured with
+    NER (SBERT unavailable or failed); before, only a log warning said so.
+  - **Where:** `cats.lite.score()` (plus `coherence_backend_warning` in the
+    explanation), `compare_feeds` rows, the CLI (`Warning` line in `score` and
+    `compare`, field in `--json`), the MCP tools, and the `/evaluate` and
+    `/batch` responses (`EvaluateResponse.coherence_backend`, not persisted).
+  - **Not changed:** the fallback does not force `requires_human_review` and
+    is not a degraded signal. Known limit: with fewer than 2 messages or no
+    spaCy model, `effective` is `null` and `fallback` is `false`.
 - **Popularity-table status in every result.** `cats.lite.score` results and
   `/evaluate` / `/batch` responses carry a `domain_popularity` block:
   whether the local Tranco table (`data/tranco_top1m.csv`) is loaded, its row
@@ -49,6 +158,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     at least some items, and 65 of 99 carry `<category>` labels.
 
 ### Changed
+- **The `/explain` disclaimer matches the real calibration status.** It said
+  "parameters not empirically calibrated (WP 4.1)", but aggregation weights
+  are calibrated when a calibrated table is configured (`CATS_WEIGHTS_FILE`)
+  and band thresholds are not. The new text keeps the opening "Scores are
+  ordinal rankings of source reliability patterns" and the WP 4.1 / WP 4.3
+  references, and says the weights are static initial estimates unless
+  `CATS_WEIGHTS_FILE` is set and the band thresholds are not calibrated. The
+  wording is a proposal pending maintainer review.
+  - **One module for disclaimer strings:** `cats/scoring/disclaimers.py`. The
+    CLI note and the MCP disclaimer are built from it; their text is
+    unchanged character for character.
+  - **No score, band or weight changes.**
 - **The RSS collector keeps more feed fields in `metadata`.** No signal reads
   them yet; they are stored because a feed's history cannot be fetched later.
   - **`title_len`:** the title is the first `title_len` characters of `text`.
