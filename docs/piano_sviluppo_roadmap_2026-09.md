@@ -186,7 +186,7 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   ([`zenodo_deposit_checklist.md`](zenodo_deposit_checklist.md)).
 - [ ] Correggere la descrizione del repo su GitHub, che dice ancora "GDPR & EU
   AI Act compliant" — **S** — umano.
-- [ ] Verificare che `technical@cats-system.org` riceva davvero — **S** — umano.
+- [x] ~~Verificare che l'indirizzo email di contatto riceva davvero~~ — superato (novembre): l'indirizzo è stato tolto da tutti i documenti; le segnalazioni passano da GitHub (`SECURITY.md`).
 - [x] Far funzionare `alembic upgrade head` dentro l'immagine Docker (falliva
   con "No module named 'cats'") — **S** — `prepend_sys_path` in `alembic.ini`,
   più un controllo nel job `docker` della CI.

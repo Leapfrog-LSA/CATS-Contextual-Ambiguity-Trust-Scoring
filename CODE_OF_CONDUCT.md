@@ -51,7 +51,8 @@ the project in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the maintainers at **technical@cats-system.org**. All complaints
+reported to the maintainers privately through GitHub (the repository's
+**Security** tab → **Report a vulnerability** is visible only to them). All complaints
 will be reviewed and investigated promptly and fairly.
 
 All maintainers are obligated to respect the privacy and security of the

@@ -185,7 +185,7 @@ doing OSINT/disinformation work find it.
 
 ## License
 
-Code: [MIT](LICENSE) — technical@cats-system.org
+Code: [MIT](LICENSE). Security reports: see [`SECURITY.md`](SECURITY.md).
 
 Data: the MIT License does not cover the data files. The RSS texts in `data/`
 belong to their publishers. See [`DATA_LICENSE`](DATA_LICENSE) (draft, pending

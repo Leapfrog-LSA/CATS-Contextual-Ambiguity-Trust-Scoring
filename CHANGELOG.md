@@ -89,6 +89,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `data/README.md` link to both files.
 
 ### Changed
+- **No contact email in the documents.** The address was removed from
+  `README.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/compliance.md`,
+  `DATA_LICENSE` and the roadmap.
+  - **Security reports:** through GitHub private vulnerability reporting
+    (the *Security* tab), which the maintainer enables in the repository
+    settings.
+  - **Data-protection requests and the proposed takedown route:** through
+    GitHub as well. Whether a dedicated private channel is needed is left as
+    a TODO for the maintainer.
 - **Roadmap: the maintainer's November decisions are recorded.** In
   `docs/piano_sviluppo_roadmap_2026-09.md`:
   - the constraint of no new signals until mid-December is confirmed;
