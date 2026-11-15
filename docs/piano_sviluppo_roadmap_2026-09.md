@@ -135,6 +135,22 @@ banda cambiato.
 - **Conformità:** bozza tecnica del piano di monitoraggio post-market
   (Art. 72), con soglie, cadenze e responsabile lasciati come TODO umani.
 
+### Decisioni del maintainer (13–15 novembre)
+
+- **Confermato:** nessun nuovo segnale fino a metà dicembre (vincolo in
+  Fase 2).
+- **Contatti:** l'email non è più pubblicata. Le segnalazioni passano da
+  GitHub; quelle di sicurezza dalle segnalazioni private (`SECURITY.md`).
+- **Raccolta:** non si sospendono le fonti con una riserva TDM esplicita.
+  La questione resta aperta per la consulenza legale.
+- **Licenza del codice:** resta MIT per ora. La scelta tra MIT, Apache 2.0 e
+  AGPL-3.0 si fa più avanti, con il legale.
+- **Catalogo delle fonti:** l'originale sarà quello della watchlist. Il
+  metodo di allineamento è ancora da decidere: le due copie divergono su 55
+  fonti del registro etichettato.
+- **Rimandati:** consulenza legale e decisione sui testi già raccolti.
+- **Non si fa:** la correzione della descrizione del repository.
+
 ## Fase 1 — breve termine (0–4 settimane): chiudere il lavoro aperto
 
 Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
@@ -245,7 +261,8 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
   7 novembre; soglie, cadenze e responsabile restano TODO umani, i punti
   legali vanno verificati da un legale.
 - [ ] **Vincolo:** nessuno spike su nuovi segnali fino a metà dicembre 2026. Si
-  riapre solo con più dati **e** un utente che lo chieda.
+  riapre solo con più dati **e** un utente che lo chieda. Confermato dal
+  maintainer il 15 novembre.
 
 ## Fase 3 — lungo termine (3–6+ mesi, gennaio–giugno 2027): ricalibrazione v2.0, conformità, pubblicazione
 
