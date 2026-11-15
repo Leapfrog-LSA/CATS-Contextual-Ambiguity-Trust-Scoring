@@ -215,3 +215,7 @@ def test_compare_sources_rejects_too_few_or_too_many(monkeypatch, urls):
     monkeypatch.setattr("cats.mcp_server._compare_feeds", lambda *a, **k: pytest.fail("must not score"))
     with pytest.raises(ValueError):
         compare_sources(urls)
+
+
+def test_mcp_disclaimer_text_unchanged():
+    assert _DISCLAIMER == "Ordinal score, not a probability (WP 4.3)."

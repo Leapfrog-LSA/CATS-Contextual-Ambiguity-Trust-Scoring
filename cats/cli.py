@@ -24,8 +24,9 @@ from cats.lite import (
     score,
     score_feed,
 )
+from cats.scoring.disclaimers import CLI_NOTE
 
-_NOTE = "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
+_NOTE = CLI_NOTE
 _SIGNALS = ("coherence", "volatility", "silence", "gaming")
 
 
