@@ -69,13 +69,15 @@ Size, rate and error behaviour for every endpoint: [Limits and errors](#limits-a
   "band": "medium_high",
   "requires_review": false,
   "signals": [
-    { "name": "coherence", "value": 68.2, "confidence": 0.8, "metadata": {"pairs": 5} },
+    { "name": "coherence", "value": 68.2, "confidence": 0.8, "metadata": {"pairs": 5, "backend": "ner"} },
     { "name": "volatility", "value": 41.0, "confidence": 0.6, "metadata": {"threshold": 0.3} },
     { "name": "silence",    "value": 20.0, "confidence": 0.7, "metadata": {"threshold_h": 96.0, "source_type": "social"} },
     { "name": "gaming",     "value": 15.3, "confidence": 0.9, "metadata": {"token_count": 420} }
   ],
   "language": { "detected": "italian", "confidence": 0.85, "marker_ratio": 0.23, "latin_script_ratio": 1.0 },
-  "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 }
+  "evidence": { "messages": 12, "min_messages": 3, "sufficient": true, "mean_signal_confidence": 0.75 },
+  "coherence_backend": { "configured": "ner", "effective": "ner", "fallback": false },
+  "domain_popularity": { "loaded": false, "entries": null, "version": null }
 }
 ```
 
@@ -96,6 +98,15 @@ or `band`, and they are not persisted — `/explain` does not report them):
   penalised yet: that is a signal change, deferred to the next recalibration
   cycle (risk R5).
 
+**`coherence_backend`** — the configured coherence backend
+(`COHERENCE_BACKEND`), the one that actually measured coherence (`effective`,
+from the coherence signal's `metadata.backend`; `null` when coherence was not
+measured) and `fallback`. `fallback: true` means `sbert` was configured but
+coherence was measured with NER (SBERT unavailable or failed), so the score is
+not comparable with an SBERT install; fix with
+`pip install -r requirements-sbert.txt`. Reporting only: it never changes
+`score` or `band`, does not set `requires_review`, and is not persisted.
+
 `requires_review` is `true` when any of these holds:
 
 - evidence is insufficient (`evidence.sufficient: false`, above);
@@ -104,6 +115,15 @@ or `band`, and they are not persisted — `/explain` does not report them):
   spaCy model);
 - the band is `low` or `very_low`;
 - any signal has confidence below 0.3 and the score is under 50.
+
+A third block, **`domain_popularity`**, reports the local Tranco popularity
+table used by the domain-provenance penalty: `loaded` (bool), `entries` (row
+count, `null` when not loaded) and `version` (`list_id` / `list_date` /
+`downloaded_at` from the hand-written `.meta.json` file next to the table, or
+`null`). It is a reporting flag only: it never changes `score`, `band` or
+`requires_review`, and it is not persisted, so `/explain` does not report it.
+For what a missing table changes, see *Domain-provenance penalty* in
+[`docs/architecture.md`](architecture.md).
 
 ---
 
@@ -136,14 +156,14 @@ would be far larger than that, so for big histories send fewer items per call.
 {
   "count": 2,
   "results": [
-    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...], "language": {...}, "evidence": {...} },
+    { "trace_id": "...", "score": 72.4, "band": "medium_high", "requires_review": false, "signals": [...], "language": {...}, "evidence": {...}, "domain_popularity": {...} },
     { "trace_id": "...", "score": 41.0, "band": "medium",      "requires_review": true,  "signals": [...], "language": {...}, "evidence": {...} }
   ]
 }
 ```
 
 Each item has the same shape as an `/evaluate` response, including the
-`language` and `evidence` guardrail blocks.
+`language` and `evidence` guardrail blocks, `coherence_backend` and the `domain_popularity` flag.
 
 ---
 
@@ -175,7 +195,25 @@ GDPR Art. 14/22 — explainability endpoint.
 (`coherence`) and `100 - value` for a `negative` one (`volatility`, `silence`,
 `gaming`). `score_share_pct` is each signal's share of the weighted score (a
 linear-model attribution), and `primary_driver` is the signal that contributed
-the most — both surface *why* a source got its score.
+the most — both surface *why* a source got its score. `primary_driver` is the
+largest contribution, not a verdict on the source.
+
+`cats.lite.score`, the `cats score` CLI and the MCP tools add two optional,
+presentation-only fields to their explanation (the score, band and signal
+values are unchanged):
+
+- **`observable: false`** on the `silence` entry of `signals`, when the
+  observed history spans no more than the silence threshold (96 h) or has
+  fewer than two messages: `silence` cannot fire on such a window, so its 0
+  is missing evidence, not quiet behaviour. The key is absent otherwise.
+- **`driver_note`** — when `primary_driver` is an unobservable or
+  zero-confidence signal: the largest contribution then comes from missing
+  evidence. `cats.lite.compare_feeds` / `compare_sources` rows carry the
+  matching `silence_observable` (`false`, `true`, or `null` if unknown).
+
+`GET /explain/{trace_id}` does **not** report `observable` or `driver_note`:
+it rebuilds the signals from the stored value/confidence only, and the
+observed history span is not persisted.
 
 Two optional blocks can appear in `explanation`:
 

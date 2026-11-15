@@ -237,3 +237,15 @@ def test_scoring_tools_add_feedback_url_and_explain_bands_does_not(monkeypatch):
     assert FEEDBACK_URL.endswith("score_feedback.yml")
     assert "feedback_url" not in explain_bands()
     assert set(explain_bands()) == {"bands", "disclaimer"}
+
+
+def test_tool_docstrings_present_driver_as_contribution_and_describe_observable():
+    for tool in (score_source, score_messages):
+        assert "observable" in tool.__doc__
+        assert "driver_note" in tool.__doc__
+        assert "not a verdict" in " ".join(tool.__doc__.split())
+    assert "silence_observable" in compare_sources.__doc__
+
+
+def test_mcp_disclaimer_text_unchanged():
+    assert _DISCLAIMER == "Ordinal score, not a probability (WP 4.3)."

@@ -1,3 +1,5 @@
+import pytest
+
 import cats.signals.domain_provenance as dp
 from cats.signals.domain_provenance import compute_domain_provenance, extract_host
 
@@ -234,3 +236,64 @@ class TestEstablishedDomainOnSuspiciousTld:
         r = compute_domain_provenance("https://www.open.online")
         assert r.suspicious_tld is True
         assert r.value == 40.0
+
+
+def _reset_popularity_state(monkeypatch, csv_path):
+    """Point the loaders at ``csv_path`` with both lazy caches cleared."""
+    from cats.core.config import settings
+
+    monkeypatch.setattr(dp, "_popularity_table", None)
+    monkeypatch.setattr(dp, "_popularity_load_attempted", False)
+    monkeypatch.setattr(dp, "_popularity_version", None)
+    monkeypatch.setattr(dp, "_popularity_version_load_attempted", False)
+    monkeypatch.setattr(settings, "domain_popularity_path", str(csv_path))
+
+
+class TestPopularityTableStatus:
+    """popularity_table_status(): reporting only, never raises."""
+
+    def test_missing_table_is_not_loaded(self, monkeypatch, tmp_path):
+        _reset_popularity_state(monkeypatch, tmp_path / "tranco_top1m.csv")
+        # A version file without a table is ignored.
+        (tmp_path / "tranco_top1m.meta.json").write_text('{"list_id": "X"}', encoding="utf-8")
+        assert dp.popularity_table_status() == {"loaded": False, "entries": None, "version": None}
+
+    def test_mocked_table_without_version_file(self, monkeypatch, tmp_path):
+        _reset_popularity_state(monkeypatch, tmp_path / "tranco_top1m.csv")
+        _mock_popularity_table(monkeypatch, {"corriere.it": 1, "ansa.it": 2})
+        assert dp.popularity_table_status() == {"loaded": True, "entries": 2, "version": None}
+
+    def test_table_and_version_file(self, monkeypatch, tmp_path):
+        csv_path = tmp_path / "tranco_top1m.csv"
+        csv_path.write_text("1,corriere.it\n2,ansa.it\n3,repubblica.it\n", encoding="utf-8")
+        (tmp_path / "tranco_top1m.meta.json").write_text(
+            '{"list_id": "TEST1", "list_date": "2026-11-01", "downloaded_at": "2026-11-02T10:00:00Z"}',
+            encoding="utf-8",
+        )
+        _reset_popularity_state(monkeypatch, csv_path)
+        status = dp.popularity_table_status()
+        assert status["loaded"] is True
+        assert status["entries"] == 3
+        assert status["version"] == {
+            "list_id": "TEST1",
+            "list_date": "2026-11-01",
+            "downloaded_at": "2026-11-02T10:00:00Z",
+        }
+
+    @pytest.mark.parametrize("content", ["not json {", "[1, 2, 3]", "", '"a string"'])
+    def test_malformed_version_file_is_graceful(self, monkeypatch, tmp_path, content):
+        csv_path = tmp_path / "tranco_top1m.csv"
+        csv_path.write_text("1,corriere.it\n", encoding="utf-8")
+        (tmp_path / "tranco_top1m.meta.json").write_text(content, encoding="utf-8")
+        _reset_popularity_state(monkeypatch, csv_path)
+        assert dp.popularity_table_status() == {"loaded": True, "entries": 1, "version": None}
+
+    def test_version_file_does_not_change_domain_signal(self, monkeypatch, tmp_path):
+        csv_path = tmp_path / "tranco_top1m.csv"
+        csv_path.write_text("1,corriere.it\n", encoding="utf-8")
+        _reset_popularity_state(monkeypatch, csv_path)
+        before = compute_domain_provenance("https://ilcorrispondente.blogspot.com")
+        (tmp_path / "tranco_top1m.meta.json").write_text('{"list_id": "TEST1"}', encoding="utf-8")
+        _reset_popularity_state(monkeypatch, csv_path)
+        after = compute_domain_provenance("https://ilcorrispondente.blogspot.com")
+        assert (before.value, before.confidence) == (after.value, after.confidence) == (60.0, 1.0)

@@ -31,6 +31,7 @@
 * [Feed-health audit — July 2026](docs/feed_health_2026-07.md)
 * [Snapshot history audit — 13 September 2026](docs/snapshot_history_audit_2026-09.md)
 * [Coverage probe on the OSINT watchlist catalogue — 2026-11-09](docs/watchlist_probe_2026-11.md)
+* [CATS catalogue vs watchlist catalogue — 2026-11-15](docs/catalog_watchlist_diff_2026-11.md)
 * [Dataset expansion runbook — growing and maintaining the labelled registry](docs/dataset_expansion_runbook.md)
 
 ## Signal work & spikes

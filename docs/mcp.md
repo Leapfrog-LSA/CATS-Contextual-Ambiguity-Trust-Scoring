@@ -64,22 +64,31 @@ Scores a source directly from its URL — fetches (and autodiscovers, if
 needed) its RSS/Atom feed, then runs the CATS signal pipeline. Same
 autodiscovery behaviour as `cats.lite.score_feed`/`cats score <url>`. Returns
 `score()`'s result plus a `source` block (feed URL, message count, time
-span), a `disclaimer` and a `feedback_url` (see [Caveats](#caveats)).
+span), a `disclaimer` and a `feedback_url` (see [Caveats](#caveats)). In `explanation`, `primary_driver` is the signal
+with the largest contribution, not a verdict; the `silence` entry carries
+`observable: false` when the window spans 96 h or less (or has fewer than two
+messages), and `driver_note` appears when the driver is such an unobserved or
+zero-confidence signal.
 
 ### `score_messages(messages, source_type="default", url=None)`
 
 Scores a source from an already-collected list of
 `{"timestamp": ISO-8601, "text": str}` messages — use this when the source
 isn't a public feed. `url`, if given, enables the domain-provenance penalty.
-Returns `score()`'s result plus a `disclaimer` and a `feedback_url`.
+Returns `score()`'s result plus a `disclaimer` and a `feedback_url`, with the
+same `observable` flag and optional `driver_note` in `explanation`.
 
 ### `compare_sources(urls, source_type="default")`
 
 Scores 2 to 10 sources from their URLs (duplicates dropped) and ranks them
 by trust score, with the same pipeline as `cats compare`. Returns `ranked`:
-compact rows with `rank`, `url`, `trust_score`, `band`, `primary_driver`,
-raw `signals`, `messages`, `requires_human_review`, `review_reason`,
-`degraded_signals` and `domain_red_flag`. It also returns `errors`, the
+compact rows with `rank`, `url`, `trust_score`, `band`, `primary_driver`
+(largest contribution), `silence_observable` (`false` when that source's
+window was too short for `silence` to fire, `true` when observable, `null` if
+unknown), raw `signals`, `messages`, `requires_human_review`, `review_reason`,
+`degraded_signals`, `domain_red_flag` and `coherence_backend` (its
+`fallback` is `true` when SBERT was configured but NER measured coherence, so
+the score is not comparable with an SBERT install). It also returns `errors`, the
 sources that could not be scored, with the reason; they never stop the
 comparison. A `note`, a `disclaimer` and a `feedback_url` complete the response. More than 10
 URLs, or fewer than 2 distinct ones, is refused: each source costs a feed
@@ -98,7 +107,10 @@ Same as everywhere else in CATS: scores are ordinal rankings, not calibrated
 probabilities (every tool response carries a `disclaimer` field saying so);
 the default NLP stack is Italian-optimised; `score_source` and
 `compare_sources` need network access to fetch the sources' feeds, and refuse
-URLs that resolve to non-public addresses (threat model T9). See [architecture.md](architecture.md)
+URLs that resolve to non-public addresses (threat model T9). A short window
+(a single fetch spanning 96 h or less) makes `silence` unobservable: its 0 is
+missing evidence, so relay `driver_note` / `observable: false` rather than
+presenting the driver as a finding. See [architecture.md](architecture.md)
 and the top-level [README](../README.md) for the full picture.
 
 `score_source`, `score_messages` and `compare_sources` also return

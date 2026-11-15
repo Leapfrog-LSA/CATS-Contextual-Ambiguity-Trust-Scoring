@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from cats.api.schemas import BatchEvaluateRequest, EvaluateRequest, MessageSchema
+from cats.api.schemas import BatchEvaluateRequest, EvaluateRequest, EvaluateResponse, MessageSchema
 
 
 class TestMessageSchema:
@@ -57,3 +57,33 @@ class TestBatchEvaluateRequest:
     def test_max_items_enforced(self):
         with pytest.raises(ValidationError):
             BatchEvaluateRequest(items=[self._item(str(i)) for i in range(51)])
+
+
+class TestEvaluateResponse:
+    _BASE = {"trace_id": "t-1", "score": 61.0, "band": "medium_high", "requires_review": False, "signals": []}
+
+    def test_valid_without_domain_popularity(self):
+        r = EvaluateResponse(**self._BASE)
+        assert r.domain_popularity is None
+
+    def test_valid_with_domain_popularity(self):
+        block = {
+            "loaded": True,
+            "entries": 2,
+            "version": {"list_id": "TEST1", "list_date": None, "downloaded_at": None},
+        }
+        r = EvaluateResponse(**self._BASE, domain_popularity=block)
+        assert r.domain_popularity == block
+        assert r.model_dump()["domain_popularity"]["version"]["list_id"] == "TEST1"
+
+    def _base(self, **extra):
+        return EvaluateResponse(
+            trace_id="t", score=60.0, band="medium_high", requires_review=False, signals=[], **extra
+        )
+
+    def test_coherence_backend_defaults_to_none(self):
+        assert self._base().coherence_backend is None
+
+    def test_coherence_backend_accepted(self):
+        status = {"configured": "sbert", "effective": "ner", "fallback": True}
+        assert self._base(coherence_backend=status).coherence_backend == status

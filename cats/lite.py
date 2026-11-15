@@ -65,6 +65,7 @@ from cats.pipeline.normalizer import normalize_messages  # noqa: E402
 from cats.scoring.engine import (  # noqa: E402
     aggregate_score,
     apply_domain_penalty,
+    coherence_backend_status,
     degraded_signals,
     determine_band,
     evidence_summary,
@@ -74,9 +75,9 @@ from cats.scoring.explainer import generate_explanation  # noqa: E402
 from cats.scoring.weights import get_dynamic_weights  # noqa: E402
 from cats.signals import coherence  # noqa: E402
 from cats.signals.coherence import compute_coherence  # noqa: E402
-from cats.signals.domain_provenance import compute_domain_provenance  # noqa: E402
+from cats.signals.domain_provenance import compute_domain_provenance, popularity_table_status  # noqa: E402
 from cats.signals.gaming import compute_gaming  # noqa: E402
-from cats.signals.silence import compute_silence  # noqa: E402
+from cats.signals.silence import compute_silence, silence_observable  # noqa: E402
 from cats.signals.types import SignalResult  # noqa: E402
 from cats.signals.volatility import compute_volatility  # noqa: E402
 
@@ -88,6 +89,12 @@ _DEGRADED_WARNING = (
     "Some signals were not measured and entered the score at a neutral value, so the score "
     "and band are not comparable with a full install. For coherence, install the Italian "
     "spaCy model: python -m spacy download it_core_news_lg"
+)
+
+_COHERENCE_BACKEND_WARNING = (
+    "COHERENCE_BACKEND=sbert is configured but coherence was measured with NER (SBERT unavailable "
+    "or failed), so the score is not comparable with an SBERT install. Fix: "
+    "pip install -r requirements-sbert.txt"
 )
 
 _WELL_KNOWN_FEED_PATHS = ("/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml", "/rss/")
@@ -411,6 +418,17 @@ def review_reason(result: Dict) -> Optional[str]:
     return "low-confidence signal(s)"
 
 
+def _silence_observable_flag(explanation: Dict) -> Optional[bool]:
+    """``observable`` of the explanation's silence entry: False, True if unflagged, None if unknown."""
+    details = explanation.get("signals")
+    if not details:
+        return None
+    silence = next((d for d in details if d.get("signal") == "silence"), None)
+    if silence is None:
+        return None
+    return silence.get("observable") is not False
+
+
 def compare_feeds(
     urls: List[str],
     source_type: str = "default",
@@ -425,10 +443,15 @@ def compare_feeds(
     ``errors`` with its message instead of aborting the comparison.
 
     Returns ``{source_type, ranked, errors, note}``. Each ``ranked`` row is
-    compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``,
-    raw ``signals``, ``messages``, ``requires_human_review``,
-    ``review_reason``, ``degraded_signals``, ``domain_red_flag``. The scores
-    are ordinal and comparable only within one call (see ``note``).
+    compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``
+    (the signal with the largest contribution to the score, not a verdict),
+    ``silence_observable`` (False when the observed window was too short for
+    ``silence`` to fire, so its 0 is missing evidence; True when it was
+    observable; None when the explanation does not say), raw ``signals``,
+    ``messages``, ``requires_human_review``, ``review_reason``,
+    ``degraded_signals``, ``domain_red_flag``, ``coherence_backend`` (see
+    :func:`score`; ``None`` if absent). The scores are ordinal and comparable
+    only within one call (see ``note``).
     """
     rows: List[Dict] = []
     errors: List[Dict] = []
@@ -445,12 +468,14 @@ def compare_feeds(
                 "trust_score": result["trust_score"],
                 "band": result["band"],
                 "primary_driver": explanation.get("primary_driver"),
+                "silence_observable": _silence_observable_flag(explanation),
                 "signals": result["signals"],
                 "messages": result["source"]["messages"],
                 "requires_human_review": result["requires_human_review"],
                 "review_reason": review_reason(result),
                 "degraded_signals": result.get("degraded_signals") or [],
                 "domain_red_flag": result["signals"].get("domain_provenance", 0) > 0,
+                "coherence_backend": result.get("coherence_backend"),
             }
         )
     rows.sort(key=lambda r: r["trust_score"], reverse=True)
@@ -500,13 +525,23 @@ def score(
     penalty is applied (impersonation/clone red-flags only lower the score).
 
     Returns ``{trust_score, band, requires_human_review, signals,
-    degraded_signals, language, evidence, explanation}``. ``language`` flags
+    degraded_signals, coherence_backend, language, evidence, domain_popularity,
+    explanation}``. ``language`` flags
     non-Italian input (the NLP stack is Italian-optimised — risk R3);
     ``evidence`` reports the message count vs ``CATS_MIN_EVIDENCE_MESSAGES``
     (risk R5) — an insufficient history forces ``requires_human_review`` but
     never changes the score. ``degraded_signals`` names signals that were not
     measured (e.g. ``coherence`` without the spaCy model): they enter the score
     at their neutral value, so a non-empty list also forces review.
+    ``coherence_backend`` is ``{configured, effective, fallback}``: ``fallback``
+    is true when ``COHERENCE_BACKEND=sbert`` is configured but coherence was
+    measured with NER (SBERT unavailable or failed); the explanation then adds
+    ``coherence_backend_warning``. Reporting only: it never changes the score,
+    the band or ``requires_human_review``.
+    ``domain_popularity`` reports whether the local Tranco popularity table is
+    loaded (``loaded``, ``entries``) and its hand-written version file
+    (``version``, ``None`` when absent) — reporting only: it never changes the
+    score, the band or ``requires_human_review``.
     """
     if load_nlp:
         init_nlp()
@@ -532,6 +567,7 @@ def score(
 
     language = detect_language(msgs)
     evidence = evidence_summary(behavioural, len(msgs), settings.min_evidence_messages)
+    backend_status = coherence_backend_status(signals, settings.coherence_backend)
     result = {
         "trust_score": round(value, 2),
         "band": band,
@@ -540,11 +576,20 @@ def score(
         ),
         "signals": {s.name: round(s.value, 2) for s in signals},
         "degraded_signals": degraded_signals(signals),
+        "coherence_backend": backend_status,
         "language": language.as_dict(),
         "evidence": evidence,
+        "domain_popularity": popularity_table_status(),
     }
     if explain:
-        explanation = generate_explanation(value, band, signals, w)
+        span_hours: Optional[float] = None
+        if len(msgs) >= 2:
+            first = datetime.fromisoformat(msgs[0].timestamp.replace("Z", "+00:00"))
+            last = datetime.fromisoformat(msgs[-1].timestamp.replace("Z", "+00:00"))
+            span_hours = (last - first).total_seconds() / 3600
+        explanation = generate_explanation(
+            value, band, signals, w, silence_observable=silence_observable(span_hours, source_type)
+        )
         if language.detected == "other":
             explanation["language_warning"] = (
                 "Input does not look Italian: the default NLP stack is "
@@ -552,5 +597,7 @@ def score(
             )
         if result["degraded_signals"]:
             explanation["degraded_warning"] = _DEGRADED_WARNING
+        if backend_status["fallback"]:
+            explanation["coherence_backend_warning"] = _COHERENCE_BACKEND_WARNING
         result["explanation"] = explanation
     return result

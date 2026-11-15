@@ -68,8 +68,11 @@ pip install -r requirements-sbert.txt   # pulls torch + transformers, ~2 GB
 export COHERENCE_BACKEND=sbert
 ```
 
-It falls back to NER *silently* when the model is unavailable — check the logs
-for `sbert_loaded` to confirm it took effect.
+It falls back to NER when the model is unavailable. The result says so:
+`coherence_backend.fallback` is `true` in `cats.lite`, `cats compare` rows
+and the `/evaluate` response, and the CLI prints a warning. The logs also show
+`sbert_loaded` when SBERT took effect. The fallback never changes the score;
+it means the score is not comparable with an SBERT install.
 [Measurement](docs/signal_diagnosis_2026-07.md).
 
 Or as a library:
@@ -135,6 +138,7 @@ On top of the four behavioural signals, an asymmetric **domain-provenance penalt
 * The default stack is Italian-optimised — other languages are detected and flagged, not blocked, but accuracy degrades.
 * Calibration is validated on a 56-source train / 53-source future-holdout split — informative, not large-scale.
 * **Fewer than 3 messages: read `evidence`, not the score.** With a single message `coherence` has nothing to compare and returns 100 (at zero confidence), so a one-item or long-dead feed can show a `high` band. CATS flags these cases (`evidence.sufficient: false`, review forced), but the score itself is not lowered until the next recalibration cycle. In a [probe over 852 catalogue feeds](docs/watchlist_probe_2026-11.md), all 6 `high` results were one-message feeds.
+* **A single fetch is not a history.** `silence` counts gaps longer than 96 h, so when the observed window spans 96 h or less (or holds fewer than 2 messages) it cannot fire and is 0 by construction — which inverts to a full-reliability contribution. The explanation then marks the `silence` entry `observable: false`, and adds a `driver_note` when the largest contribution comes from such an unobserved or zero-confidence signal. The Driver is the largest contribution to the score, not a judgement about the source; the score itself is unchanged.
 * Scores are ordinal, not probabilities, and are not a substitute for human review.
 
 Full detail, numbers and the validation history: [docs/architecture.md](docs/architecture.md) and the [calibration findings](docs/calibration_findings_2026-07-28.md).

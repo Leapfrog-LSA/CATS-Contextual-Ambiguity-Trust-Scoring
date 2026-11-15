@@ -136,7 +136,12 @@ object per line:
 `cats_band`/`human_band` must be one of the five CATS bands, `cats_band`
 must match `determine_band(cats_score)`, and `issue_url` is required when
 `provenance` is `"issue"`. `provenance` is one of `issue | demo |
-api_contest`.
+api_contest | blind_panel`.
+
+`blind_panel` records are not disagreements with a score someone saw: they
+are bands given without seeing the CATS score. Their CATS fields
+(`cats_score`, `cats_band`, `engine_version`, `cats_version`) are filled in
+afterwards, and `provenance` keeps them distinct from the other records.
 
 **Use is validation-only, and always will be: never signal input.** These
 are human disagreements with a score, not ground truth — feeding them into
@@ -145,6 +150,25 @@ grade CATS and train it (leakage). The intended use is comparing CATS's
 ranking against these human verdicts, the same validation role
 `data/labels.jsonl` plays for distant-supervision ratings but sourced from
 people instead.
+
+## `tranco_top1m.csv` and `tranco_top1m.meta.json` — local popularity table (not committed)
+Both files are git-ignored and absent from a fresh checkout. `make
+tranco-download` fetches the table (`rank,domain` per line); the
+domain-provenance penalty reads it from `settings.domain_popularity_path`. Licensing:
+see [`NOTICE.md`](../NOTICE.md).
+
+The optional version file sits next to the table, with the same base name and
+the `.meta.json` suffix. Whoever downloads the list writes it by hand; nothing
+generates it. It is a JSON object; the keys below are reported as free-form
+strings in the `domain_popularity.version` block of `cats.lite` results and
+`/evaluate` responses (format not validated, missing keys are `null`):
+
+```json
+{ "list_id": "<list identifier>", "list_date": "<date of the list>", "downloaded_at": "<download time>" }
+```
+
+A missing or malformed version file only makes `version` `null`; the table
+still loads. Neither file changes any score.
 
 ## Pipeline outputs
 `data/snapshots/` now holds 67 snapshots (2026-07-02 → 2026-09-30; daily
@@ -168,3 +192,15 @@ from two different runs:
   [`docs/calibration.md`](../docs/calibration.md) §3 (concordance 0.750,
   Spearman +0.554); scores remain **ordinal**, not calibrated probabilities.
   Weights calibrated under ≤ 1.2.x (before the polarity fix) are invalid.
+
+Record shape. The committed signal datasets (`train.jsonl`,
+`holdout_future.jsonl`, `holdout.jsonl`) carry only `source_type`, `signals`
+and `label`. Datasets built with the current
+`python -m cats.calibration.build_dataset` also carry a top-level
+`diagnostics` block (`source_id`, `n_messages`, `span_hours`,
+`signal_confidence`, `language`). It is diagnostics only — ignored by
+`load_dataset`, calibration and evaluation, and it holds no message text. The
+`language` value comes from a heuristic that only tells Italian from
+`other` / `unknown` (uncertain). The committed files have **not** been
+regenerated with it; `research/holdout_composition.py` counts them as language
+`unknown`.

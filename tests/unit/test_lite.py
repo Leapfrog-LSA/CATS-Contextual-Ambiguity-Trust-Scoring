@@ -77,6 +77,54 @@ def test_no_url_keeps_four_signals():
     assert set(result["signals"]) == {"coherence", "volatility", "silence", "gaming"}
 
 
+def _popularity_state(monkeypatch, csv_path):
+    import cats.signals.domain_provenance as dp
+    from cats.core.config import settings
+
+    monkeypatch.setattr(dp, "_popularity_table", None)
+    monkeypatch.setattr(dp, "_popularity_load_attempted", False)
+    monkeypatch.setattr(dp, "_popularity_version", None)
+    monkeypatch.setattr(dp, "_popularity_version_load_attempted", False)
+    monkeypatch.setattr(settings, "domain_popularity_path", str(csv_path))
+
+
+def test_domain_popularity_block_without_table(monkeypatch, tmp_path):
+    _popularity_state(monkeypatch, tmp_path / "missing.csv")
+    result = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)
+    assert result["domain_popularity"] == {"loaded": False, "entries": None, "version": None}
+
+
+def test_domain_popularity_block_reports_version(monkeypatch, tmp_path):
+    csv_path = tmp_path / "tranco_top1m.csv"
+    csv_path.write_text("1,corriere.it\n2,ansa.it\n", encoding="utf-8")
+    (tmp_path / "tranco_top1m.meta.json").write_text(
+        '{"list_id": "TEST1", "list_date": "2026-11-01", "downloaded_at": "2026-11-02"}', encoding="utf-8"
+    )
+    _popularity_state(monkeypatch, csv_path)
+    block = score(_MESSAGES, source_type="news", load_nlp=False, explain=False)["domain_popularity"]
+    assert block["loaded"] is True
+    assert block["entries"] == 2
+    assert block["version"]["list_id"] == "TEST1"
+    assert block["version"]["list_date"] == "2026-11-01"
+
+
+@pytest.mark.parametrize("url", [None, "https://ilcorrispondente.blogspot.com", "https://www.corriere.it"])
+def test_version_file_does_not_change_score(monkeypatch, tmp_path, url):
+    csv_path = tmp_path / "tranco_top1m.csv"
+    csv_path.write_text("1,corriere.it\n", encoding="utf-8")
+    keys = ("trust_score", "band", "signals", "requires_human_review")
+
+    _popularity_state(monkeypatch, csv_path)
+    without = score(_MESSAGES, source_type="news", load_nlp=False, explain=False, url=url)
+    (tmp_path / "tranco_top1m.meta.json").write_text('{"list_id": "TEST1"}', encoding="utf-8")
+    _popularity_state(monkeypatch, csv_path)
+    with_version = score(_MESSAGES, source_type="news", load_nlp=False, explain=False, url=url)
+
+    assert without["domain_popularity"]["version"] is None
+    assert with_version["domain_popularity"]["version"]["list_id"] == "TEST1"
+    assert {k: without[k] for k in keys} == {k: with_version[k] for k in keys}
+
+
 # ── score_feed ────────────────────────────────────────────────────────────
 
 
@@ -352,6 +400,66 @@ def test_measured_coherence_is_not_degraded(monkeypatch):
     assert "degraded_warning" not in result["explanation"]
 
 
+def _score_with_backend(monkeypatch, configured):
+    from cats.core.config import settings
+
+    measured = CoherenceResult(name="coherence", value=40.0, confidence=1.0, metadata={"backend": "ner"})
+    monkeypatch.setattr("cats.lite.compute_coherence", lambda msgs: measured)
+    monkeypatch.setattr(settings, "coherence_backend", configured)
+    return score(_MESSAGES, source_type="news", load_nlp=False)
+
+
+def test_sbert_fallback_is_reported_without_changing_the_score(monkeypatch):
+    as_ner = _score_with_backend(monkeypatch, "ner")
+    as_sbert = _score_with_backend(monkeypatch, "sbert")
+
+    for key in ("trust_score", "band", "requires_human_review", "degraded_signals", "signals"):
+        assert as_ner[key] == as_sbert[key]
+    assert as_ner["coherence_backend"] == {"configured": "ner", "effective": "ner", "fallback": False}
+    assert as_sbert["coherence_backend"] == {"configured": "sbert", "effective": "ner", "fallback": True}
+    assert "coherence_backend_warning" not in as_ner["explanation"]
+    assert "requirements-sbert.txt" in as_sbert["explanation"]["coherence_backend_warning"]
+    assert "degraded_warning" not in as_sbert["explanation"]
+
+
+def test_unmeasured_coherence_is_not_an_sbert_fallback(monkeypatch):
+    from cats.core.config import settings
+
+    short = CoherenceResult(name="coherence", value=50.0, confidence=0.0, metadata={"reason": "insufficient_messages"})
+    monkeypatch.setattr("cats.lite.compute_coherence", lambda msgs: short)
+    monkeypatch.setattr(settings, "coherence_backend", "sbert")
+    result = score(_MESSAGES, source_type="news", load_nlp=False)
+    assert result["coherence_backend"] == {"configured": "sbert", "effective": None, "fallback": False}
+    assert "coherence_backend_warning" not in result["explanation"]
+
+
+def test_compare_feeds_rows_carry_coherence_backend(monkeypatch):
+    from cats.lite import compare_feeds
+
+    status = {"configured": "sbert", "effective": "ner", "fallback": True}
+
+    def fake_score_feed(url, **kwargs):
+        result = {
+            "trust_score": 50.0,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0},
+            "degraded_signals": [],
+            "evidence": {"messages": 5, "min_messages": 3, "sufficient": True},
+            "explanation": {"primary_driver": "silence"},
+            "source": {"messages": 5},
+        }
+        if url == "https://a.example":
+            result["coherence_backend"] = status
+        return result
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://a.example", "https://b.example"])
+    rows = {r["url"]: r for r in out["ranked"]}
+    assert rows["https://a.example"]["coherence_backend"] == status
+    assert rows["https://b.example"]["coherence_backend"] is None
+
+
 def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
     from cats.lite import COMPARE_NOTE, FeedNotFoundError, compare_feeds
 
@@ -379,3 +487,76 @@ def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
         {"url": "https://gone.example", "error": "no RSS/Atom feed found for https://gone.example"}
     ]
     assert out["note"] == COMPARE_NOTE
+
+
+def _silence_entry(result):
+    return next(d for d in result["explanation"]["signals"] if d["signal"] == "silence")
+
+
+def _assert_score_unchanged_by_explain(messages):
+    with_explain = score(messages, source_type="news", load_nlp=False)
+    without = score(messages, source_type="news", load_nlp=False, explain=False)
+    for key in ("trust_score", "band", "requires_human_review", "signals"):
+        assert with_explain[key] == without[key]
+    assert with_explain["explanation"]["primary_driver"]
+    return with_explain
+
+
+def test_short_window_marks_silence_not_observable():
+    # _MESSAGES spans 25 h, below the 96 h silence threshold.
+    result = _assert_score_unchanged_by_explain(_MESSAGES)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_window_exactly_at_threshold_is_not_observable():
+    messages = [
+        {"timestamp": "2026-01-01T00:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-05T00:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_long_window_has_no_observable_key():
+    messages = [
+        {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-03T08:00:00Z", "text": "I sindacati commentano il piano del governo."},
+        {"timestamp": "2026-01-10T09:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert "observable" not in _silence_entry(result)
+
+
+def test_single_message_gets_driver_note():
+    messages = [{"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."}]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+    assert "missing evidence" in result["explanation"]["driver_note"]
+
+
+def test_compare_feeds_reports_silence_observable(monkeypatch):
+    from cats.lite import compare_feeds
+
+    def explanation_for(url):
+        if url == "https://short.example":
+            return {"primary_driver": "silence", "signals": [{"signal": "silence", "observable": False}]}
+        if url == "https://long.example":
+            return {"primary_driver": "coherence", "signals": [{"signal": "silence"}]}
+        return {"primary_driver": "silence"}
+
+    def fake_score_feed(url, **kwargs):
+        return {
+            "trust_score": 50.0,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0},
+            "degraded_signals": [],
+            "explanation": explanation_for(url),
+            "source": {"messages": 5},
+        }
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://short.example", "https://long.example", "https://bare.example"])
+    flags = {r["url"]: r["silence_observable"] for r in out["ranked"]}
+    assert flags == {"https://short.example": False, "https://long.example": True, "https://bare.example": None}
+    assert all("primary_driver" in r for r in out["ranked"])

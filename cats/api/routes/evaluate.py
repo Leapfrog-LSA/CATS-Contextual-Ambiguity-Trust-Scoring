@@ -34,6 +34,7 @@ from cats.scoring.engine import (
     ENGINE_VERSION,
     aggregate_score,
     apply_domain_penalty,
+    coherence_backend_status,
     determine_band,
     evidence_summary,
     requires_human_review,
@@ -41,7 +42,7 @@ from cats.scoring.engine import (
 from cats.scoring.explainer import generate_explanation
 from cats.scoring.weights import get_dynamic_weights
 from cats.signals.coherence import compute_coherence
-from cats.signals.domain_provenance import compute_domain_provenance
+from cats.signals.domain_provenance import compute_domain_provenance, popularity_table_status
 from cats.signals.gaming import compute_gaming
 from cats.signals.silence import compute_silence
 from cats.signals.types import Message, SignalResult
@@ -95,6 +96,10 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
     domain = compute_domain_provenance(str(context.get("url") or ""))
     score = apply_domain_penalty(score, domain)
     signals: list[SignalResult] = behavioural + ([domain] if domain.confidence > 0 else [])
+    # Popularity-table status: a reporting flag only (is the local Tranco table
+    # loaded, which version). It never changes the score, the band or
+    # requires_review, and it is not persisted on the TrustScore row.
+    domain_popularity = popularity_table_status()
 
     band = determine_band(score)
     # Response-time guardrails (risk register R3/R5): both are flags — they
@@ -138,6 +143,9 @@ async def _evaluate_item(item: EvaluateRequest, request: Request, db: AsyncSessi
         ],
         language=language.as_dict(),
         evidence=evidence,
+        domain_popularity=domain_popularity,
+        # Reporting only (not persisted, never changes score/band/review).
+        coherence_backend=coherence_backend_status(signals, settings.coherence_backend),
     )
 
 

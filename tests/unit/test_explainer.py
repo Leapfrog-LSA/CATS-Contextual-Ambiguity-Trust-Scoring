@@ -93,3 +93,77 @@ def test_no_domain_penalty_block_without_domain_signal():
     signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
     result = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})
     assert "domain_penalty" not in result
+
+
+def _silence_led_signals():
+    # silence 0 -> reliability 100: with these weights silence is the largest contribution.
+    return [
+        SignalResult(name="coherence", value=40.0, confidence=0.9),
+        SignalResult(name="silence", value=0.0, confidence=0.1),
+    ]
+
+
+def test_without_silence_observable_output_is_unchanged():
+    signals = _silence_led_signals() + [SignalResult(name="gaming", value=0.0, confidence=0.0)]
+    weights = {"coherence": 0.3, "silence": 0.5, "gaming": 0.2}
+    result = generate_explanation(70.0, "medium_high", signals, weights)
+
+    assert set(result) == {"trust_score", "band", "signals", "primary_driver", "methodology", "disclaimer"}
+    assert all("observable" not in d for d in result["signals"])
+    assert "driver_note" not in result
+    assert result == generate_explanation(70.0, "medium_high", signals, weights, silence_observable=None)
+
+
+def test_silence_not_observable_flags_entry_and_adds_driver_note():
+    weights = {"coherence": 0.4, "silence": 0.6}
+    baseline = generate_explanation(76.0, "medium_high", _silence_led_signals(), weights)
+    result = generate_explanation(76.0, "medium_high", _silence_led_signals(), weights, silence_observable=False)
+
+    details = {d["signal"]: d for d in result["signals"]}
+    assert details["silence"]["observable"] is False
+    assert "observable" not in details["coherence"]
+    assert result["primary_driver"] == baseline["primary_driver"] == "silence"
+    assert "missing evidence" in result["driver_note"]
+    assert result["methodology"] == baseline["methodology"]
+    assert result["disclaimer"] == baseline["disclaimer"]
+
+
+def test_silence_observable_true_adds_nothing():
+    weights = {"coherence": 0.4, "silence": 0.6}
+    baseline = generate_explanation(76.0, "medium_high", _silence_led_signals(), weights)
+    result = generate_explanation(76.0, "medium_high", _silence_led_signals(), weights, silence_observable=True)
+    assert result == baseline
+
+
+def test_zero_confidence_driver_gets_note_when_hint_given():
+    signals = [
+        SignalResult(name="coherence", value=20.0, confidence=0.9),
+        SignalResult(name="gaming", value=0.0, confidence=0.0),
+    ]
+    weights = {"coherence": 0.5, "gaming": 0.5}
+    result = generate_explanation(60.0, "medium_high", signals, weights, silence_observable=True)
+    assert result["primary_driver"] == "gaming"
+    assert "'gaming'" in result["driver_note"]
+    assert all("observable" not in d for d in result["signals"])
+
+
+def test_unobservable_silence_that_is_not_the_driver_has_no_note():
+    signals = [
+        SignalResult(name="coherence", value=90.0, confidence=0.9),
+        SignalResult(name="silence", value=0.0, confidence=0.5),
+    ]
+    weights = {"coherence": 0.9, "silence": 0.1}
+    result = generate_explanation(91.0, "high", signals, weights, silence_observable=False)
+    assert result["primary_driver"] == "coherence"
+    assert {d["signal"]: d for d in result["signals"]}["silence"]["observable"] is False
+    assert "driver_note" not in result
+
+
+def test_disclaimer_reflects_calibration_status():
+    signals = [SignalResult(name="coherence", value=70.0, confidence=0.8)]
+    disclaimer = generate_explanation(70.0, "medium_high", signals, {"coherence": 1.0})["disclaimer"]
+    assert disclaimer.startswith("Scores are ordinal rankings of source reliability patterns")
+    for required in ("ordinal", "WP 4.1", "WP 4.3", "CATS_WEIGHTS_FILE"):
+        assert required in disclaimer
+    assert "not empirically calibrated" not in disclaimer
+    assert "validated" not in disclaimer.lower()

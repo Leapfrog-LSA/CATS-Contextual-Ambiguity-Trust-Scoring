@@ -20,10 +20,11 @@ from cats.lite import FEEDBACK_URL
 from cats.lite import compare_feeds as _compare_feeds
 from cats.lite import score as _score
 from cats.lite import score_feed as _score_feed
+from cats.scoring.disclaimers import MCP_DISCLAIMER
 
 # WP 4.3: scores are ordinal rankings, not calibrated probabilities. Attached
 # to every tool response so an LLM client surfaces it, not just the docstrings.
-_DISCLAIMER = "Ordinal score, not a probability (WP 4.3)."
+_DISCLAIMER = MCP_DISCLAIMER
 
 # Each source costs a feed fetch plus NLP over its messages; an LLM client can
 # be prompted into long lists, so one call is capped (cf. threat model T1).
@@ -53,11 +54,19 @@ def score_source(url: str, source_type: str = "default") -> Dict:
 
     Returns a dict with ``trust_score`` (0-100), ``band`` (``high`` down to
     ``very_low``), ``requires_human_review``, per-signal ``signals``,
-    ``language``/``evidence`` flags, a full ``explanation`` (which signal
-    drove the score and why), a ``source`` block (feed URL, message count,
-    time span), a ``disclaimer`` and a ``feedback_url``. Raises an error if
-    the host is unreachable, no feed can be found, or the feed has no usable
-    messages.
+    ``language``/``evidence`` flags, a ``domain_popularity`` block (whether
+    the local Tranco popularity table is loaded and its version; reporting
+    only, never affects the score), a full ``explanation`` (per-signal
+    contributions; ``primary_driver`` is the signal with the largest
+    contribution, not a verdict), a ``source`` block (feed URL, message count,
+    time span), a ``disclaimer`` and a ``feedback_url``. When the observed window spans no more
+    than the silence threshold (96 h) or has fewer than two messages, the
+    ``silence`` entry of ``explanation.signals`` carries ``"observable": false``:
+    its 0 is missing evidence, not quiet behaviour. If the primary driver is
+    unobservable or has zero confidence, ``explanation.driver_note`` says the
+    score mostly reflects missing evidence: relay it rather than presenting
+    the driver as a finding. Raises an error if the host is unreachable, no
+    feed can be found, or the feed has no usable messages.
 
     ``feedback_url`` is the public GitHub issue form for reporting a score the
     user disagrees with. Offer it when the user disputes a score: reporting is
@@ -83,8 +92,10 @@ def score_messages(messages: List[dict], source_type: str = "default", url: Opti
     Returns the same shape as ``score_source`` minus the ``source`` block,
     including ``disclaimer`` and ``feedback_url`` (the GitHub issue form for a
     disputed score: voluntary, reviewed by a maintainer, never changes the
-    score, validation-only). Raises an error if no messages remain after
-    normalisation.
+    score, validation-only), the ``observable`` flag on ``silence`` and the
+    optional ``driver_note`` (``primary_driver`` is the largest contribution,
+    not a verdict; a short history makes silence unobservable).
+    Raises an error if no messages remain after normalisation.
     """
     result = _score(messages, source_type=source_type, url=url)
     result["disclaimer"] = _DISCLAIMER
@@ -101,9 +112,14 @@ def compare_sources(urls: List[str], source_type: str = "default") -> Dict:
     applies to every source; compare news outlets with ``"news"``.
 
     Returns ``ranked`` (highest trust score first; each row has ``rank``,
-    ``url``, ``trust_score``, ``band``, ``primary_driver``, raw ``signals``,
+    ``url``, ``trust_score``, ``band``, ``primary_driver`` (largest
+    contribution, not a verdict), ``silence_observable`` (False when the
+    source's window was too short for silence to fire, so that 0 is missing
+    evidence; True when observable; None if unknown), raw ``signals``,
     ``messages``, ``requires_human_review``, ``review_reason``,
-    ``degraded_signals``, ``domain_red_flag``), ``errors`` (sources that could
+    ``degraded_signals``, ``domain_red_flag``, ``coherence_backend`` with
+    ``fallback`` true when SBERT was configured but NER measured coherence, so
+    the score is not comparable with an SBERT install), ``errors`` (sources that could
     not be scored, with the reason; they do not stop the comparison), a
     ``note``, a ``disclaimer`` and a ``feedback_url`` (the GitHub issue form
     for a disputed score: voluntary, reviewed by a maintainer, never changes

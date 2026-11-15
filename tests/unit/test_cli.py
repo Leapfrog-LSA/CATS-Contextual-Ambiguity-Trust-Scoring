@@ -51,7 +51,30 @@ def test_score_human_output_contains_score_and_band(monkeypatch, capsys):
     assert exit_code == 0
     assert "Score" in captured.out
     assert "medium_high" in captured.out
-    assert "Driver     silence (share 46.0%)" in captured.out
+    assert "Driver     silence (largest contribution, 46.0% of score)" in captured.out
+
+
+def test_score_human_output_shows_unobservable_silence_and_driver_note(monkeypatch, capsys):
+    result = json.loads(json.dumps(_RESULT))
+    result["explanation"]["signals"][0]["observable"] = False
+    result["explanation"]["driver_note"] = "The largest contribution comes from 'silence' (missing evidence)."
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    exit_code = main(["score", "https://esempio.it"])
+
+    out = capsys.readouterr().out
+    assert exit_code == 0
+    assert "silence not observable: window <= 96 h" in out
+    assert "The largest contribution comes from 'silence' (missing evidence)." in out
+
+
+def test_score_human_output_without_new_fields_has_no_note(monkeypatch, capsys):
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: dict(_RESULT))
+
+    main(["score", "https://esempio.it"])
+
+    out = capsys.readouterr().out
+    assert "not observable" not in out
 
 
 def test_score_json_is_valid_and_has_trust_score(monkeypatch, capsys):
@@ -100,6 +123,41 @@ def test_score_measured_coherence_has_no_warning(monkeypatch, capsys):
     assert "NOT measured" not in capsys.readouterr().out
 
 
+_FALLBACK = {"configured": "sbert", "effective": "ner", "fallback": True}
+
+
+def test_score_sbert_fallback_warning(monkeypatch, capsys):
+    result = dict(_RESULT)
+    result["coherence_backend"] = _FALLBACK
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    main(["score", "https://esempio.it"])
+
+    out = capsys.readouterr().out
+    assert "COHERENCE_BACKEND=sbert is configured but coherence was measured with NER" in out
+    assert "pip install -r requirements-sbert.txt" in out
+
+
+def test_score_no_sbert_fallback_no_warning(monkeypatch, capsys):
+    result = dict(_RESULT)
+    result["coherence_backend"] = {"configured": "ner", "effective": "ner", "fallback": False}
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    main(["score", "https://esempio.it"])
+
+    assert "COHERENCE_BACKEND=sbert" not in capsys.readouterr().out
+
+
+def test_score_json_carries_coherence_backend(monkeypatch, capsys):
+    result = dict(_RESULT)
+    result["coherence_backend"] = _FALLBACK
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    main(["score", "https://esempio.it", "--json"])
+
+    assert json.loads(capsys.readouterr().out)["coherence_backend"] == _FALLBACK
+
+
 def test_score_clean_domain_no_red_flags_line(monkeypatch, capsys):
     result = dict(_RESULT)
     result["signals"] = dict(_RESULT["signals"])
@@ -126,6 +184,28 @@ def test_score_domain_red_flag_line(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "Domain red flags: suspicious_tld" in captured.out
+
+
+@pytest.mark.parametrize(
+    "block, expected",
+    [
+        (None, False),
+        ({"loaded": False, "entries": None, "version": None}, True),
+        ({"loaded": True, "entries": 2, "version": None}, False),
+        ({"loaded": True, "entries": 2, "version": {"list_id": "TEST1"}}, False),
+    ],
+)
+def test_score_popularity_table_warning_only_when_not_loaded(monkeypatch, capsys, block, expected):
+    result = dict(_RESULT)
+    if block is not None:
+        result["domain_popularity"] = block
+    monkeypatch.setattr("cats.cli.score_feed", lambda *a, **k: result)
+
+    exit_code = main(["score", "https://esempio.it"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert ("Domain popularity table not loaded" in captured.out) is expected
 
 
 def test_score_feed_not_found_exit_code_3(monkeypatch, capsys):
@@ -322,6 +402,55 @@ def test_compare_flags_review_domain_and_missing_model(monkeypatch, capsys):
     assert "python -m spacy download it_core_news_lg" in out
 
 
+def test_compare_marks_driver_when_silence_not_observable(monkeypatch, capsys):
+    short = _scored(60.0)
+    short["explanation"]["signals"][0]["observable"] = False
+    table = {"https://short.example": short, "https://long.example": _scored(50.0, band="medium")}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table])
+
+    out = capsys.readouterr().out
+    rows = {line.split()[1]: line.split()[4] for line in out.splitlines() if line.lstrip()[:1].isdigit()}
+    assert rows == {"https://short.example": "silence*", "https://long.example": "silence"}
+    assert "*  silence not observable: window <= 96 h" in out
+
+
+def test_compare_sbert_fallback_warning(monkeypatch, capsys):
+    fallback = _scored(55.0, band="medium")
+    fallback["coherence_backend"] = _FALLBACK
+    table = {"https://a.example": fallback, "https://b.example": _scored(40.2, band="medium")}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table])
+
+    out = capsys.readouterr().out
+    assert "COHERENCE_BACKEND=sbert is configured but coherence was measured with NER" in out
+    assert "pip install -r requirements-sbert.txt" in out
+
+
+def test_compare_without_sbert_fallback_has_no_warning(monkeypatch, capsys):
+    table = {"https://a.example": _scored(55.0, band="medium"), "https://b.example": _scored(40.2, band="medium")}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table])
+
+    assert "COHERENCE_BACKEND=sbert" not in capsys.readouterr().out
+
+
+def test_compare_json_rows_carry_coherence_backend(monkeypatch, capsys):
+    fallback = _scored(55.0, band="medium")
+    fallback["coherence_backend"] = _FALLBACK
+    table = {"https://a.example": fallback, "https://b.example": _scored(40.2, band="medium")}
+    monkeypatch.setattr("cats.lite.score_feed", _fake_score_feed(table))
+
+    main(["compare", *table, "--json"])
+
+    rows = {r["url"]: r for r in json.loads(capsys.readouterr().out)["ranked"]}
+    assert rows["https://a.example"]["coherence_backend"] == _FALLBACK
+    assert rows["https://b.example"]["coherence_backend"] is None
+
+
 def test_compare_reads_urls_from_file_and_dedupes(monkeypatch, tmp_path, capsys):
     calls = []
 
@@ -381,3 +510,9 @@ def test_compare_human_output_shows_feedback_link_and_json_does_not(monkeypatch,
     raw = capsys.readouterr().out
     assert FEEDBACK_URL not in raw
     assert "feedback" not in json.loads(raw)
+
+
+def test_cli_note_text_unchanged():
+    from cats.cli import _NOTE
+
+    assert _NOTE == "Ordinal score, not a probability. Cross-validate key claims. See docs/architecture.md."
