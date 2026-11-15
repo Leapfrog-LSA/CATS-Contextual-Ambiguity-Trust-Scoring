@@ -284,9 +284,11 @@ Legenda: **S** / **M** / **L** = sforzo piccolo / medio / grande.
       `value=100.0` con `confidence=0.0` e `reason: "insufficient_messages"`.
       Proposta: portare quel valore di ripiego a 50, lasciando la confidenza
       a 0. È una mitigazione parziale del caso "feed quasi vuoto che risulta
-      alto", non la sua chiusura: con meno di 2 messaggi anche `silence`,
-      `volatility` (sotto 3 messaggi) e `gaming` (sotto 5) restituiscono 0,
-      che invertito vale 100 sull'asse di affidabilità. Il ramo
+      alto", non la sua chiusura: con meno di 2 messaggi anche `silence` e
+      `volatility` (sotto 3 messaggi) restituiscono 0, e `gaming` restituisce
+      0 sotto 10 token (`nlp_gaming_min_tokens`, `cats/core/config.py`);
+      sotto 5 messaggi è nulla solo la sottocomponente burst. Un valore 0,
+      invertito, vale 100 sull'asse di affidabilità. Il ramo
       `nlp_unavailable` del backend NER restituisce già 50.
     - **Confidenza nell'aggregazione** — *proposta in attesa di decisione del
       maintainer.* Oggi `aggregate_score` (`cats/scoring/engine.py`) fa la
