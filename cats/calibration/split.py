@@ -61,7 +61,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from cats.calibration.collect_rss import DEFAULT_MIN_MESSAGES
-from cats.signals.silence import threshold_for
+from cats.signals.silence import silence_observable, threshold_for
 
 # Share of a side's sources that may be silence-blind before it is called out.
 # A judgement call, not a derived constant: below it the signal still varies
@@ -203,7 +203,7 @@ def silence_blind_sources(records: List[dict]) -> Tuple[int, int]:
     blind = 0
     for r in records:
         span = record_span_hours(r)
-        if span is None or span <= threshold_for(str(r.get("source_type") or "default")):
+        if not silence_observable(span, str(r.get("source_type") or "default")):
             blind += 1
     return blind, len(records)
 

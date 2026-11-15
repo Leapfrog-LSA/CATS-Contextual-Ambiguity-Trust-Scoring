@@ -210,6 +210,11 @@ recalibration cycle. Neither is persisted, so `/explain` does not report them.
   nlp_unavailable`, i.e. no spaCy model) forces `requires_review`. `cats.lite`
   lists it in `degraded_signals`; `/evaluate` shows it via the signal's
   `metadata.reason`.
+- **Silence observability** (`signals.silence.silence_observable`) — presentation
+  only: `cats.lite` explanations mark `silence` `observable: false` when the
+  history spans <= 96 h or has < 2 messages, and add a `driver_note` when the
+  primary driver (largest contribution) is unobserved or zero-confidence. The
+  span is not persisted, so `/explain` does not report it.
 
 ## Security Design
 

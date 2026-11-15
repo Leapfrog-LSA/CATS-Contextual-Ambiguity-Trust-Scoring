@@ -9,6 +9,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Honest "Driver": the explanation says when `silence` was not observable.**
+  Presentation only: trust score, band, `requires_human_review`, weights and
+  signal values/confidences/metadata are unchanged.
+  - **Why:** `silence` counts gaps over 96 h, so a window of 96 h or less (or
+    fewer than 2 messages) scores 0 by construction, which inverts to a full
+    contribution and often becomes the `primary_driver`.
+  - **Library:** new pure helper `cats.signals.silence.silence_observable`
+    (now also used by `silence_blind_sources`, same results);
+    `generate_explanation` gains a keyword-only `silence_observable` hint.
+    `cats.lite.score` passes it, so the `silence` entry carries
+    `"observable": false` and a `driver_note` appears when the primary driver
+    is unobserved or zero-confidence. Without the hint (GET `/explain`) the
+    output is unchanged. `compare_feeds` rows gain `silence_observable`.
+  - **CLI / MCP / demo:** `cats score` prints the driver as the largest
+    contribution plus the note; `cats compare` marks such drivers with `*`
+    and a legend; MCP tool docstrings and the Gradio demo follow.
+  - **Proposed names, for maintainer review:** `observable`, `driver_note`,
+    `silence_observable` (row field, helper and parameter), and the wording
+    of the CLI lines. The README demo block still shows the old
+    `Driver ... (share ...)` line and was deliberately left unchanged.
 - **`fetch_snapshots` works with the private data repository.**
   `Leapfrog-LSA/cats-snapshots` became private on 2026-11-15, so an anonymous
   `make snapshots-download` now gets 404.

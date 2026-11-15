@@ -379,3 +379,76 @@ def test_compare_feeds_ranks_and_collects_errors(monkeypatch):
         {"url": "https://gone.example", "error": "no RSS/Atom feed found for https://gone.example"}
     ]
     assert out["note"] == COMPARE_NOTE
+
+
+def _silence_entry(result):
+    return next(d for d in result["explanation"]["signals"] if d["signal"] == "silence")
+
+
+def _assert_score_unchanged_by_explain(messages):
+    with_explain = score(messages, source_type="news", load_nlp=False)
+    without = score(messages, source_type="news", load_nlp=False, explain=False)
+    for key in ("trust_score", "band", "requires_human_review", "signals"):
+        assert with_explain[key] == without[key]
+    assert with_explain["explanation"]["primary_driver"]
+    return with_explain
+
+
+def test_short_window_marks_silence_not_observable():
+    # _MESSAGES spans 25 h, below the 96 h silence threshold.
+    result = _assert_score_unchanged_by_explain(_MESSAGES)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_window_exactly_at_threshold_is_not_observable():
+    messages = [
+        {"timestamp": "2026-01-01T00:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-05T00:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+
+
+def test_long_window_has_no_observable_key():
+    messages = [
+        {"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."},
+        {"timestamp": "2026-01-03T08:00:00Z", "text": "I sindacati commentano il piano del governo."},
+        {"timestamp": "2026-01-10T09:00:00Z", "text": "Il parlamento discute la legge di bilancio."},
+    ]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert "observable" not in _silence_entry(result)
+
+
+def test_single_message_gets_driver_note():
+    messages = [{"timestamp": "2026-01-01T08:00:00Z", "text": "Il governo annuncia un piano economico."}]
+    result = _assert_score_unchanged_by_explain(messages)
+    assert _silence_entry(result)["observable"] is False
+    assert "missing evidence" in result["explanation"]["driver_note"]
+
+
+def test_compare_feeds_reports_silence_observable(monkeypatch):
+    from cats.lite import compare_feeds
+
+    def explanation_for(url):
+        if url == "https://short.example":
+            return {"primary_driver": "silence", "signals": [{"signal": "silence", "observable": False}]}
+        if url == "https://long.example":
+            return {"primary_driver": "coherence", "signals": [{"signal": "silence"}]}
+        return {"primary_driver": "silence"}
+
+    def fake_score_feed(url, **kwargs):
+        return {
+            "trust_score": 50.0,
+            "band": "medium",
+            "requires_human_review": False,
+            "signals": {"coherence": 10.0},
+            "degraded_signals": [],
+            "explanation": explanation_for(url),
+            "source": {"messages": 5},
+        }
+
+    monkeypatch.setattr("cats.lite.score_feed", fake_score_feed)
+    out = compare_feeds(["https://short.example", "https://long.example", "https://bare.example"])
+    flags = {r["url"]: r["silence_observable"] for r in out["ranked"]}
+    assert flags == {"https://short.example": False, "https://long.example": True, "https://bare.example": None}
+    assert all("primary_driver" in r for r in out["ranked"])

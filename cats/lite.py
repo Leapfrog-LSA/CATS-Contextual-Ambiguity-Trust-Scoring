@@ -76,7 +76,7 @@ from cats.signals import coherence  # noqa: E402
 from cats.signals.coherence import compute_coherence  # noqa: E402
 from cats.signals.domain_provenance import compute_domain_provenance  # noqa: E402
 from cats.signals.gaming import compute_gaming  # noqa: E402
-from cats.signals.silence import compute_silence  # noqa: E402
+from cats.signals.silence import compute_silence, silence_observable  # noqa: E402
 from cats.signals.types import SignalResult  # noqa: E402
 from cats.signals.volatility import compute_volatility  # noqa: E402
 
@@ -405,6 +405,17 @@ def review_reason(result: Dict) -> Optional[str]:
     return "low-confidence signal(s)"
 
 
+def _silence_observable_flag(explanation: Dict) -> Optional[bool]:
+    """``observable`` of the explanation's silence entry: False, True if unflagged, None if unknown."""
+    details = explanation.get("signals")
+    if not details:
+        return None
+    silence = next((d for d in details if d.get("signal") == "silence"), None)
+    if silence is None:
+        return None
+    return silence.get("observable") is not False
+
+
 def compare_feeds(
     urls: List[str],
     source_type: str = "default",
@@ -419,10 +430,14 @@ def compare_feeds(
     ``errors`` with its message instead of aborting the comparison.
 
     Returns ``{source_type, ranked, errors, note}``. Each ``ranked`` row is
-    compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``,
-    raw ``signals``, ``messages``, ``requires_human_review``,
-    ``review_reason``, ``degraded_signals``, ``domain_red_flag``. The scores
-    are ordinal and comparable only within one call (see ``note``).
+    compact: ``rank``, ``url``, ``trust_score``, ``band``, ``primary_driver``
+    (the signal with the largest contribution to the score, not a verdict),
+    ``silence_observable`` (False when the observed window was too short for
+    ``silence`` to fire, so its 0 is missing evidence; True when it was
+    observable; None when the explanation does not say), raw ``signals``,
+    ``messages``, ``requires_human_review``, ``review_reason``,
+    ``degraded_signals``, ``domain_red_flag``. The scores are ordinal and
+    comparable only within one call (see ``note``).
     """
     rows: List[Dict] = []
     errors: List[Dict] = []
@@ -439,6 +454,7 @@ def compare_feeds(
                 "trust_score": result["trust_score"],
                 "band": result["band"],
                 "primary_driver": explanation.get("primary_driver"),
+                "silence_observable": _silence_observable_flag(explanation),
                 "signals": result["signals"],
                 "messages": result["source"]["messages"],
                 "requires_human_review": result["requires_human_review"],
@@ -538,7 +554,14 @@ def score(
         "evidence": evidence,
     }
     if explain:
-        explanation = generate_explanation(value, band, signals, w)
+        span_hours: Optional[float] = None
+        if len(msgs) >= 2:
+            first = datetime.fromisoformat(msgs[0].timestamp.replace("Z", "+00:00"))
+            last = datetime.fromisoformat(msgs[-1].timestamp.replace("Z", "+00:00"))
+            span_hours = (last - first).total_seconds() / 3600
+        explanation = generate_explanation(
+            value, band, signals, w, silence_observable=silence_observable(span_hours, source_type)
+        )
         if language.detected == "other":
             explanation["language_warning"] = (
                 "Input does not look Italian: the default NLP stack is "
