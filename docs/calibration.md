@@ -430,6 +430,120 @@ Band agreement     : 33.3% exact, 100.0% within 1 band
 > the defect on real data and the motivation for the change — see
 > [architecture.md → Signal Polarity & Scoring](architecture.md#signal-polarity--scoring-design-decision).
 
+
+### Uncertainty and paired comparison (optional)
+
+Every number above is a point estimate on a few dozen sources. The harness can
+also report how much it would move under resampling, and whether a candidate
+weight table beats another *on the same rows*:
+
+```bash
+python -m cats.calibration.evaluate \
+    --dataset holdout.jsonl \
+    --weights candidate_weights.json \
+    --bootstrap-replicates N \        # required, no default
+    --bootstrap-level L \             # required, no default; strictly between 0 and 1
+    --bootstrap-seed S \              # optional, default 0
+    --compare-weights production_weights.json   # or the literal `static`
+```
+
+- **Method:** percentile bootstrap — dataset rows are resampled with
+  replacement (stdlib `random.Random(seed)`, like the GA), scores are computed
+  once per weight table with `predict_scores` and resampled by index, and the
+  interval ends are the `(1−L)/2` and `(1+L)/2` percentiles of the defined
+  replicates (linear interpolation). The method name, replicates, seed and level
+  are printed with the result.
+- **Metrics:** pairwise concordance, Spearman and the `unreliable` recall.
+- **Undefined replicates are excluded and counted, never scored as 0:**
+  concordance when the replicate has a single distinct label, Spearman when its
+  predictions or labels are constant, `unreliable` recall when it contains no
+  label below 40. The `excluded` column reports the count per metric.
+- **Paired comparison (`--compare-weights`):** the same resampled rows are
+  applied to both tables and the interval is for the difference
+  `--weights table − --compare-weights table`; the point estimate of each table
+  and their difference are printed alongside. A table compared with itself gives
+  a difference of exactly 0.
+- **Resampled unit:** the dataset row. Records carry no source identifier, so
+  on a `message`-axis split a row is a source *slice*, not a whole source.
+- **Output:** a trailing `Uncertainty:` section in the text output, a separate
+  `uncertainty` key in `--json`. `--bootstrap-replicates` and
+  `--bootstrap-level` are both required as soon as any of these options is
+  given. **Without these options the output is byte-for-byte what it was
+  before.**
+
+No replicate count or level is recommended here: for the January 2027
+recalibration they are open decisions (see below).
+
+## Validation protocol for the January 2027 recalibration
+
+> **Status: draft, to be completed and dated by the maintainer before
+> 12 January 2027** — i.e. before the January holdout data is looked at. It
+> fixes *how* the recalibration will be judged; it does not record any result.
+> Every item marked *to be decided by the maintainer* is deliberately left
+> open. The roadmap exit criterion (`docs/piano_sviluppo_roadmap_2026-09.md`,
+> *Ricalibrazione completa*) is concordance ≥ 0.78 on a future holdout of
+> **≥ 100 sources** with improving low-tail recall; runs on the current
+> 53-source holdout only exercise the tooling and say nothing about that
+> criterion.
+
+**Fixed requirements**
+
+1. **Coherence backend:** run with `COHERENCE_BACKEND=sbert`. The published
+   weights were calibrated with SBERT (see *Backend requirement* in §3); a run
+   on another backend is not comparable.
+2. **Split declared before looking at the holdout:** the axis
+   (`--axis message` or `--axis source` of `cats.calibration.split`) and the
+   `--holdout-fraction` or `--cutoff` are written into this section before any
+   holdout metric is computed, and not changed afterwards.
+3. **Two protocols, reported separately** — they are not the same measurement
+   (`docs/calibration_findings_2026-08-21.md` explains why 0.755 and 0.537 are
+   not a regression):
+   - *Future snapshot:* a whole later snapshot never used in calibration. Here a
+     row is a **source**.
+   - *Message-axis cut:* every source's history cut at a shared boundary. Here
+     a row is a **source slice**, and the same source appears on both sides.
+4. **The `Per predicted band` table is mandatory at every checkpoint** (the
+   harness already prints it), so a collapse into one band is visible next to
+   the rank metrics.
+5. **Every point estimate is reported with its interval and with the paired
+   comparison candidate vs production** (`--compare-weights` with the shipped
+   `data/calibrated_weights.json`), using the replicates, level and seed fixed
+   below.
+
+**Open decisions**
+
+- Resampling unit for January: source or source slice (the tool resamples
+  dataset rows; on a message-axis cut a row is a slice) — *to be decided by the
+  maintainer*.
+- Number of bootstrap replicates — *to be decided by the maintainer*.
+- Interval level — *to be decided by the maintainer*.
+- Seed — *to be decided by the maintainer*.
+- Interval method (the tool implements the simple percentile bootstrap; another
+  method would be a separate change) — *to be decided by the maintainer*.
+- Which quantity is compared with 0.78: the harness's pairwise concordance (the
+  roadmap says "concordanza") or "AUC-ROC" as worded in
+  `cats/calibration/report.py`; and whether with or without the
+  domain-provenance penalty (currently 0.750 without, 0.762 with) — *to be
+  decided by the maintainer*.
+- Whether 0.78 applies to the point estimate or to the lower end of the
+  interval — *to be decided by the maintainer*.
+- How "improving low-tail recall" is judged: against which reference value and
+  with what margin — *to be decided by the maintainer*.
+- Split axis and fraction (or cutoff) for January — *to be decided by the
+  maintainer*.
+- `--not-before` / `--not-after` values for the timestamp filter of
+  `cats.calibration.merge_snapshots` (off by default) — *to be decided by the
+  maintainer*.
+- Whether intervals also appear in the accuracy declaration
+  (`cats/calibration/report.py`, `docs/eu_ai_act/`); until decided, the
+  declaration is unchanged — *to be decided by the maintainer (or legal)*.
+- Whether the domain-penalty variant gets its own interval (today its 0.762 is
+  computed only by `research/validate_domain_penalty.py`) — *to be decided by
+  the maintainer*.
+
+**Completed and dated by the maintainer:** *TODO (maintainer) — date and
+sign-off before 12 January 2027.*
+
 ## 5. Accuracy declaration (EU AI Act Art. 15)
 
 `cats.calibration.report` runs the eval harness on a holdout dataset and renders
