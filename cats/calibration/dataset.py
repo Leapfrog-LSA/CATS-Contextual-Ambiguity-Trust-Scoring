@@ -13,6 +13,12 @@ Each record:
     {"source_type": "social",
      "signals": {"coherence": 71.2, "volatility": 55.0, "silence": 0.0, "gaming": 12.8},
      "label": 80.0}
+
+Extra top-level keys are allowed and ignored. In particular, records written by
+:mod:`cats.calibration.build_dataset` carry a ``diagnostics`` block (source id,
+message count, time span, per-signal confidence, detected language): it is
+read-only bookkeeping and never reaches :class:`LabeledSample`, so it cannot
+weight, filter or exclude a sample.
 """
 
 from __future__ import annotations

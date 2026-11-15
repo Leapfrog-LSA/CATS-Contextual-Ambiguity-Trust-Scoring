@@ -9,6 +9,69 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`human_labels` accepts `provenance: "blind_panel"`.** The validator in
+  `cats/calibration/human_labels.py` now allows a fourth provenance value for
+  bands given by a person who had not seen the CATS score; the CATS fields are
+  filled in afterwards. All other rules are unchanged (every field still
+  required, `cats_band` must match `determine_band(cats_score)`, `issue_url`
+  only for `issue`). Schema documented in the module docstring and
+  `data/README.md`. Validation-only: no records added, no score, band or
+  weight changes.
+- **Related-work draft** (`docs/related_work.md`), linked only from
+  `docs/README.md` as a draft. An English rendering of whitepaper v1.1 §1.4:
+  the four objects (source, claim, support, dependence), prior methods, the
+  Admiralty Code A–F axis, why no LLM produces the score, and the gap CATS
+  fills. Adds a "What CATS does not see" box that points to the README limits
+  and adds two points: recall 0.333 on the 06-Jul-2026 future holdout, and
+  fake news on ordinary domains. Every external reference is marked *to be
+  verified on the primary source*; none is taken from outside the whitepaper
+  or the repository. Documentation only: no score, band or weight changes.
+- **Roadmap: candidates for the January 2027 recalibration**
+  (`docs/piano_sviluppo_roadmap_2026-09.md`, Phase 3). A list titled
+  "Candidate da valutare (non approvate)", each item a proposal awaiting the
+  maintainer's decision, with its description checked against the code:
+  coherence fallback value with fewer than 2 messages (100 today, proposed
+  50), confidence in aggregation, silence with a reference instant, volatility
+  with the existing BERT sentiment backend, weights per coherence backend, and
+  the Admiralty A–F view mapped on band names. Every item would need
+  recalibration, future-holdout re-validation and an `ENGINE_VERSION` bump;
+  none has code. Documentation only: no score, band or weight changes.
+  - **Open point:** `README.md` quotes concordance 0.750, while
+    `docs/signal_diagnosis_2026-07.md` quotes 0.755. Neither number is
+    changed; the maintainer decides how to reconcile them.
+- **Uncertainty and paired comparison in the eval harness**
+  (`cats/calibration/evaluate.py`). New optional flags
+  `--bootstrap-replicates`, `--bootstrap-level`, `--bootstrap-seed` and
+  `--compare-weights PATH|static`.
+  - **Interval:** percentile bootstrap over dataset rows for concordance,
+    Spearman and the `unreliable` recall. Undefined replicates are excluded and
+    counted per metric, never scored as 0.
+  - **Paired comparison:** the same resampled rows are applied to two weight
+    tables. The output is the interval of their difference.
+  - **No defaults:** replicates and level must both be passed. Without the new
+    flags the text and `--json` output are byte-for-byte unchanged.
+  - **No score changes:** scores, bands, weights and signals are all as before.
+    This only measures.
+- **January 2027 validation protocol** (`docs/calibration.md`). A draft
+  section that fixes how the recalibration will be judged. It lists the open
+  decisions, each marked *to be decided by the maintainer*. The maintainer
+  completes and dates it before 12 January 2027.
+- **Per-source diagnostics in calibration datasets, and a composition count.**
+  `cats.calibration.build_dataset` now writes a top-level `diagnostics` block
+  per record (`source_id`, `n_messages`, `span_hours`, per-signal
+  `signal_confidence`, detected `language`: `italian` / `other` / `unknown`).
+  `source_type`, `signals` and `label` are unchanged, and `load_dataset`,
+  calibration and evaluation ignore the new key: no score, band or weight
+  changes, and no committed dataset was regenerated.
+  - **Script:** `research/holdout_composition.py --dataset <file>` prints the
+    label x language counts, sources with a signal confidence below 1, and the
+    min / median / max message count. Read-only, no network. Records without
+    `diagnostics` (all committed datasets) count as `unknown`.
+  - **Docs:** `docs/dataset_expansion_runbook.md` adds a composition table
+    (minimum per cell left to the maintainer), a proposed note on `stale`
+    feeds, and why the feed-health check concerns the whole pool under the
+    `message` split axis. `docs/calibration.md` and `data/README.md` describe
+    the `diagnostics` block and the language detector's limits.
 - **Read-only diff of the CATS catalogue against the watchlist catalogue**
   (`research/catalog_watchlist_diff.py`, report
   `docs/catalog_watchlist_diff_2026-11.md`). The script compares

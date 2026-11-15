@@ -23,15 +23,24 @@ Usage::
 With ``--weights`` the harness scores using a calibrated weights file (the
 output of ``python -m cats.calibration``); otherwise it uses the static WP 4.1
 estimates. This makes "before vs after calibration" a one-command comparison.
+
+Optionally (``--bootstrap-replicates`` + ``--bootstrap-level``, with
+``--bootstrap-seed``) it also reports a percentile bootstrap interval for
+concordance, Spearman and the ``unreliable`` recall, and with
+``--compare-weights`` a *paired* comparison of two weight tables on the same
+resampled rows. Without those options the output is unchanged. The resampled
+unit is the dataset row: the records carry no source identifier, so on a
+message-axis split a row is a source *slice*, not a whole source.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Callable, Dict, List, Optional, Sequence
 
 from cats.calibration.dataset import SIGNAL_NAMES, LabeledSample, load_dataset
 from cats.calibration.objective import (
@@ -285,6 +294,270 @@ def evaluate_dataset(
     )
 
 
+# --------------------------------------------------------------------------- #
+# Uncertainty: percentile bootstrap over dataset rows (measurement only)
+# --------------------------------------------------------------------------- #
+
+BOOTSTRAP_METHOD = (
+    "percentile bootstrap (resample rows with replacement; linear interpolation between order statistics)"
+)
+RESAMPLING_UNIT = "dataset row"
+UNCERTAINTY_METRICS = ("concordance", "spearman", "recall_unreliable")
+
+# Literal accepted by ``--compare-weights`` for the static WP 4.1 estimates.
+STATIC_WEIGHTS_LITERAL = "static"
+
+
+def _concordance_or_none(preds: Sequence[float], labels: Sequence[float]) -> Optional[float]:
+    # pairwise_concordance returns 0.0 when no pair has different labels:
+    # that is "undefined", not "every pair discordant", so it is caught first.
+    if len(set(labels)) < 2:
+        return None
+    return pairwise_concordance(preds, labels)
+
+
+def _spearman_or_none(preds: Sequence[float], labels: Sequence[float]) -> Optional[float]:
+    # spearman returns 0.0 for constant predictions or labels: undefined, not "no correlation".
+    if len(set(preds)) < 2 or len(set(labels)) < 2:
+        return None
+    return spearman(preds, labels)
+
+
+def _recall_unreliable_or_none(preds: Sequence[float], labels: Sequence[float]) -> Optional[float]:
+    # Recall is undefined when no label is unreliable (_class_metrics gives None too).
+    if not any(is_unreliable(lbl) for lbl in labels):
+        return None
+    rows = {r.label: r for r in _class_metrics(preds, labels)}
+    return rows["unreliable"].recall
+
+
+_METRIC_FNS: Dict[str, Callable[[Sequence[float], Sequence[float]], Optional[float]]] = {
+    "concordance": _concordance_or_none,
+    "spearman": _spearman_or_none,
+    "recall_unreliable": _recall_unreliable_or_none,
+}
+
+
+def _percentile(sorted_xs: Sequence[float], q: float) -> float:
+    """Linear-interpolation percentile of an already sorted, non-empty sequence."""
+    if len(sorted_xs) == 1:
+        return sorted_xs[0]
+    pos = q * (len(sorted_xs) - 1)
+    lo = int(pos)
+    hi = min(lo + 1, len(sorted_xs) - 1)
+    frac = pos - lo
+    return sorted_xs[lo] + (sorted_xs[hi] - sorted_xs[lo]) * frac
+
+
+def _interval(values: Sequence[float], level: float) -> tuple[Optional[float], Optional[float]]:
+    if not values:
+        return None, None
+    xs = sorted(values)
+    alpha = 1.0 - level
+    return _percentile(xs, alpha / 2.0), _percentile(xs, 1.0 - alpha / 2.0)
+
+
+def _r(x: Optional[float]) -> Optional[float]:
+    return round(x, 4) if x is not None else None
+
+
+def _bootstrap_indices(n: int, replicates: int, seed: int) -> List[List[int]]:
+    """Row indices for each replicate, drawn with replacement (same stdlib RNG style as the GA)."""
+    rng = random.Random(seed)
+    return [[rng.randrange(n) for _ in range(n)] for _ in range(replicates)]
+
+
+def _validate_bootstrap_params(n: int, replicates: int, level: float) -> None:
+    if n <= 0:
+        raise ValueError("no samples to resample")
+    if replicates < 1:
+        raise ValueError("replicates must be >= 1")
+    if not 0.0 < level < 1.0:
+        raise ValueError("level must be strictly between 0 and 1 (e.g. 0.9)")
+
+
+@dataclass
+class MetricInterval:
+    """Point estimate and bootstrap interval for one metric.
+
+    ``excluded`` counts replicates where the metric was undefined (see the
+    ``*_or_none`` helpers); they are left out of the interval, never counted as 0.
+    """
+
+    metric: str
+    point: Optional[float]
+    lower: Optional[float]
+    upper: Optional[float]
+    defined: int
+    excluded: int
+
+
+@dataclass
+class MetricDifference:
+    """Paired difference ``primary − reference`` for one metric on the same resampled rows."""
+
+    metric: str
+    primary: Optional[float]
+    reference: Optional[float]
+    point_difference: Optional[float]
+    lower: Optional[float]
+    upper: Optional[float]
+    defined: int
+    excluded: int
+
+
+@dataclass
+class PairedComparison:
+    primary_weights: str
+    reference_weights: str
+    metrics: List[MetricDifference] = field(default_factory=list)
+
+
+@dataclass
+class UncertaintyReport:
+    method: str
+    resampling_unit: str
+    replicates: int
+    seed: int
+    level: float
+    metrics: List[MetricInterval] = field(default_factory=list)
+    paired_comparison: Optional[PairedComparison] = None
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    def render(self) -> str:
+        def fmt(x: Optional[float], signed: bool = False) -> str:
+            if x is None:
+                return "n/a"
+            return f"{x:+.3f}" if signed else f"{x:.3f}"
+
+        lines = [
+            "Uncertainty:",
+            f"  method          : {self.method}",
+            f"  resampling unit : {self.resampling_unit}",
+            f"  replicates      : {self.replicates}",
+            f"  seed            : {self.seed}",
+            f"  level           : {self.level:g}",
+            f"  {'metric':18s} {'point':>7s} {'lower':>7s} {'upper':>7s} {'defined':>8s} {'excluded':>9s}",
+        ]
+        for m in self.metrics:
+            signed = m.metric == "spearman"
+            lines.append(
+                f"  {m.metric:18s} {fmt(m.point, signed):>7s} {fmt(m.lower, signed):>7s} "
+                f"{fmt(m.upper, signed):>7s} {m.defined:>8d} {m.excluded:>9d}"
+            )
+        pc = self.paired_comparison
+        if pc is not None:
+            lines.append("")
+            lines.append("Paired comparison (difference = primary - reference, same resampled rows):")
+            lines.append(f"  primary   : {pc.primary_weights}")
+            lines.append(f"  reference : {pc.reference_weights}")
+            lines.append(
+                f"  {'metric':18s} {'primary':>8s} {'refer.':>8s} {'diff':>7s} {'lower':>7s} {'upper':>7s} "
+                f"{'defined':>8s} {'excluded':>9s}"
+            )
+            for d in pc.metrics:
+                signed = d.metric == "spearman"
+                lines.append(
+                    f"  {d.metric:18s} {fmt(d.primary, signed):>8s} {fmt(d.reference, signed):>8s} "
+                    f"{fmt(d.point_difference, True):>7s} {fmt(d.lower, True):>7s} {fmt(d.upper, True):>7s} "
+                    f"{d.defined:>8d} {d.excluded:>9d}"
+                )
+        return "\n".join(lines)
+
+
+def bootstrap_metrics(
+    samples: Sequence[LabeledSample],
+    weights_by_group: WeightsByGroup,
+    *,
+    replicates: int,
+    level: float,
+    seed: int,
+) -> List[MetricInterval]:
+    """Percentile bootstrap interval for concordance, Spearman and unreliable recall.
+
+    Scores are computed once with ``predict_scores`` and then resampled by row
+    index, so the weights and the scoring path are exactly those of
+    :func:`evaluate_dataset`. ``replicates`` and ``level`` have no default on
+    purpose: they are methodological choices left to the caller.
+    """
+    _validate_bootstrap_params(len(samples), replicates, level)
+    preds = predict_scores(samples, weights_by_group)
+    labels = [s.label for s in samples]
+    draws = _bootstrap_indices(len(samples), replicates, seed)
+    out: List[MetricInterval] = []
+    for name in UNCERTAINTY_METRICS:
+        fn = _METRIC_FNS[name]
+        values: List[float] = []
+        for idx in draws:
+            v = fn([preds[i] for i in idx], [labels[i] for i in idx])
+            if v is not None:
+                values.append(v)
+        lo, hi = _interval(values, level)
+        out.append(
+            MetricInterval(
+                metric=name,
+                point=_r(fn(preds, labels)),
+                lower=_r(lo),
+                upper=_r(hi),
+                defined=len(values),
+                excluded=replicates - len(values),
+            )
+        )
+    return out
+
+
+def paired_bootstrap_comparison(
+    samples: Sequence[LabeledSample],
+    primary: WeightsByGroup,
+    reference: WeightsByGroup,
+    *,
+    replicates: int,
+    level: float,
+    seed: int,
+    primary_source: str = "primary",
+    reference_source: str = "reference",
+) -> PairedComparison:
+    """Paired bootstrap of ``metric(primary) − metric(reference)`` on the same rows.
+
+    Each replicate applies the *same* resampled indices to both tables, so the
+    interval is for the difference itself rather than two independent intervals.
+    A replicate where the metric is undefined for either table is excluded and
+    counted for that metric.
+    """
+    _validate_bootstrap_params(len(samples), replicates, level)
+    p_preds = predict_scores(samples, primary)
+    r_preds = predict_scores(samples, reference)
+    labels = [s.label for s in samples]
+    draws = _bootstrap_indices(len(samples), replicates, seed)
+    rows: List[MetricDifference] = []
+    for name in UNCERTAINTY_METRICS:
+        fn = _METRIC_FNS[name]
+        diffs: List[float] = []
+        for idx in draws:
+            lab = [labels[i] for i in idx]
+            a = fn([p_preds[i] for i in idx], lab)
+            b = fn([r_preds[i] for i in idx], lab)
+            if a is not None and b is not None:
+                diffs.append(a - b)
+        pa, pb = fn(p_preds, labels), fn(r_preds, labels)
+        lo, hi = _interval(diffs, level)
+        rows.append(
+            MetricDifference(
+                metric=name,
+                primary=_r(pa),
+                reference=_r(pb),
+                point_difference=_r(pa - pb) if pa is not None and pb is not None else None,
+                lower=_r(lo),
+                upper=_r(hi),
+                defined=len(diffs),
+                excluded=replicates - len(diffs),
+            )
+        )
+    return PairedComparison(primary_weights=primary_source, reference_weights=reference_source, metrics=rows)
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m cats.calibration.evaluate",
@@ -298,7 +571,36 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="calibrated weights file; omit to use the static WP 4.1 estimates",
     )
     parser.add_argument("--json", action="store_true", help="emit the report as JSON")
+    unc = parser.add_argument_group(
+        "uncertainty (optional)",
+        "percentile bootstrap over dataset rows; --bootstrap-replicates and --bootstrap-level have no "
+        "default and are both required as soon as any of these options is given",
+    )
+    unc.add_argument("--bootstrap-replicates", type=int, default=None, help="number of bootstrap replicates (>= 1)")
+    unc.add_argument(
+        "--bootstrap-level", type=float, default=None, help="interval level, strictly between 0 and 1 (e.g. 0.9)"
+    )
+    unc.add_argument("--bootstrap-seed", type=int, default=None, help="RNG seed for the resampling (default 0)")
+    unc.add_argument(
+        "--compare-weights",
+        default=None,
+        metavar="PATH|static",
+        help="second weights table for a paired comparison (difference = --weights table minus this one); "
+        f"'{STATIC_WEIGHTS_LITERAL}' means the static WP 4.1 estimates",
+    )
     args = parser.parse_args(argv)
+
+    want_uncertainty = any(
+        v is not None
+        for v in (args.bootstrap_replicates, args.bootstrap_level, args.bootstrap_seed, args.compare_weights)
+    )
+    if want_uncertainty:
+        if args.bootstrap_replicates is None or args.bootstrap_level is None:
+            parser.error("uncertainty requires both --bootstrap-replicates and --bootstrap-level (no defaults)")
+        if args.bootstrap_replicates < 1:
+            parser.error("--bootstrap-replicates must be >= 1")
+        if not 0.0 < args.bootstrap_level < 1.0:
+            parser.error("--bootstrap-level must be strictly between 0 and 1")
 
     if not args.dataset.exists():
         parser.error(f"dataset not found: {args.dataset}")
@@ -316,7 +618,48 @@ def main(argv: Optional[List[str]] = None) -> int:
         source = "static (WP 4.1 estimates)"
 
     report = evaluate_dataset(samples, weights, weights_source=source)
-    print(report.to_json() if args.json else report.render())
+    if not want_uncertainty:
+        print(report.to_json() if args.json else report.render())
+        return 0
+
+    seed = args.bootstrap_seed if args.bootstrap_seed is not None else 0
+    uncertainty = UncertaintyReport(
+        method=BOOTSTRAP_METHOD,
+        resampling_unit=RESAMPLING_UNIT,
+        replicates=args.bootstrap_replicates,
+        seed=seed,
+        level=args.bootstrap_level,
+        metrics=bootstrap_metrics(
+            samples, weights, replicates=args.bootstrap_replicates, level=args.bootstrap_level, seed=seed
+        ),
+    )
+    if args.compare_weights is not None:
+        if args.compare_weights == STATIC_WEIGHTS_LITERAL:
+            ref_weights = static_weights_for(groups)
+            ref_source = "static (WP 4.1 estimates)"
+        else:
+            ref_path = Path(args.compare_weights)
+            if not ref_path.exists():
+                parser.error(f"compare weights file not found: {ref_path}")
+            ref_weights = load_weights_file(ref_path, groups)
+            ref_source = str(ref_path)
+        uncertainty.paired_comparison = paired_bootstrap_comparison(
+            samples,
+            weights,
+            ref_weights,
+            replicates=args.bootstrap_replicates,
+            level=args.bootstrap_level,
+            seed=seed,
+            primary_source=source,
+            reference_source=ref_source,
+        )
+
+    if args.json:
+        payload = report.to_dict()
+        payload["uncertainty"] = uncertainty.to_dict()
+        print(json.dumps(payload, indent=2))
+    else:
+        print(report.render() + "\n\n" + uncertainty.render())
     return 0
 
 
